@@ -80,6 +80,22 @@ The planned flow is:
 
 The generic importer will convert supported CSV columns into TaxPrep AU's standard transaction format. Bank-specific adapters and document scanning are possible future work, not part of the current foundation.
 
+## How the API status lesson works
+
+`src/frontend/src/components/ApiStatus.tsx` is a small real feature designed to refresh the React and TypeScript concepts used throughout the future application.
+
+1. `ApiStatus` is a **component** responsible for one section of the page.
+2. `App` passes `/api/health` through the `endpoint` **prop**.
+3. The component uses **state** to remember its current status and message.
+4. Clicking the button triggers the `checkBackend` **event handler**.
+5. `HealthResponse` and `ApiStatusProps` are TypeScript **interfaces** describing expected data.
+6. `checkBackend` uses **async/await** so the page remains responsive while it waits.
+7. `fetch` makes the actual **API call**.
+
+During development, the browser opens the React application on port `5173`, while ASP.NET Core listens on port `5087`. `vite.config.ts` contains a development proxy that forwards requests beginning with `/api` to the backend.
+
+The button deliberately calls only the health endpoint. It sends no user or financial information.
+
 ## How we will comment code
 
 Comments should explain:
