@@ -1,5 +1,8 @@
 import './App.css'
 
+// These cards describe the foundation milestone.
+// Keeping the content in one list lets React build each card using the same
+// layout, instead of us copying the card markup three times.
 const foundations = [
   { title: 'Frontend ready', detail: 'React, TypeScript and Vite are configured.' },
   { title: 'Backend ready', detail: 'ASP.NET Core provides a simple health endpoint.' },
@@ -7,6 +10,8 @@ const foundations = [
 ]
 
 function App() {
+  // A React component is a function that returns the page structure it owns.
+  // App is currently the top-level component, so it arranges the whole screen.
   return (
     <main>
       <header className="site-header">
@@ -36,6 +41,7 @@ function App() {
           <h2 id="foundation-title">Project foundation</h2>
         </div>
         <div className="cards">
+          {/* map visits each foundation item and turns it into a visible card. */}
           {foundations.map((item, index) => (
             <article className="card" key={item.title}>
               <span className="card-number" aria-hidden="true">
