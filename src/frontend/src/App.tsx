@@ -1,5 +1,6 @@
 import './App.css'
 import ApiStatus from './components/ApiStatus'
+import TransactionUpload from './components/TransactionUpload'
 
 // These cards describe the foundation milestone.
 // Keeping the content in one list lets React build each card using the same
@@ -58,6 +59,8 @@ function App() {
       {/* App supplies the endpoint through a prop. During local development,
           Vite forwards /api requests to the ASP.NET Core backend. */}
       <ApiStatus endpoint="/api/health" />
+
+      <TransactionUpload />
     </main>
   )
 }
