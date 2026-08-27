@@ -1,6 +1,7 @@
 import './App.css'
 import ApiStatus from './components/ApiStatus'
 import TransactionUpload from './components/TransactionUpload'
+import GuidedDemo from './features/demo/GuidedDemo'
 
 // These cards describe the foundation milestone.
 // Keeping the content in one list lets React build each card using the same
@@ -21,21 +22,23 @@ function App() {
           <span className="brand-mark" aria-hidden="true">T</span>
           <span>TaxPrep AU</span>
         </a>
-        <span className="status">Foundation phase</span>
+        <span className="status">Guided demo</span>
       </header>
 
       <section className="hero" aria-labelledby="page-title">
         <p className="eyebrow">Australian tax preparation assistant</p>
-        <h1 id="page-title">A clean foundation for a careful product.</h1>
+        <h1 id="page-title">Tax preparation, explained simply.</h1>
         <p className="intro">
-          TaxPrep AU will help individuals organise records and prepare a clear
-          summary before using myTax or speaking with a registered tax agent.
+          Answer a short series of questions, identify preparation items and see
+          what still needs attention before using myTax or speaking with an agent.
         </p>
         <aside className="notice" aria-label="Project disclaimer">
           <strong>Preparation only.</strong> TaxPrep AU does not provide tax
           advice or lodge tax returns.
         </aside>
       </section>
+
+      <GuidedDemo />
 
       <section className="foundation" aria-labelledby="foundation-title">
         <div>
