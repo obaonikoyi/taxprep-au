@@ -2,7 +2,7 @@
 
 TaxPrep AU is an Australian tax-preparation assistant that helps individuals organise financial records, review possible work-related deductions, and prepare a clear summary before lodging through myTax or consulting a registered tax agent.
 
-> **Project status:** Planning and requirements definition  
+> **Project status:** Guided demo development
 > **Important:** TaxPrep AU is an organisational and educational tool. It does not provide tax, legal, or financial advice and does not lodge tax returns.
 
 ## The Problem
@@ -152,6 +152,12 @@ V1 will be considered successful when a user can:
 5. **Evidence and guidance** — add receipt tracking, notes, questions, and review flags.
 6. **Reporting** — create category summaries and exports.
 7. **Testing and release** — test accuracy, usability, security, and edge cases before an initial release.
+
+## Current Portfolio Demo
+
+The current milestone introduces a fictional profile named Sarah, a disability support worker. A visitor can confirm sample income, answer three work-expense discovery questions and receive a preparation summary. The demo uses no account, TFN, myGov login or real financial data.
+
+See [`docs/MILESTONE_2_GUIDED_DEMO.md`](docs/MILESTONE_2_GUIDED_DEMO.md) for its user story, acceptance criteria and deferred work.
 
 ## Disclaimer
 
