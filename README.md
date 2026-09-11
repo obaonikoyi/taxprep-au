@@ -159,6 +159,8 @@ The current milestone introduces a fictional profile named Sarah, a disability s
 
 See [`docs/MILESTONE_2_GUIDED_DEMO.md`](docs/MILESTONE_2_GUIDED_DEMO.md) for its user story, acceptance criteria and deferred work.
 
+The next increment adds local CSV validation and a transaction preview without uploading or storing financial data. See [`docs/MILESTONE_3_CSV_PREVIEW.md`](docs/MILESTONE_3_CSV_PREVIEW.md).
+
 ## Disclaimer
 
 TaxPrep AU is an independent software project and is not affiliated with or endorsed by the Australian Taxation Office. Tax rules depend on individual circumstances and can change. Users remain responsible for verifying their information and should consult current ATO guidance or a registered tax agent when needed.
