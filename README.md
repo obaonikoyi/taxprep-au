@@ -161,6 +161,8 @@ See [`docs/MILESTONE_2_GUIDED_DEMO.md`](docs/MILESTONE_2_GUIDED_DEMO.md) for its
 
 The next increment adds local CSV validation and a transaction preview without uploading or storing financial data. See [`docs/MILESTONE_3_CSV_PREVIEW.md`](docs/MILESTONE_3_CSV_PREVIEW.md).
 
+The import API and automated browser-parser tests are defined in [`docs/MILESTONE_4_IMPORT_API_TESTS.md`](docs/MILESTONE_4_IMPORT_API_TESTS.md).
+
 ## Disclaimer
 
 TaxPrep AU is an independent software project and is not affiliated with or endorsed by the Australian Taxation Office. Tax rules depend on individual circumstances and can change. Users remain responsible for verifying their information and should consult current ATO guidance or a registered tax agent when needed.
