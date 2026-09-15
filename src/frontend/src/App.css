@@ -113,6 +113,59 @@ h3 { margin-bottom: 10px; color: #173e34; font-size: 1.12rem; }
 .transaction-preview .expense { color: #9b2c2c; }
 .transaction-preview .income { color: #17623e; }
 
+/* Expense preparation: labelled controls, readable records and a compact summary. */
+.demo-content, .demo-content > div { min-width: 0; }
+.demo-content { align-items: start; padding: 40px clamp(22px, 4vw, 48px); }
+.demo-content h3 { font-size: clamp(1.65rem, 3.5vw, 2.25rem); }
+.step-heading:focus { outline: none; }
+.demo-data-note { margin: 28px 0 0; color: #546b62; font-size: .8rem; line-height: 1.6; }
+.button-row { flex-wrap: wrap; }
+.button-row button { min-height: 44px; }
+.text-button { min-height: 44px; padding: 10px 0; border: 0; color: #12684d; background: transparent; font-weight: 750; text-align: left; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.question-back { margin-top: 20px; }
+.expense-form .lead { margin-bottom: 14px; }
+.expense-form label { display: block; margin: 20px 0 8px; color: #173e34; font-weight: 750; line-height: 1.45; }
+.expense-form label span { color: #546b62; font-weight: 400; font-size: .85rem; }
+.expense-form input, .expense-form select, .expense-form textarea { width: 100%; min-width: 0; min-height: 46px; padding: 12px; border: 1px solid #9ebbae; border-radius: 8px; color: #173e34; background: #fff; font-size: 1rem; }
+.expense-form textarea { resize: vertical; }
+.expense-form input:focus-visible, .expense-form select:focus-visible, .expense-form textarea:focus-visible, summary:focus-visible { outline: 3px solid #bd800a; outline-offset: 3px; }
+.expense-form [aria-invalid=true] { border-color: #b33232; }
+.expense-form .button-row { margin-top: 30px; }
+.expense-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.field-help { margin: 8px 0 14px; color: #546b62; font-size: .85rem; line-height: 1.6; }
+.field-error { margin: 8px 0 0; color: #972626; font-size: .85rem; line-height: 1.5; }
+.review-totals { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 0 0 16px; }
+.review-totals > div { padding: 16px 12px; border: 1px solid #c9ddd4; border-radius: 10px; background: #eff8f4; }
+.review-totals dt { color: #476458; font-size: .8rem; line-height: 1.4; }
+.review-totals dd { margin: 10px 0 0; font-size: clamp(1.15rem, 2vw, 1.4rem); font-weight: 800; overflow-wrap: anywhere; }
+.expense-review-list { display: grid; gap: 16px; margin: 26px 0; }
+.expense-review-list article { min-width: 0; padding: 22px; border: 1px solid #cfded7; border-radius: 12px; }
+.expense-card-heading { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: center; margin-bottom: 16px; }
+.expense-card-heading h4 { margin: 0; font-size: 1.1rem; }
+.expense-status { padding: 6px 9px; border-radius: 7px; font-size: .75rem; font-weight: 750; }
+.expense-status--needs-attention { color: #6d4911; background: #fff0c9; }
+.expense-status--details-recorded { color: #22583e; background: #e4f1e9; }
+.expense-status--excluded { color: #46595a; background: #eaf0ef; }
+.expense-calculation { color: #536b60; font-size: .9rem; }
+.expense-notes { display: grid; gap: 12px; font-size: .85rem; line-height: 1.55; }
+.expense-notes dt { font-weight: 750; }
+.expense-notes dd { margin: 2px 0 0; color: #536b60; white-space: pre-wrap; overflow-wrap: anywhere; }
+.review-actions { margin: 18px 0 6px; padding-left: 20px; color: #71541f; font-size: .85rem; line-height: 1.6; }
+.review-actions li + li { margin-top: 6px; }
+.expense-card-actions { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
+.remove-expense { color: #873838; }
+.review-error { margin-bottom: 24px; padding: 18px; border-radius: 10px; background: #fff0f0; color: #812727; }
+.developer-details { margin: 0 0 40px; color: #536b60; }
+.developer-details > summary { padding: 18px 0; cursor: pointer; }
+.developer-details .api-status { padding-top: 28px; }
+@media (max-width: 760px) {
+  .expense-fields { grid-template-columns: 1fr; gap: 0; }
+  .review-totals { grid-template-columns: 1fr; }
+  .review-totals > div { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+  .review-totals dd { margin: 0; }
+  .expense-review-list article { padding: 16px; }
+}
+
 /* Uploads remain usable with long data, a keyboard and narrow viewports. */
 .transaction-upload > * { min-width: 0; }
 .transaction-upload button:disabled { cursor: wait; opacity: .65; }

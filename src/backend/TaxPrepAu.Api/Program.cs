@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http.Features;
 using TaxPrepAu.Api.Transactions;
+using TaxPrepAu.Api.Expenses;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<FormOptions>(options =>
@@ -21,6 +22,7 @@ app.MapGet("/api/health", () => Results.Ok(new
     service = "TaxPrep AU API"
 })).WithName("GetHealth");
 app.MapImportPreview();
+app.MapExpenseReview();
 app.Run();
 
 public partial class Program;

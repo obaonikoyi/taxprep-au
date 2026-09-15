@@ -1,4 +1,5 @@
 import { chromium } from 'playwright';
+import { verifyExpenses } from './expense-smoke.mjs';
 import { spawn } from 'node:child_process';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -22,6 +23,10 @@ async function ready(url){for(let i=0;i<80;i++){try{if((await fetch(url)).ok)ret
   const page=await browser.newPage({viewport:{width:1440,height:1000}});
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto('http://127.0.0.1:5173');
+  const expenseReport = await verifyExpenses(page, artifacts, {
+    stopApi: async () => { const exited = new Promise(resolve => api.once('exit', resolve)); api.kill('SIGTERM'); await exited; },
+    startApi: async () => { api = startApi(); await ready('http://127.0.0.1:5087/api/health'); },
+  });
   await page.getByRole('heading',{name:'Review your transactions'}).scrollIntoViewIfNeeded();
   const uploadResponse=page.waitForResponse(r=>r.url().endsWith('/api/transactions/import-preview') && r.request().method()==='POST');
   await page.getByRole('button',{name:'Try sample CSV'}).click();
@@ -48,7 +53,7 @@ async function ready(url){for(let i=0;i<80;i++){try{if((await fetch(url)).ok)ret
   await page.locator('.transaction-upload').screenshot({path:artifacts+'/mobile.png'});
   await page.getByRole('button',{name:'Clear preview'}).click();assert.equal(await page.locator('tbody tr').count(),0);
   assert.equal(await page.locator('vite-error-overlay').count(),0);assert.deepEqual(errors,[]);
-  const report={sampleRows:20,netTotal:1374.12,partialRows:true,physicalRowNumbers:true,duplicateHeaders:true,realBackendRecovery:true,mobileWidth:390,horizontalOverflow:false,pageErrors:errors};
+  const report={expenses:expenseReport,sampleRows:20,netTotal:1374.12,partialRows:true,physicalRowNumbers:true,duplicateHeaders:true,realBackendRecovery:true,mobileWidth:390,horizontalOverflow:false,pageErrors:errors};
   writeFileSync(artifacts+'/report.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report));
  } finally {if(browser)await browser.close();for(const p of children)p.kill('SIGTERM');}
 })().catch(e=>{console.error(e);process.exitCode=1;});

@@ -1,130 +1,64 @@
 # TaxPrep AU code walkthrough
 
-This is a beginner-friendly tour of the project. It explains how the main files work together without repeating every line of code.
+This is a beginner-friendly tour of the current application. The frontend handles the screen and temporary entries. The backend validates requests and calculates organising amounts. Neither application saves a return or lodges with the ATO.
 
-## The big picture
+## Where to start
 
-TaxPrep AU currently contains two applications:
+| File | What it owns |
+|---|---|
+| `src/frontend/src/App.tsx` | Page layout: guided demo, CSV preview and expandable developer connection check |
+| `features/demo/GuidedDemo.tsx` | Current step and saved expense list |
+| `features/demo/demoData.ts` | Fictional profile and three discovery questions |
+| `features/expenses/ExpenseForm.tsx` | Unsaved form input, validation and example details |
+| `features/expenses/ExpenseSummary.tsx` | Review request, retry, totals and evidence checklist |
+| `features/expenses/expenseReview.ts` | Shared types, sample expenses and API response validation |
+| `src/backend/TaxPrepAu.Api/Expenses/ExpenseReview.cs` | JSON endpoint, server validation and decimal calculations |
+| `src/backend/TaxPrepAu.Api/Program.cs` | Starts the API and registers its routes |
 
-1. The **frontend** is the page a user sees and interacts with in the browser.
-2. The **backend** is the server that will eventually validate requests, apply business rules and work with stored data.
+Frontend paths beginning with `features/` are inside `src/frontend/src/`.
 
-They run separately during development. This separation lets us change the page design without mixing it with server or data logic.
+## One expense, end to end
 
-## What happens when the frontend starts?
+1. A visitor confirms Sarah's sample income and answers Yes to phone use.
+2. `GuidedDemo` opens `ExpenseForm` for the phone category.
+3. The form stores text while the visitor types. This permits an empty field and avoids treating a partially typed number as a saved amount.
+4. Save validates the required fields and converts valid numbers. The parent replaces the saved item for that category. Cancel leaves the old saved entry intact.
+5. On the summary screen, `fetchExpenseReview` sends the saved list as JSON to `/api/expenses/review`.
+6. The API validates the request again. Browser validation is helpful feedback, but callers can bypass the browser and send requests themselves.
+7. The API returns decimal work portions and missing-information actions. The frontend checks the JSON shape and that the response matches the requested categories/amounts before displaying it.
 
-1. The browser opens `src/frontend/index.html`.
-2. That file loads `src/frontend/src/main.tsx`.
-3. `main.tsx` finds the HTML element named `root`.
-4. React renders the `App` component inside that element.
-5. `App.tsx` describes the visible page structure and content.
-6. `App.css` and `index.css` control how the page looks.
+For a $100 phone bill at 40% work use with no reimbursement, the recorded work portion is $40. This says how the entered cost was divided; it does not say whether $40 is deductible.
 
-### Why `App.tsx` looks like HTML
+## Why the numbers live in the backend
 
-React uses **JSX**, which lets TypeScript describe a user interface with HTML-like elements. For example:
+The frontend sends the facts. The C# calculation uses `decimal`, a number type suitable for exact decimal amounts. Each item is rounded to cents before totals are added, so the visible items reconcile with the total. For example, two work portions that each round from $0.005 to $0.01 sum to $0.02.
 
-```tsx
-<h1>A clean foundation for a careful product.</h1>
-```
+A fully reimbursed or 0%-work item contributes zero. Partial/unknown reimbursement leaves the work portion unresolved and the subtotal is labelled partial. Missing evidence keeps the arithmetic visible but adds an action. These rules organise a small fictional example; they do not implement complete tax legislation.
 
-This tells React to display a main heading. JSX can also include normal programming features such as variables, conditions and loops.
+## How editing avoids stale results
 
-### How the foundation cards are created
+React's saved expense array changes whenever an item is saved or removed. The summary has a key based on that small list. A changed list unmounts the old summary, aborts its request and starts a fresh summary with no old totals. The active-request flag also ignores a late response if a transport does not respect cancellation.
 
-`App.tsx` stores the card information in the `foundations` array. The `map` operation visits each item and creates one card from it.
+The form remains editable when the API is unavailable. Retry sends the same saved entries. The 15-second timeout restores retry even if a request never settles. Restart or refresh clears the in-tab data; there is no database or local-storage copy.
 
-This is preferable to copying the same markup three times because there is only one card structure to maintain.
+## The separate CSV flow
 
-## What happens when the backend starts?
+1. `components/TransactionUpload.tsx` accepts a file or loads the bundled fictional sample.
+2. `features/transactions/importPreview.ts` sends multipart form data to `/api/transactions/import-preview` and validates the JSON response.
+3. `Transactions/ImportPreviewEndpoint.cs` checks file/request limits and encoding.
+4. `Transactions/CsvTransactionParser.cs` validates headers, quotes, dates, amounts and rows. Independent valid rows survive row errors.
+5. The browser displays valid transactions, row errors and the API's net total.
 
-1. .NET runs `src/backend/TaxPrepAu.Api/Program.cs`.
-2. `WebApplication.CreateBuilder` prepares the application and reads its configuration.
-3. `builder.Build()` creates the web application.
-4. The application registers the `/api/health` endpoint.
-5. `app.Run()` starts the server and waits for requests.
+There is one authoritative CSV parser in C#. The CSV preview does not automatically populate the guided expense form. Connecting those workflows is future work.
 
-### What is an endpoint?
+## What to learn from this milestone
 
-An endpoint is an address where another program can request a specific operation or piece of information.
+- **State ownership:** explain why typing belongs to the form but saved entries belong to the journey. Try Cancel after changing an amount.
+- **Validation boundaries:** explain why both the form and API validate. Try 101% work use, then inspect the API integration tests for a direct invalid request.
+- **Deterministic calculation:** explain why missing evidence, unclear reimbursement and tax eligibility are separate from multiplying an amount by a percentage.
 
-The current endpoint is:
+## Running and verifying
 
-```text
-/api/health
-```
+Use [the development guide](DEVELOPMENT.md). Frontend tests cover interactions and API contracts. Backend tests use `WebApplicationFactory` to send real HTTP requests through the application in memory. The browser smoke script runs the real API and Vite together, checking the guided expense journey and CSV preview at desktop/mobile widths.
 
-It returns:
-
-```json
-{
-  "status": "healthy",
-  "service": "TaxPrep AU API"
-}
-```
-
-This proves the API is running. It does not read or return personal or financial information.
-
-## Where the synthetic CSV fits
-
-`sample-data/transactions.csv` is not part of a real user's account. It is a safe development fixture that will help us build the future import workflow.
-
-The planned flow is:
-
-1. The user chooses a CSV file.
-2. The frontend sends it to the backend.
-3. An importer reads and validates the columns.
-4. The application shows a preview.
-5. The user confirms or corrects the information.
-6. Only confirmed transactions are added to the selected tax-year workspace.
-
-The generic importer will convert supported CSV columns into TaxPrep AU's standard transaction format. Bank-specific adapters and document scanning are possible future work, not part of the current foundation.
-
-## How the API status lesson works
-
-`src/frontend/src/components/ApiStatus.tsx` is a small real feature designed to refresh the React and TypeScript concepts used throughout the future application.
-
-1. `ApiStatus` is a **component** responsible for one section of the page.
-2. `App` passes `/api/health` through the `endpoint` **prop**.
-3. The component uses **state** to remember its current status and message.
-4. Clicking the button triggers the `checkBackend` **event handler**.
-5. `HealthResponse` and `ApiStatusProps` are TypeScript **interfaces** describing expected data.
-6. `checkBackend` uses **async/await** so the page remains responsive while it waits.
-7. `fetch` makes the actual **API call**.
-
-During development, the browser opens the React application on port `5173`, while ASP.NET Core listens on port `5087`. `vite.config.ts` contains a development proxy that forwards requests beginning with `/api` to the backend.
-
-The button deliberately calls only the health endpoint. It sends no user or financial information.
-
-## How we will comment code
-
-Comments should explain:
-
-- why a section exists;
-- how it fits into TaxPrep AU;
-- a decision that may not be obvious;
-- a privacy or safety rule; or
-- syntax that is genuinely useful for a beginner to understand.
-
-Comments should not repeat every obvious line. The code remains the exact source of behaviour, while this walkthrough explains the larger story.
-
-## Current boundaries
-
-The project does not yet contain:
-
-- login or user accounts;
-- a database;
-- CSV upload or parsing;
-- tax categorisation;
-- AI integration;
-- bank connections; or
-- real financial information.
-
-Those features will be introduced in small, reviewed stages.
-
-
-## Milestone 4: the CSV now travels to the backend
-
-`TransactionUpload.tsx` owns file selection, loading, errors and the preview. `importPreview.ts` sends the file as `FormData` using `fetch`, then validates the returned JSON shape at runtime. Vite forwards `/api` to ASP.NET Core on port 5087 in development. `ImportPreviewEndpoint.cs` checks the upload; `CsvTransactionParser.cs` validates records and calculates a decimal total. The endpoint returns valid rows and structured errors together. React renders them without storing them. The previous browser parser was removed so tax-record validation has one source of truth. Cancelling/replacing a selection aborts its request; a request identity check also prevents late responses from replacing newer results.
-
-The health lesson and Sarah demo remain independent of the CSV workflow. Read the development guide for current startup commands and the milestone document for the request/response contract. Earlier descriptions of CSV work as future/local-only are historical.
+The detailed scope, sample totals and boundaries are in [Milestone 5](MILESTONE_5_EXPENSE_REVIEW.md).

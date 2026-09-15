@@ -2,7 +2,7 @@
 
 TaxPrep AU is an Australian tax-preparation assistant that helps individuals organise financial records, review possible work-related deductions, and prepare a clear summary before lodging through myTax or consulting a registered tax agent.
 
-> **Project status:** Milestone 4 — connected CSV import preview
+> **Project status:** Milestone 5 — guided expense details and evidence review
 > **Important:** TaxPrep AU is an organisational and educational tool. It does not provide tax, legal, or financial advice and does not lodge tax returns.
 
 ## The Problem
@@ -155,9 +155,9 @@ V1 will be considered successful when a user can:
 
 ## Current Portfolio Demo
 
-The current milestone introduces a fictional profile named Sarah, a disability support worker. A visitor can confirm sample income, answer three work-expense discovery questions and receive a preparation summary. The demo uses no account, TFN, myGov login or real financial data.
+Try **Explore example summary** for an immediate walkthrough, or **Try demo** to guide Sarah, a fictional disability support worker, through three expense categories. Record amounts, work-use percentages, reimbursement and evidence; then edit the entries and review missing information. The backend calculates recorded work portions without deciding tax eligibility. The demo needs no account or identity details.
 
-See [`docs/MILESTONE_2_GUIDED_DEMO.md`](docs/MILESTONE_2_GUIDED_DEMO.md) for its user story, acceptance criteria and deferred work.
+See [Milestone 5](docs/MILESTONE_5_EXPENSE_REVIEW.md) for the current user stories, sample numbers and API contract. Entries remain only in the current tab; restart or refresh clears them. Summary requests are processed in memory and are not stored.
 
 The CSV screen now uploads a fictional CSV to the ASP.NET Core API for validation. Try the built-in 20-row sample, review valid rows alongside errors, retry a failed request or clear the preview. Totals come from the backend. Transactions are processed in memory and not saved.
 
@@ -165,7 +165,9 @@ The CSV screen now uploads a fictional CSV to the ASP.NET Core API for validatio
 - [Milestone 4 and API contract](docs/MILESTONE_4_IMPORT_API_TESTS.md)
 - [Issue #6](https://github.com/obaonikoyi/taxprep-au/issues/6) / [PR #5](https://github.com/obaonikoyi/taxprep-au/pull/5)
 
-Next: add expense amounts, work-use percentages and evidence information to Sarah's guided demo. The CSV path currently validates transaction data; it does not decide deductibility or estimate refunds.
+Next: export the reviewed preparation summary and evidence checklist. The guided expense demo and CSV preview remain separate workflows; neither decides deductibility or estimates refunds.
+
+- [Milestone 5 issue #7](https://github.com/obaonikoyi/taxprep-au/issues/7)
 
 ## Disclaimer
 

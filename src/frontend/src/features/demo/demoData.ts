@@ -23,18 +23,17 @@ export const demoProfile: DemoProfile = {
 export const demoQuestions: DemoQuestion[] = [
   {
     id: 'travel',
-    title: 'Did Sarah travel directly between workplaces or clients?',
-    description: 'Ordinary travel from home to a regular workplace is not included in this demo.',
+    title: 'Did Sarah pay transport fares between workplaces or clients?',
+    description: 'This example covers bus, train or taxi fares. Leave out ordinary commuting and own-car expenses for this demo.',
   },
   {
     id: 'phone',
     title: 'Did Sarah use her personal phone for work?',
-    description: 'Only the documented work-use portion should be considered.',
+    description: 'Record a phone service bill and the percentage used for work.',
   },
   {
     id: 'protective-clothing',
     title: 'Did Sarah buy protective clothing required for work?',
-    description: 'Everyday clothing is treated differently from protective or occupation-specific items.',
+    description: 'Record a protective item and what Sarah used it for. Everyday clothing is outside this example.',
   },
 ]
-
