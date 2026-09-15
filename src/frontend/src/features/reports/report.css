@@ -40,6 +40,7 @@ li { margin: 5px 0; overflow-wrap: anywhere; }
 footer { border-top: 2px solid #1b7054; margin-top: 24px; padding-top: 20px; font-size: 11px; color: #50665d; }
 .report-sources { margin: 18px 0 8px; }
 .report-sources th:first-child { width: 32%; }
+.report-sources th:nth-child(2) { text-align: left; }
 .report-sources td:nth-child(2) { text-align: left; white-space: pre-wrap; }
 .report-sources th:last-child, .report-sources td:last-child { width: 22%; }
 @media screen and (max-width: 600px) {
@@ -72,6 +73,8 @@ footer { border-top: 2px solid #1b7054; margin-top: 24px; padding-top: 20px; fon
   .expense.has-sources { break-inside: auto; }
   .expense-heading { break-after: avoid; }
   .report-sources thead { display: table-header-group; }
+  .report-sources th, .report-sources td { padding: 5px 8px; }
+  .report-sources small { margin-top: 2px; }
   .expense h3 { margin-bottom: 4px; }
   .expense p { margin: 6px 0; }
   .notes { gap: 4px; margin: 8px 0; line-height: 1.35; }
