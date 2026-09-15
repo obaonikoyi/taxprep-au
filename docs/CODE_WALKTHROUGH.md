@@ -121,3 +121,10 @@ The project does not yet contain:
 - real financial information.
 
 Those features will be introduced in small, reviewed stages.
+
+
+## Milestone 4: the CSV now travels to the backend
+
+`TransactionUpload.tsx` owns file selection, loading, errors and the preview. `importPreview.ts` sends the file as `FormData` using `fetch`, then validates the returned JSON shape at runtime. Vite forwards `/api` to ASP.NET Core on port 5087 in development. `ImportPreviewEndpoint.cs` checks the upload; `CsvTransactionParser.cs` validates records and calculates a decimal total. The endpoint returns valid rows and structured errors together. React renders them without storing them. The previous browser parser was removed so tax-record validation has one source of truth. Cancelling/replacing a selection aborts its request; a request identity check also prevents late responses from replacing newer results.
+
+The health lesson and Sarah demo remain independent of the CSV workflow. Read the development guide for current startup commands and the milestone document for the request/response contract. Earlier descriptions of CSV work as future/local-only are historical.

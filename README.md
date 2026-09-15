@@ -2,7 +2,7 @@
 
 TaxPrep AU is an Australian tax-preparation assistant that helps individuals organise financial records, review possible work-related deductions, and prepare a clear summary before lodging through myTax or consulting a registered tax agent.
 
-> **Project status:** Guided demo development
+> **Project status:** Milestone 4 — connected CSV import preview
 > **Important:** TaxPrep AU is an organisational and educational tool. It does not provide tax, legal, or financial advice and does not lodge tax returns.
 
 ## The Problem
@@ -159,7 +159,13 @@ The current milestone introduces a fictional profile named Sarah, a disability s
 
 See [`docs/MILESTONE_2_GUIDED_DEMO.md`](docs/MILESTONE_2_GUIDED_DEMO.md) for its user story, acceptance criteria and deferred work.
 
-The next increment adds local CSV validation and a transaction preview without uploading or storing financial data. See [`docs/MILESTONE_3_CSV_PREVIEW.md`](docs/MILESTONE_3_CSV_PREVIEW.md).
+The CSV screen now uploads a fictional CSV to the ASP.NET Core API for validation. Try the built-in 20-row sample, review valid rows alongside errors, retry a failed request or clear the preview. Totals come from the backend. Transactions are processed in memory and not saved.
+
+- [Run and test locally](docs/DEVELOPMENT.md)
+- [Milestone 4 and API contract](docs/MILESTONE_4_IMPORT_API_TESTS.md)
+- [Issue #6](https://github.com/obaonikoyi/taxprep-au/issues/6) / [PR #5](https://github.com/obaonikoyi/taxprep-au/pull/5)
+
+Next: add expense amounts, work-use percentages and evidence information to Sarah's guided demo. The CSV path currently validates transaction data; it does not decide deductibility or estimate refunds.
 
 ## Disclaimer
 
