@@ -47,7 +47,7 @@ const object = (v: unknown): v is Record<string, unknown> => v !== null && typeo
 const money = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 3_000_000
 const count = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= 3
 
-function isReview(value: unknown, expenses: Expense[]): value is ExpenseReviewResult {
+export function isExpenseReview(value: unknown, expenses: Expense[]): value is ExpenseReviewResult {
   if (!object(value) || !Array.isArray(value.items) || value.items.length !== expenses.length) return false
   const items = value.items
   return money(value.enteredTotal) && money(value.workPortionTotal)
@@ -74,6 +74,6 @@ export async function fetchExpenseReview(expenses: Expense[], signal: AbortSigna
   if (!response.ok) throw new Error('The review could not be completed. Check your expense details and try again.')
   let data: unknown
   try { data = await response.json() } catch { throw new Error('The review service returned an unreadable response. Try again.') }
-  if (!isReview(data, expenses)) throw new Error('The review service returned an unexpected response. Try again.')
+  if (!isExpenseReview(data, expenses)) throw new Error('The review service returned an unexpected response. Try again.')
   return data
 }

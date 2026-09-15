@@ -50,6 +50,17 @@ The upload sends the CSV to TaxPrep AU and processes it in memory. Use fictional
 
 [Milestone 5](MILESTONE_5_EXPENSE_REVIEW.md) explains input bounds, rounding and the difference between work portions and tax eligibility.
 
+## Keep a report
+
+1. Complete a review or click **Explore example summary** with the API running.
+2. Expand **Preview report**, then click **Download report (HTML)**.
+3. Open the downloaded `.html` file in a browser. It works offline and includes the evidence checklist and references.
+4. **Print / save PDF** opens the browser print dialog for the report. Select A4 and Save as PDF where supported. The direct download remains HTML.
+5. Change an expense and save it. Export is available again after the new review succeeds; earlier downloaded copies keep their original values.
+6. No export is shown for an empty, loading or failed review. If printing is unavailable, download the HTML and use that browser's Print command.
+
+See [Milestone 6](MILESTONE_6_PREPARATION_REPORT.md) for format boundaries and verification details.
+
 ## Automated checks
 
 From the repository root:
@@ -83,4 +94,4 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-The script starts/stops its own API and Vite processes on 5087/5173 (stop your development servers first). It checks the guided expense interview, edits and partial totals, manual mobile entry, validation focus, real service interruption/retry and reset, plus the CSV upload regression flow. Desktop and 390px mobile widths are covered. It writes screenshots and a JSON report to ignored `test-results/browser/`. CI installs browser system dependencies and uploads these files alongside the API test report as a seven-day artifact.
+The script starts/stops its own API and Vite processes on 5087/5173 (stop your development servers first). It checks the guided expense interview, edits and partial totals, manual mobile entry, validation focus, real service interruption/retry and reset, plus the CSV upload regression flow. Desktop and 390px mobile widths are covered. The report checks verify the print action and browser print-event capability, real HTML download bytes, offline reopening without network requests, partial amounts and long notes. They also generate A4 PDFs from the downloaded HTML for inspection. It writes screenshots and a JSON report to ignored `test-results/browser/`. CI installs browser system dependencies and uploads these files alongside the API test report as a seven-day artifact.

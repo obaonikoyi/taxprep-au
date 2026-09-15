@@ -51,14 +51,25 @@ The form remains editable when the API is unavailable. Retry sends the same save
 
 There is one authoritative CSV parser in C#. The CSV preview does not automatically populate the guided expense form. Connecting those workflows is future work.
 
+## How the preparation report works
+
+`features/reports/ReportExport.tsx` appears only after a successful expense review. It creates one report snapshot from that saved list and matching API response. The summary's existing remount behaviour removes the snapshot after an edit, so the next export cannot silently reuse the old totals.
+
+`features/reports/preparationReport.ts` turns the snapshot into a complete HTML document. It copies the API's work portions and checks that displayed cent amounts reconcile with its totals; it never repeats the work-use calculation. Every variable text value is HTML-escaped, so typing `<img>` in a note produces visible text rather than an image element. `report.css` is bundled into the document, making it independent of the running app.
+
+The same HTML string feeds the preview, the download and browser printing. A temporary Blob URL lets the browser save a file without a new API call. The preview iframe permits printing and same-origin access but cannot run report scripts. The report contains no scripts or external resources. Print readiness is checked before calling that frame's `window.print()`.
+
+For example, if the API returns a $40 work portion, the page and report both display $40. Editing the cost creates a new review and report; it cannot alter a file the visitor already downloaded.
+
 ## What to learn from this milestone
 
 - **State ownership:** explain why typing belongs to the form but saved entries belong to the journey. Try Cancel after changing an amount.
 - **Validation boundaries:** explain why both the form and API validate. Try 101% work use, then inspect the API integration tests for a direct invalid request.
+- **Portable snapshots:** explain why the downloadable report is a separate copy, and why escaping text and waiting for print readiness matter.
 - **Deterministic calculation:** explain why missing evidence, unclear reimbursement and tax eligibility are separate from multiplying an amount by a percentage.
 
 ## Running and verifying
 
 Use [the development guide](DEVELOPMENT.md). Frontend tests cover interactions and API contracts. Backend tests use `WebApplicationFactory` to send real HTTP requests through the application in memory. The browser smoke script runs the real API and Vite together, checking the guided expense journey and CSV preview at desktop/mobile widths.
 
-The detailed scope, sample totals and boundaries are in [Milestone 5](MILESTONE_5_EXPENSE_REVIEW.md).
+The calculation scope is in [Milestone 5](MILESTONE_5_EXPENSE_REVIEW.md). The export contract and browser checks are in [Milestone 6](MILESTONE_6_PREPARATION_REPORT.md).
