@@ -60,3 +60,15 @@ npm run build
 - **Preview took too long:** the UI cancels after 15 seconds and permits retry.
 
 See [Milestone 4](MILESTONE_4_IMPORT_API_TESTS.md) for supported formats, bounds and the API response contract.
+
+
+## Real browser verification
+
+After a Release backend build, run from `src/frontend`:
+
+```powershell
+npx playwright install chromium
+npm run test:e2e
+```
+
+The script starts/stops its own API and Vite processes on 5087/5173 (stop your development servers first). It checks the real sample upload, partial errors, duplicate headings, service interruption/retry, clearing and a 390px mobile viewport. It writes screenshots and a JSON report to ignored `test-results/browser/`. CI installs browser system dependencies and uploads these files alongside the API test report as a seven-day artifact.

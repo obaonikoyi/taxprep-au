@@ -22,7 +22,11 @@ public static partial class CsvTransactionParser
 
     public static TransactionImportPreview Parse(TextReader reader)
     {
-        using var parser = new TextFieldParser(reader);
+        // The endpoint already bounds bytes. Trim trailing blank lines to avoid
+        // repeatedly scanning large empty tails and retain source lines for errors.
+        var csv = reader.ReadToEnd().TrimEnd();
+        var sourceLines = csv.Split(["\r\n", "\n", "\r"], StringSplitOptions.None);
+        using var parser = new TextFieldParser(new StringReader(csv));
         parser.TextFieldType = FieldType.Delimited;
         parser.SetDelimiters(",");
         parser.HasFieldsEnclosedInQuotes = true;
@@ -57,8 +61,10 @@ public static partial class CsvTransactionParser
             if (++recordsRead > MaximumRows)
                 return Preview([], [new(null, $"The CSV exceeds {MaximumRows} data rows. Split it into smaller files.")]);
 
-            // TextFieldParser uses physical line numbers, including blank/multiline rows.
+            // LineNumber points before blanks that ReadFields will skip.
             var rowNumber = parser.LineNumber;
+            while (rowNumber > 0 && rowNumber <= sourceLines.Length
+                && string.IsNullOrWhiteSpace(sourceLines[(int)rowNumber - 1])) rowNumber++;
             string[] fields;
             try
             {
