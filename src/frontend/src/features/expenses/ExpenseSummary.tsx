@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import ReportExport from '../reports/ReportExport'
 import { categories, categoryLabels, currency, evidenceLabels, reimbursementLabels, fetchExpenseReview, type Expense, type ExpenseCategory, type ExpenseReviewResult } from './expenseReview'
 
 interface Props { expenses: Expense[]; onEdit: (category: ExpenseCategory) => void; onRemove: (category: ExpenseCategory) => void }
@@ -39,6 +40,7 @@ export default function ExpenseSummary({ expenses, onEdit, onRemove }: Props) {
           </dl>
           <p className="field-help">Work portions include amounts with missing evidence. Fully reimbursed and 0% work-use items contribute $0. All items still need a tax eligibility check.</p>
           {result.unresolvedCount > 0 && <p className="form-message form-message--error">Partial total: {result.unresolvedCount} item(s) have an unresolved reimbursement and are not included.</p>}
+          <ReportExport expenses={expenses} review={result} />
         </>}
       </>}
       <div className="expense-review-list">

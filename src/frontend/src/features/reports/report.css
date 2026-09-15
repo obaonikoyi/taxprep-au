@@ -1,0 +1,65 @@
+* { box-sizing: border-box; }
+html { color: #19382f; background: #f2f6f3; font-family: Arial, Helvetica, sans-serif; line-height: 1.5; }
+body { margin: 0; }
+main { max-width: 880px; margin: 28px auto; padding: 44px; background: white; border: 1px solid #d7e2dc; }
+.report-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-bottom: 22px; margin-bottom: 30px; border-bottom: 2px solid #1b7054; }
+.brand { font-size: 21px; font-weight: 800; letter-spacing: -.5px; }
+.badge { font-size: 12px; font-weight: bold; padding: 5px 10px; border: 1px solid #abcabd; border-radius: 5px; }
+.eyebrow { color: #27674f; text-transform: uppercase; font-size: 11px; letter-spacing: 1.4px; font-weight: bold; }
+h1 { margin: 8px 0 12px; font-size: 32px; line-height: 1.15; letter-spacing: -.7px; }
+h2 { margin: 30px 0 14px; font-size: 19px; line-height: 1.3; }
+h3 { margin: 0 0 8px; font-size: 15px; }
+p { margin: 10px 0; }
+.profile { font-size: 14px; }
+.generated, .help, .print-help, .version { color: #50665d; font-size: 12px; }
+.notice, .partial { padding: 13px 16px; margin: 22px 0; border-left: 4px solid #b38d35; background: #fff9e9; color: #584719; font-size: 13px; }
+.totals { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0 0 16px; }
+.totals > div { padding: 16px; border: 1px solid #c7dad0; background: #f1f8f4; }
+.totals dt { font-size: 12px; color: #476153; }
+.totals dd { margin: 7px 0 0; font-weight: bold; font-size: 23px; overflow-wrap: anywhere; }
+.table-wrap { margin-top: 22px; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 12px; }
+caption { text-align: left; font-weight: bold; margin-bottom: 10px; }
+th, td { padding: 10px 8px; text-align: right; border-bottom: 1px solid #d7e2dc; vertical-align: top; overflow-wrap: anywhere; }
+th:first-child { width: 34%; text-align: left; }
+thead { background: #eff4f1; }
+small { display: block; margin-top: 4px; color: #5b6c64; font-size: 10px; font-weight: normal; }
+.checklist-group { margin: 14px 0; }
+ul { padding-left: 20px; margin: 8px 0; font-size: 13px; }
+li { margin: 5px 0; overflow-wrap: anywhere; }
+.expense-details { margin-top: 34px; }
+.expense { padding: 20px 0; border-top: 1px solid #c7dad0; }
+.expense-heading { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; }
+.status { font-size: 11px; font-weight: bold; color: #526459; }
+.amount-line { font-size: 12px; }
+.notes { display: grid; gap: 10px; margin: 14px 0; font-size: 12px; }
+.notes > div { display: grid; grid-template-columns: 135px minmax(0, 1fr); gap: 12px; }
+.notes dt { font-weight: bold; }
+.notes dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.item-actions { color: #695222; font-size: 12px; }
+footer { border-top: 2px solid #1b7054; margin-top: 24px; padding-top: 20px; font-size: 11px; color: #50665d; }
+@media screen and (max-width: 600px) {
+  main { margin: 0; padding: 22px 16px; border: 0; }
+  h1 { font-size: 27px; }
+  .totals { grid-template-columns: 1fr; gap: 8px; }
+  .totals > div { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+  .totals dd { margin: 0; font-size: 21px; }
+  th, td { padding: 9px 4px; font-size: 11px; }
+  .notes > div { grid-template-columns: 1fr; gap: 3px; }
+}
+@page { size: A4; margin: 16mm; }
+@media print {
+  html { background: white; font-size: 10pt; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  main { max-width: none; margin: 0; padding: 0; border: 0; }
+  .screen-only { display: none; }
+  .report-header { margin-bottom: 18px; padding-bottom: 14px; }
+  h1 { font-size: 25pt; }
+  h2 { font-size: 15pt; break-after: avoid; }
+  h3, caption { break-after: avoid; }
+  .expense-details { break-before: page; margin: 0; }
+  .expense-details > h2 { margin-top: 0; }
+  .expense, .checklist-group, tr, .totals, .notice, .partial, footer { break-inside: avoid; }
+  .expense { padding: 14px 0; }
+  .notes { gap: 6px; margin: 10px 0; }
+  p, li { orphans: 3; widows: 3; }
+}

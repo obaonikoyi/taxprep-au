@@ -1,6 +1,6 @@
 # TaxPrep AU — Project Plan
 
-> **Implementation checkpoint — 15 September 2026:** Milestones 1–5 are implemented. [Milestone 5](MILESTONE_5_EXPENSE_REVIEW.md) adds editable expense details, work-use arithmetic, evidence/reimbursement status and an API-backed preparation checklist to Sarah's guided demo. CSV preview remains separate. The next milestone is exporting the reviewed summary and evidence checklist. The original plan below remains the longer-term roadmap; storage and final tax calculations are future work.
+> **Implementation checkpoint — 15 September 2026:** Milestones 1–6 are implemented. [Milestone 6](MILESTONE_6_PREPARATION_REPORT.md) adds an offline HTML preparation report, preview and browser printing/PDF option to the guided expense review. The next milestone connects selected CSV transactions to editable expense records. The original plan below remains the longer-term roadmap; persistent storage and final tax calculations are future work.
 
 
 ## 1. Document Purpose

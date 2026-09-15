@@ -2,7 +2,7 @@
 
 TaxPrep AU is an Australian tax-preparation assistant that helps individuals organise financial records, review possible work-related deductions, and prepare a clear summary before lodging through myTax or consulting a registered tax agent.
 
-> **Project status:** Milestone 5 — guided expense details and evidence review
+> **Project status:** Milestone 6 — preparation report and evidence checklist
 > **Important:** TaxPrep AU is an organisational and educational tool. It does not provide tax, legal, or financial advice and does not lodge tax returns.
 
 ## The Problem
@@ -165,9 +165,12 @@ The CSV screen now uploads a fictional CSV to the ASP.NET Core API for validatio
 - [Milestone 4 and API contract](docs/MILESTONE_4_IMPORT_API_TESTS.md)
 - [Issue #6](https://github.com/obaonikoyi/taxprep-au/issues/6) / [PR #5](https://github.com/obaonikoyi/taxprep-au/pull/5)
 
-Next: export the reviewed preparation summary and evidence checklist. The guided expense demo and CSV preview remain separate workflows; neither decides deductibility or estimates refunds.
+After a successful expense review, use **Download report (HTML)** for an offline copy, **Preview report** to inspect it, or **Print / save PDF** to open the browser print dialog. The report preserves evidence notes, rounded amounts and partial-total labels. No extra data is sent to the server for export. Downloaded copies stay on your device after a restart.
+
+Next: connect selected CSV transactions to editable expense records. The guided expense demo and CSV preview currently remain separate workflows; neither decides deductibility or estimates refunds.
 
 - [Milestone 5 issue #7](https://github.com/obaonikoyi/taxprep-au/issues/7)
+- [Milestone 6 report format and verification](docs/MILESTONE_6_PREPARATION_REPORT.md) / [issue #9](https://github.com/obaonikoyi/taxprep-au/issues/9)
 
 ## Disclaimer
 
