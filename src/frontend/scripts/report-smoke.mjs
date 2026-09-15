@@ -6,12 +6,29 @@ export async function verifyReportDownload(page, artifacts, { name, total, unres
   const demo = page.locator('#guided-demo');
   const preview = page.frameLocator('iframe[title="Preparation report preview"]');
   await preview.locator('html[data-report="taxprep-expenses-v1"]').waitFor({ state: 'attached' });
-  // The native browser print event proves the action targets the report frame.
-  await preview.locator('html').evaluate(el => {
-    el.ownerDocument.defaultView.addEventListener('beforeprint', () => { el.dataset.printRequested = 'yes'; }, { once: true });
+  // Compare with a plain page to distinguish print-dialog support from app wiring.
+  const probe = await page.context().newPage();
+  await probe.setContent('<p>Print capability probe</p>');
+  const nativePrintEvents = await probe.evaluate(() => {
+    let events = 0;
+    window.addEventListener('beforeprint', () => { events += 1; });
+    window.print();
+    return events;
+  });
+  await probe.close();
+  console.log('Headless print capability:', { nativePrintEvents });
+  await page.locator('iframe[title="Preparation report preview"]').evaluate(frame => {
+    const target = frame.contentWindow;
+    const original = target.print.bind(target);
+    target.addEventListener('beforeprint', () => { frame.dataset.printEvent = 'yes'; }, { once: true });
+    target.print = () => { frame.dataset.printCalled = 'yes'; original(); };
   });
   await demo.getByRole('button', { name: 'Print / save PDF', exact: true }).click();
-  await preview.locator('html[data-print-requested="yes"]').waitFor({ state: 'attached' });
+  const printFrame = page.locator('iframe[title="Preparation report preview"]');
+  assert.equal(await printFrame.getAttribute('data-print-called'), 'yes');
+  const reportPrintEvent = await printFrame.getAttribute('data-print-event');
+  console.log('Report print result:', { reportPrintEvent });
+  if (nativePrintEvents > 0) assert.equal(reportPrintEvent, 'yes');
   assert.equal(await preview.locator('script, img, link, a, form').count(), 0);
 
   const downloaded = page.waitForEvent('download');
@@ -47,5 +64,5 @@ export async function verifyReportDownload(page, artifacts, { name, total, unres
     await offline.screenshot({ path: artifacts + '/report-' + name + '-mobile.png', fullPage: true });
     assert.deepEqual(network, []); assert.deepEqual(errors, []);
   } finally { await context.close(); }
-  return { downloaded: true, previewMatchesDownload: true, offline: true, nativePrintEvent: true, partial: unresolved, noOverflow: true };
+  return { downloaded: true, previewMatchesDownload: true, offline: true, printTargetsReport: true, nativePrintEvents: nativePrintEvents > 0, partial: unresolved, noOverflow: true };
 }

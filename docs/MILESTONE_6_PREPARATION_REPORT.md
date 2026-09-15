@@ -52,7 +52,7 @@ The summary is already remounted when its expense list changes. This removes the
 
 - Download uses a temporary Blob URL and removes the temporary anchor immediately. The URL is released after a 30-second grace period so the browser can consume it.
 - Download failures show a retryable message and offer the print alternative.
-- Printing is disabled until the expected report document is loaded. A print failure explains how to print the downloaded HTML instead.
+- Printing is disabled until the expected report document is loaded. Clicking Print expands the preview before invoking the report frame. A print failure explains how to print the downloaded HTML instead.
 - Status text says a download/print was requested; the browser controls the actual save dialog and destination.
 - The expandable preview is keyboard accessible and the report iframe has an accessible title.
 
@@ -61,7 +61,7 @@ The summary is already remounted when its expense list changes. This removes the
 - Report tests cover sample values, partial totals, cent rounding, snapshot consistency, text escaping, Unicode/newlines and temporary download URL cleanup.
 - Component/journey tests cover print readiness, print/download failures, invalid report refusal, and unavailable exports after edits or failed/empty reviews.
 - The real browser downloads the HTML and compares its bytes with the preview, then reopens it in an offline browser context with zero HTTP requests.
-- Sample and long-note/partial reports are checked at desktop and 390px mobile widths. Native `beforeprint` verifies the app's print action targets the report frame.
+- Sample and long-note/partial reports are checked at desktop and 390px mobile widths. The browser check verifies that the app calls the report frame's native print method. A plain-page capability probe checks whether this browser emits `beforeprint`; when it does, the report must emit it too. Headless browsers may not expose native print dialogs/events, so the A4 rendering is checked separately through Chromium PDF output. The operating system save dialog still requires a user.
 - Chromium generates A4 PDFs from those same downloaded reports for text extraction and visual inspection. CI artifacts contain HTML, PDFs, screenshots and the regression report.
 - Existing API, expense-journey and CSV tests continue to run.
 

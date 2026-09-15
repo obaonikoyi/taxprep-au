@@ -23,6 +23,7 @@ it('waits for the report document before printing, then prints that frame only',
   fireEvent.load(frame)
   await user.click(button)
   expect(print).toHaveBeenCalledOnce()
+  expect(frame.closest('details')).toHaveAttribute('open')
   expect(focus).toHaveBeenCalledOnce()
   expect(screen.getByRole('status')).toHaveTextContent('Print requested')
 })

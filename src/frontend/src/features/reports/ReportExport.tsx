@@ -13,6 +13,7 @@ export default function ReportExport({ expenses, review }: { expenses: Expense[]
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const frame = useRef<HTMLIFrameElement>(null)
+  const preview = useRef<HTMLDetailsElement>(null)
 
   function download() {
     setError(''); setMessage('')
@@ -26,6 +27,8 @@ export default function ReportExport({ expenses, review }: { expenses: Expense[]
     try {
       const target = frame.current?.contentWindow
       if (!ready || !target || typeof target.print !== 'function') throw new Error('Print unavailable')
+      // Show the document being printed; some browsers cannot print a hidden frame.
+      if (preview.current) preview.current.open = true
       target.focus(); target.print()
       setMessage('Print requested. Choose Save as PDF in the print options if available.')
     } catch { setError('Printing could not start. Download the HTML report and use your browser’s Print command.') }
@@ -38,7 +41,7 @@ export default function ReportExport({ expenses, review }: { expenses: Expense[]
         <div className="button-row"><button className="primary-button" type="button" onClick={download}>Download report (HTML)</button><button className="secondary-button" type="button" disabled={!ready} onClick={print}>Print / save PDF</button></div>
         <p role="status" className="export-status">{message || (ready ? 'Report ready. Later edits do not change downloaded copies.' : 'Preparing print preview…')}</p>
         {error && <p className="form-message form-message--error" role="alert">{error}</p>}
-        <details className="report-preview"><summary>Preview report</summary>
+        <details ref={preview} className="report-preview"><summary>Preview report</summary>
           <iframe ref={frame} title="Preparation report preview" srcDoc={snapshot.report!.html} sandbox="allow-same-origin allow-modals" onLoad={() => setReady(frame.current?.contentDocument?.documentElement.dataset.report === 'taxprep-expenses-v1')} />
         </details>
       </>}
