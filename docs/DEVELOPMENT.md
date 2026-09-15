@@ -34,9 +34,21 @@ Open `http://localhost:5173` (or Vite's printed URL). The Vite development proxy
 3. Expect 20 valid rows, no errors, and **$1,374.12 net**.
 4. Try a fictional invalid date or a missing heading and inspect the error.
 5. Clear the preview. Stop the API and retry to see a recoverable service error; restart it and retry the selected file.
-6. Sarah's separate **Try demo** questionnaire still works without the API.
+6. Sarah's separate guided expense summary also uses the API. Its questions and editable form remain usable if the server is temporarily unavailable.
 
 The upload sends the CSV to TaxPrep AU and processes it in memory. Use fictional data. Nothing is saved, classified as deductible or submitted to the ATO.
+
+## Try the guided expense review
+
+1. Click **Explore example summary** to load three fictional expenses.
+2. Expect $792.60 entered, $312.60 recorded work portions and one item needing attention.
+3. Edit the phone expense: $100 at 40% produces a $40 work portion. The combined total becomes $112.60.
+4. Select **Partly reimbursed / not sure** to see an unresolved amount and a clearly labelled partial total.
+5. Remove an expense, add a skipped category or restart. Cancel changes preserves the previous entry; restart/refresh clears everything.
+6. Alternatively, choose **Try demo**, confirm sample income and answer each Yes/No question. **Use example details** speeds up each form.
+7. Stop the API while requesting a summary. Entries remain editable; restart the API and click **Retry review**.
+
+[Milestone 5](MILESTONE_5_EXPENSE_REVIEW.md) explains input bounds, rounding and the difference between work portions and tax eligibility.
 
 ## Automated checks
 
@@ -71,4 +83,4 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-The script starts/stops its own API and Vite processes on 5087/5173 (stop your development servers first). It checks the real sample upload, partial errors, duplicate headings, service interruption/retry, clearing and a 390px mobile viewport. It writes screenshots and a JSON report to ignored `test-results/browser/`. CI installs browser system dependencies and uploads these files alongside the API test report as a seven-day artifact.
+The script starts/stops its own API and Vite processes on 5087/5173 (stop your development servers first). It checks the guided expense interview, edits and partial totals, manual mobile entry, validation focus, real service interruption/retry and reset, plus the CSV upload regression flow. Desktop and 390px mobile widths are covered. It writes screenshots and a JSON report to ignored `test-results/browser/`. CI installs browser system dependencies and uploads these files alongside the API test report as a seven-day artifact.

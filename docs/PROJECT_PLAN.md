@@ -1,6 +1,6 @@
 # TaxPrep AU — Project Plan
 
-> **Implementation checkpoint — 15 September 2026:** The original plan below remains the longer-term roadmap. Milestones 1–3 are merged. Milestone 4 connects the CSV screen to the ASP.NET Core preview API, adds endpoint/React tests and handles malformed uploads. See [Milestone 4](MILESTONE_4_IMPORT_API_TESTS.md) and [development guide](DEVELOPMENT.md). The next product milestone is expense amounts, work-use percentages, evidence status and preparation totals for Sarah's guided demo. Storage and final tax calculations remain future work.
+> **Implementation checkpoint — 15 September 2026:** Milestones 1–5 are implemented. [Milestone 5](MILESTONE_5_EXPENSE_REVIEW.md) adds editable expense details, work-use arithmetic, evidence/reimbursement status and an API-backed preparation checklist to Sarah's guided demo. CSV preview remains separate. The next milestone is exporting the reviewed summary and evidence checklist. The original plan below remains the longer-term roadmap; storage and final tax calculations are future work.
 
 
 ## 1. Document Purpose
