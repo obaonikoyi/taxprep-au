@@ -52,14 +52,23 @@ footer { border-top: 2px solid #1b7054; margin-top: 24px; padding-top: 20px; fon
   html { background: white; font-size: 10pt; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   main { max-width: none; margin: 0; padding: 0; border: 0; }
   .screen-only { display: none; }
-  .report-header { margin-bottom: 18px; padding-bottom: 14px; }
+  .report-header { margin-bottom: 12px; padding-bottom: 12px; }
   h1 { font-size: 25pt; }
-  h2 { font-size: 15pt; break-after: avoid; }
+  h2 { margin: 18px 0 10px; font-size: 15pt; break-after: avoid; }
   h3, caption { break-after: avoid; }
+  .notice, .partial { margin: 12px 0; padding: 10px 14px; }
+  .totals > div { padding: 12px; }
+  .table-wrap { margin-top: 14px; }
+  th, td { padding: 7px 8px; }
+  .checklist-group { margin: 10px 0; }
   .expense-details { break-before: page; margin: 0; }
   .expense-details > h2 { margin-top: 0; }
   .expense, .checklist-group, tr, .totals, .notice, .partial, footer { break-inside: avoid; }
-  .expense { padding: 14px 0; }
-  .notes { gap: 6px; margin: 10px 0; }
+  .expense { padding: 10px 0; }
+  .expense h3 { margin-bottom: 4px; }
+  .expense p { margin: 6px 0; }
+  .notes { gap: 4px; margin: 8px 0; line-height: 1.35; }
+  footer { margin-top: 16px; padding-top: 12px; }
+  footer p { margin: 6px 0; }
   p, li { orphans: 3; widows: 3; }
 }
