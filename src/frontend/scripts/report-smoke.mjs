@@ -7,7 +7,7 @@ export async function verifyReportDownload(page, artifacts, { name, total, unres
   const preview = page.frameLocator('iframe[title="Preparation report preview"]');
   await preview.locator('html[data-report="taxprep-expenses-v1"]').waitFor({ state: 'attached' });
   // Compare with a plain page to distinguish print-dialog support from app wiring.
-  const probe = await page.context().newPage();
+  const probe = await page.context().browser().newPage();
   await probe.setContent('<p>Print capability probe</p>');
   const nativePrintEvents = await probe.evaluate(() => {
     let events = 0;
