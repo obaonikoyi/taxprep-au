@@ -1,6 +1,5 @@
 import './App.css'
 import ApiStatus from './components/ApiStatus'
-import TransactionUpload from './components/TransactionUpload'
 import GuidedDemo from './features/demo/GuidedDemo'
 
 function App() {
@@ -31,7 +30,6 @@ function App() {
 
       <GuidedDemo />
 
-      <TransactionUpload />
       <details className="developer-details">
         <summary>Developer connection check</summary>
         <ApiStatus endpoint="/api/health" />

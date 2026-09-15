@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
-export async function verifyReportDownload(page, artifacts, { name, total, unresolved = false, expectedNote = '' }) {
+export async function verifyReportDownload(page, artifacts, { name, total, unresolved = false, expectedNote = '', itemCount = 3, sourceCount = 0, expectedSource = '' }) {
   const demo = page.locator('#guided-demo');
   const preview = page.frameLocator('iframe[title="Preparation report preview"]');
   await preview.locator('html[data-report="taxprep-expenses-v1"]').waitFor({ state: 'attached' });
@@ -50,7 +50,9 @@ export async function verifyReportDownload(page, artifacts, { name, total, unres
     offline.on('request', request => { if (/^https?:/.test(request.url())) network.push(request.url()); });
     offline.on('pageerror', error => errors.push(error.message));
     await offline.goto(pathToFileURL(file).href);
-    assert.equal(await offline.locator('tbody tr').count(), 3);
+    assert.equal(await offline.locator('.table-wrap tbody tr').count(), itemCount);
+    assert.equal(await offline.locator('.report-sources tbody tr').count(), sourceCount);
+    if (expectedSource) assert.ok((await offline.locator('.report-sources').innerText()).includes(expectedSource));
     assert.equal(await offline.locator('.totals dd').nth(1).innerText(), total);
     assert.equal(await offline.locator('.partial').count(), unresolved ? 1 : 0);
     if (unresolved) assert.equal(await offline.locator('tbody tr').nth(1).locator('td').last().innerText(), 'Unresolved');

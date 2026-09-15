@@ -1,6 +1,6 @@
 # TaxPrep AU — Project Plan
 
-> **Implementation checkpoint — 15 September 2026:** Milestones 1–6 are implemented. [Milestone 6](MILESTONE_6_PREPARATION_REPORT.md) adds an offline HTML preparation report, preview and browser printing/PDF option to the guided expense review. The next milestone connects selected CSV transactions to editable expense records. The original plan below remains the longer-term roadmap; persistent storage and final tax calculations are future work.
+> **Implementation checkpoint — 15 September 2026:** Milestones 1–7 are implemented. [Milestone 7](MILESTONE_7_CSV_EXPENSE_REVIEW.md) connects selected CSV spending to editable category records and carries original source references into the preparation report. Next: save and resume a fictional preparation session. The original plan below remains the longer-term roadmap; persistent storage and final tax calculations are future work.
 
 
 ## 1. Document Purpose

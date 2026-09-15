@@ -1,3 +1,5 @@
+import type { ExpenseSource } from '../transactions/expenseImport'
+
 export const categories = ['travel', 'phone', 'protective-clothing'] as const
 export type ExpenseCategory = typeof categories[number]
 export type Evidence = 'available' | 'missing' | 'unsure'
@@ -11,6 +13,7 @@ export interface Expense {
   reimbursement: Reimbursement
   evidence: Evidence
   evidenceReference: string
+  sources?: ExpenseSource[]
 }
 export interface ReviewedExpense {
   category: ExpenseCategory
@@ -64,7 +67,9 @@ export async function fetchExpenseReview(expenses: Expense[], signal: AbortSigna
   let response: Response
   try {
     response = await fetch('/api/expenses/review', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ expenses }), signal,
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ expenses: expenses.map(({ category, amount, workUsePercent, purpose, workUseBasis, reimbursement, evidence, evidenceReference }) =>
+        ({ category, amount, workUsePercent, purpose, workUseBasis, reimbursement, evidence, evidenceReference })) }), signal,
     })
   } catch (error) {
     if (signal.aborted) throw error

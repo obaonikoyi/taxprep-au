@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import { fetchImportPreview, validateFile, UPLOAD_TIMEOUT_MS, type ImportPreview } from '../features/transactions/importPreview'
 import sampleCsv from '../../../../sample-data/transactions.csv?raw'
+import TransactionSelection, { type SelectionProps } from '../features/transactions/TransactionSelection'
 
 const currency = new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' })
 
-function TransactionUpload() {
+function TransactionUpload({ selection }: { selection?: SelectionProps }) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [errorMessage, setErrorMessage] = useState('')
   const [preview, setPreview] = useState<ImportPreview | null>(null)
@@ -109,7 +110,7 @@ function TransactionUpload() {
             <span>{currency.format(preview.netTotal)} net</span>
           </div>
           {preview.errors.length > 0 && <p>Some items need correction. This total includes only the valid rows below.</p>}
-          <div className="table-scroll" tabIndex={0} role="region" aria-label="Transaction preview table">
+          {selection ? <TransactionSelection {...selection} transactions={preview.transactions} fileName={selectedFile!.name} /> : <div className="table-scroll" tabIndex={0} role="region" aria-label="Transaction preview table">
             <table>
               <thead><tr><th scope="col">Date</th><th scope="col">Description</th><th scope="col">Amount</th></tr></thead>
               <tbody>{preview.transactions.map(transaction => (
@@ -119,8 +120,8 @@ function TransactionUpload() {
                 </tr>
               ))}</tbody>
             </table>
-          </div>
-          <p className="upload-description">Preview only. No transactions have been saved or assessed as tax deductions.</p>
+          </div>}
+          <p className="upload-description">{selection ? 'Only rows you review and save enter the summary. Clearing this preview keeps saved expenses. Restart the demo to clear everything.' : 'Preview only. No transactions have been saved or assessed as tax deductions.'}</p>
         </div>
       )}
     </section>

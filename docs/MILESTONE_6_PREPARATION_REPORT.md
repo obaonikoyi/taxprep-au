@@ -24,7 +24,7 @@ A visitor can keep a copy of the expense review using **Download report (HTML)**
 - Evidence status and a reference for locating records; no receipt files are attached.
 - Preparation limitations and a reminder that downloaded copies do not change when the app is edited or reset.
 
-Skipped categories, the separate CSV preview and a complete income/tax calculation are outside this report. The sample report has $792.60 entered, $312.60 recorded work portions and one item needing attention. Setting the sample phone reimbursement to uncertain leaves $72.60 in known work portions, with the phone amount shown as **Unresolved**.
+At the Milestone 6 checkpoint, the CSV preview was separate. [Milestone 7](MILESTONE_7_CSV_EXPENSE_REVIEW.md) now includes source rows saved into expenses; unselected preview rows, skipped categories and a complete income/tax calculation remain outside this report. The sample report has $792.60 entered, $312.60 recorded work portions and one item needing attention. Setting the sample phone reimbursement to uncertain leaves $72.60 in known work portions, with the phone amount shown as **Unresolved**.
 
 ## Format decision
 
@@ -65,6 +65,6 @@ The summary is already remounted when its expense list changes. This removes the
 - Chromium generates A4 PDFs from those same downloaded reports for text extraction and visual inspection. CI artifacts contain HTML, PDFs, screenshots and the regression report.
 - Existing API, expense-journey and CSV tests continue to run.
 
-## Next milestone
+## Follow-up delivered
 
-Connect selected CSV transactions to editable expense records, allowing a visitor to move from imported transactions through evidence review to this report. Category selection and confirmation must remain explicit; importing a transaction must not imply tax eligibility.
+[Milestone 7](MILESTONE_7_CSV_EXPENSE_REVIEW.md) connects selected CSV transactions to editable expense records and carries their source references into this report. Category selection and confirmation remain explicit; importing a transaction does not imply tax eligibility.

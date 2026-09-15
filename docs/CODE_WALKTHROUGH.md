@@ -41,7 +41,7 @@ React's saved expense array changes whenever an item is saved or removed. The su
 
 The form remains editable when the API is unavailable. Retry sends the same saved entries. The 15-second timeout restores retry even if a request never settles. Restart or refresh clears the in-tab data; there is no database or local-storage copy.
 
-## The separate CSV flow
+## The connected CSV flow
 
 1. `components/TransactionUpload.tsx` accepts a file or loads the bundled fictional sample.
 2. `features/transactions/importPreview.ts` sends multipart form data to `/api/transactions/import-preview` and validates the JSON response.
@@ -49,7 +49,11 @@ The form remains editable when the API is unavailable. Retry sends the same save
 4. `Transactions/CsvTransactionParser.cs` validates headers, quotes, dates, amounts and rows. Independent valid rows survive row errors.
 5. The browser displays valid transactions, row errors and the API's net total.
 
-There is one authoritative CSV parser in C#. The CSV preview does not automatically populate the guided expense form. Connecting those workflows is future work.
+There is one authoritative CSV parser in C#. After validation, `TransactionSelection` lets the visitor select spending and choose a category. `GuidedDemo` copies the selection into an unsaved expense draft. Saving adds the record to the same expense list used by the guided interview.
+
+`expenseImport.ts` sums spending in integer cents and creates stable source keys. The filename is a display reference, not the duplicate key: re-uploading a renamed file should not count the same spending again. Used keys are derived from the saved records, so removing a record releases its rows without synchronising a second duplicate registry.
+
+`SourceTransactions` displays the original rows alongside an editable amount. For example, $20.10 + $30.20 becomes a $50.30 draft. If the visitor changes that amount to $60, the source total remains $50.30 and the difference is labelled. Only the expense facts go to the review API; source metadata stays with the browser/report snapshot.
 
 ## How the preparation report works
 
@@ -63,6 +67,7 @@ For example, if the API returns a $40 work portion, the page and report both dis
 
 ## What to learn from this milestone
 
+- **Import identity:** explain why a physical CSV row number or filename cannot reliably detect repeat uploads. See the exact-match limitations in [Milestone 7](MILESTONE_7_CSV_EXPENSE_REVIEW.md).
 - **State ownership:** explain why typing belongs to the form but saved entries belong to the journey. Try Cancel after changing an amount.
 - **Validation boundaries:** explain why both the form and API validate. Try 101% work use, then inspect the API integration tests for a direct invalid request.
 - **Portable snapshots:** explain why the downloadable report is a separate copy, and why escaping text and waiting for print readiness matter.

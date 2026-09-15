@@ -6,7 +6,7 @@
 
 | Column | Meaning | Example |
 |---|---|---|
-| `date` | The fictional transaction date in `YYYY-MM-DD` format | `2026-07-02` |
+| `date` | The fictional transaction date in `YYYY-MM-DD` format | `2025-07-02` |
 | `description` | A made-up merchant or payment description | `Harbour Office Supplies` |
 | `amount` | The fictional transaction value in Australian dollars | `-49.95` |
 
