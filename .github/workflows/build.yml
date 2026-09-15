@@ -56,3 +56,6 @@ jobs:
 
       - name: Build
         run: dotnet build TaxPrepAu.sln --configuration Release --no-restore
+
+      - name: API integration tests
+        run: dotnet test TaxPrepAu.sln --configuration Release --no-build --logger "trx;LogFileName=api-tests.trx"

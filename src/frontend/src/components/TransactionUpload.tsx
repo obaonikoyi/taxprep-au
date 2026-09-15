@@ -1,117 +1,126 @@
-import { useState, type ChangeEvent, type FormEvent } from 'react'
-import { parseTransactionCsv, type ImportedTransaction } from '../features/transactions/transactionCsv'
+import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
+import { fetchImportPreview, validateFile, UPLOAD_TIMEOUT_MS, type ImportPreview } from '../features/transactions/importPreview'
+import sampleCsv from '../../../../sample-data/transactions.csv?raw'
 
 const currency = new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' })
 
 function TransactionUpload() {
-  // Before the user chooses a file, the tray is empty, so the state is null.
-  // File is a browser type containing details such as the file name and size.
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [errorMessage, setErrorMessage] = useState('')
-  const [statusMessage, setStatusMessage] = useState('')
-  const [transactions, setTransactions] = useState<ImportedTransaction[]>([])
-  const [validationErrors, setValidationErrors] = useState<string[]>([])
+  const [preview, setPreview] = useState<ImportPreview | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const activeRequest = useRef<AbortController | null>(null)
+  const fileInput = useRef<HTMLInputElement>(null)
 
-  function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0] ?? null
+  useEffect(() => () => activeRequest.current?.abort(), [])
 
+  function clearPreview() {
+    activeRequest.current?.abort()
+    activeRequest.current = null
+    setIsLoading(false)
+    setPreview(null)
     setErrorMessage('')
-    setStatusMessage('')
-    setTransactions([])
-    setValidationErrors([])
-
-    if (file && !file.name.toLowerCase().endsWith('.csv')) {
-      setSelectedFile(null)
-      setErrorMessage('Please choose a CSV file.')
-      event.target.value = ''
-      return
-    }
-
-    setSelectedFile(file)
   }
 
-  async function handleImport(event: FormEvent<HTMLFormElement>) {
+  function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
+    clearPreview()
+    const file = event.target.files?.[0] ?? null
+    const error = file ? validateFile(file) : null
+    setSelectedFile(error ? null : file)
+    if (error) {
+      setErrorMessage(error)
+      event.target.value = ''
+    }
+  }
+
+  async function upload(file: File) {
+    clearPreview()
+    setSelectedFile(file)
+    const validationError = validateFile(file)
+    if (validationError) { setErrorMessage(validationError); return }
+
+    const controller = new AbortController()
+    activeRequest.current = controller
+    setIsLoading(true)
+    let timedOut = false
+    const timer = window.setTimeout(() => { timedOut = true; controller.abort() }, UPLOAD_TIMEOUT_MS)
+    try {
+      const result = await fetchImportPreview(file, controller.signal)
+      // Aborted requests may still settle: only the current selection may update the UI.
+      if (activeRequest.current === controller && !controller.signal.aborted) setPreview(result)
+    } catch (error) {
+      if (activeRequest.current !== controller) return
+      if (timedOut) setErrorMessage('The preview took too long. Please try again.')
+      else if (!controller.signal.aborted) setErrorMessage(error instanceof Error ? error.message : 'Could not preview this file. Please try again.')
+    } finally {
+      window.clearTimeout(timer)
+      if (activeRequest.current === controller) { activeRequest.current = null; setIsLoading(false) }
+    }
+  }
+
+  function handleImport(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (!selectedFile) { clearPreview(); setErrorMessage('Select a CSV file before previewing transactions.'); return }
+    void upload(selectedFile)
+  }
 
-    if (!selectedFile) {
-      setStatusMessage('')
-      setErrorMessage('Select a CSV file before importing transactions.')
-      return
-    }
-
-    if (selectedFile.size > 1_000_000) {
-      setErrorMessage('The file is too large. Choose a CSV smaller than 1 MB.')
-      return
-    }
-
-    const result = parseTransactionCsv(await selectedFile.text())
-    setErrorMessage('')
-    setTransactions(result.transactions)
-    setValidationErrors(result.errors)
-    setStatusMessage(
-      result.transactions.length > 0
-        ? `${result.transactions.length} transaction${result.transactions.length === 1 ? '' : 's'} ready for review.`
-        : '',
-    )
+  function reset() {
+    clearPreview()
+    setSelectedFile(null)
+    if (fileInput.current) fileInput.current.value = ''
   }
 
   return (
     <section className="transaction-upload" aria-labelledby="transaction-upload-title">
       <div>
-        <p className="eyebrow">Milestone 3</p>
-        <h2 id="transaction-upload-title">Import transactions</h2>
-        <p className="upload-description">
-          Choose a fictional CSV file to begin preparing a transaction preview.
-          Do not use real bank or financial information during development.
-        </p>
+        <p className="eyebrow">Transaction preparation</p>
+        <h2 id="transaction-upload-title">Review your transactions</h2>
+        <p className="upload-description">Try the fictional sample or choose a fictional CSV with date, description and amount columns. Up to 1 MB and 5,000 data rows.</p>
+        <p className="upload-description">The file is sent to TaxPrep AU for validation and processed in memory. It is not saved. Use fictional data for this prototype.</p>
+        <button className="secondary-button" type="button" disabled={isLoading} onClick={() => {
+          if (fileInput.current) fileInput.current.value = ''
+          void upload(new File([sampleCsv], 'sample-transactions.csv', { type: 'text/csv' }))
+        }}>Try sample CSV</button>
       </div>
 
-      <form className="upload-panel" onSubmit={handleImport}>
+      <form className="upload-panel" onSubmit={handleImport} aria-busy={isLoading}>
         <label htmlFor="transaction-file">Transaction CSV</label>
-        <input
-          id="transaction-file"
-          type="file"
-          accept=".csv,text/csv"
-          onChange={handleFileChange}
-        />
-
-        <p className="selected-file" aria-live="polite">
-          {selectedFile ? `Selected: ${selectedFile.name}` : 'No file selected'}
+        <input ref={fileInput} id="transaction-file" type="file" accept=".csv,text/csv" onChange={handleFileChange} aria-describedby="upload-help" />
+        <p id="upload-help" className="selected-file">UTF-8 CSV. Negative amounts are spending; positive amounts are incoming money.</p>
+        <p className="selected-file">{selectedFile ? `Selected: ${selectedFile.name}` : 'No file selected'}</p>
+        {errorMessage && <p role="alert" className="form-message form-message--error">{errorMessage}</p>}
+        <p role="status" className="upload-status">
+          {isLoading ? 'Validating transactions…' : preview ? `${preview.transactions.length} valid transaction${preview.transactions.length === 1 ? '' : 's'} ready for review. ${preview.errors.length} item${preview.errors.length === 1 ? '' : 's'} to check.` : ''}
         </p>
-
-        {errorMessage && <p className="form-message form-message--error">{errorMessage}</p>}
-        {statusMessage && <p className="form-message form-message--success">{statusMessage}</p>}
-
-        <button type="submit">Import Transactions</button>
+        <button type="submit" disabled={isLoading}>{isLoading ? 'Validating…' : 'Preview transactions'}</button>
+        {(selectedFile || preview || isLoading) && <button className="clear-upload" type="button" onClick={reset}>{isLoading ? 'Cancel upload' : 'Clear preview'}</button>}
       </form>
 
-      {validationErrors.length > 0 && (
+      {preview && preview.errors.length > 0 && (
         <aside className="import-errors" aria-labelledby="import-errors-title">
-          <h3 id="import-errors-title">Check these rows</h3>
-          <ul>{validationErrors.map((error) => <li key={error}>{error}</li>)}</ul>
+          <h3 id="import-errors-title">Check these items</h3>
+          <ul>{preview.errors.map((error, index) => <li key={index}>{error.rowNumber !== null ? `Row ${error.rowNumber}: ` : ''}{error.message}</li>)}</ul>
         </aside>
       )}
-
-      {transactions.length > 0 && (
+      {preview && preview.transactions.length > 0 && (
         <div className="transaction-preview">
           <div className="preview-heading">
-            <div><p className="eyebrow">Import preview</p><h3>Review before saving</h3></div>
-            <span>{currency.format(transactions.reduce((total, item) => total + item.amount, 0))} net</span>
+            <div><p className="eyebrow">Validated preview</p><h3>Review valid rows</h3></div>
+            <span>{currency.format(preview.netTotal)} net</span>
           </div>
-          <div className="table-scroll">
+          {preview.errors.length > 0 && <p>Some items need correction. This total includes only the valid rows below.</p>}
+          <div className="table-scroll" tabIndex={0} role="region" aria-label="Transaction preview table">
             <table>
-              <thead><tr><th>Date</th><th>Description</th><th>Amount</th></tr></thead>
-              <tbody>
-                {transactions.map((transaction) => (
-                  <tr key={transaction.id}>
-                    <td>{transaction.date}</td><td>{transaction.description}</td>
-                    <td className={transaction.amount < 0 ? 'expense' : 'income'}>{currency.format(transaction.amount)}</td>
-                  </tr>
-                ))}
-              </tbody>
+              <thead><tr><th scope="col">Date</th><th scope="col">Description</th><th scope="col">Amount</th></tr></thead>
+              <tbody>{preview.transactions.map(transaction => (
+                <tr key={transaction.rowNumber}>
+                  <td>{transaction.date}</td><td>{transaction.description}</td>
+                  <td className={transaction.amount < 0 ? 'expense' : 'income'}>{currency.format(transaction.amount)}</td>
+                </tr>
+              ))}</tbody>
             </table>
           </div>
-          <p className="privacy-note">Preview only. Transactions are not uploaded or stored yet.</p>
+          <p className="upload-description">Preview only. No transactions have been saved or assessed as tax deductions.</p>
         </div>
       )}
     </section>

@@ -1,90 +1,62 @@
 # Development guide
 
-This guide explains how to run the TaxPrep AU foundation locally. The frontend and backend run as separate applications during development.
+## Requirements
 
-## Prerequisites
+Node.js 22.12+ (Node 24 also supported), npm, .NET 8 SDK and Git. In Visual Studio 2022, use the ASP.NET and web development workload.
 
-- Node.js 22 or newer
-- npm 10 or newer
-- .NET 8 SDK
-- Git
+## Start the app
 
-Visual Studio 2022 users should install the **ASP.NET and web development** workload.
+Clone the repository, or fetch/pull the latest `main` in a clean working tree. Run these commands from the repository root in two terminals.
 
-## Get the project
+Terminal 1 — API:
 
 ```powershell
-git clone https://github.com/obaonikoyi/taxprep-au.git
-cd taxprep-au
+dotnet restore TaxPrepAu.sln
+dotnet run --project src/backend/TaxPrepAu.Api --launch-profile http
 ```
 
-## Run the React frontend
+The Development profile listens at `http://localhost:5087`. `/api/health` returns `healthy`.
 
-Open a terminal in the repository and run:
+Terminal 2 — React:
 
 ```powershell
 cd src/frontend
-npm install
+npm ci
 npm run dev
 ```
 
-Open the local address printed by Vite, normally `http://localhost:5173`.
+Open `http://localhost:5173` (or Vite's printed URL). The Vite development proxy sends `/api` to port 5087. Use the explicit `http` profile above to avoid a certificate/port mismatch. Production must serve HTTPS and forward `/api` to the backend; Vite's development proxy is not a production deployment configuration.
 
-### Check the frontend
+## Try the connected CSV flow
+
+1. Scroll to **Review your transactions**.
+2. Click **Try sample CSV**, or upload `sample-data/transactions.csv` and click **Preview transactions**.
+3. Expect 20 valid rows, no errors, and **$1,374.12 net**.
+4. Try a fictional invalid date or a missing heading and inspect the error.
+5. Clear the preview. Stop the API and retry to see a recoverable service error; restart it and retry the selected file.
+6. Sarah's separate **Try demo** questionnaire still works without the API.
+
+The upload sends the CSV to TaxPrep AU and processes it in memory. Use fictional data. Nothing is saved, classified as deductible or submitted to the ATO.
+
+## Automated checks
+
+From the repository root:
 
 ```powershell
+dotnet test TaxPrepAu.sln --configuration Release
+cd src/frontend
+npm test
 npm run lint
 npm run build
 ```
 
-- `lint` checks the source for common code-quality problems.
-- `build` checks TypeScript and creates an optimised production bundle.
+`dotnet test` builds and runs real endpoint tests using `WebApplicationFactory`. Vitest runs React interaction tests and API-client contract tests. GitHub Actions runs both suites and both builds on pull requests and changes to `main`.
 
-## Run the ASP.NET Core backend
+## Troubleshooting
 
-Open a second terminal in the repository and run:
+- **Service unavailable:** ensure the API is running on 5087 using the `http` profile, then retry.
+- **Port already in use:** stop the older local process instead of changing committed ports.
+- **Empty or unsupported CSV:** use UTF-8 and the documented columns; inspect the file/row error list.
+- **Preview took too long:** the UI cancels after 15 seconds and permits retry.
 
-```powershell
-dotnet restore TaxPrepAu.sln
-dotnet run --project src/backend/TaxPrepAu.Api
-```
-
-Open `http://localhost:5087/api/health`. A running API returns JSON similar to:
-
-```json
-{
-  "status": "healthy",
-  "service": "TaxPrep AU API"
-}
-```
-
-### Check the backend
-
-```powershell
-dotnet build TaxPrepAu.sln --configuration Release
-```
-
-## Run with Visual Studio 2022
-
-1. Open `TaxPrepAu.sln`.
-2. Confirm `TaxPrepAu.Api` is the startup project.
-3. Press `Ctrl+F5` to run without the debugger, or `F5` to run with it.
-4. Keep the frontend running separately with `npm run dev`.
-
-## Current safety boundary
-
-The foundation contains no AI integration, bank connection, database, authentication, receipt upload, or real financial data. Use fictional data only when test fixtures are introduced.
-
-## Common first-run problems
-
-### `dotnet` is not recognised
-
-Install the .NET 8 SDK, close the terminal, open a new terminal, and run `dotnet --version`.
-
-### `npm` is not recognised
-
-Install a current Node.js LTS release, reopen the terminal, and run `node --version` and `npm --version`.
-
-### Port already in use
-
-Stop the older development process or start the application on another port. Do not change committed port settings only to solve a temporary local conflict.
+See [Milestone 4](MILESTONE_4_IMPORT_API_TESTS.md) for supported formats, bounds and the API response contract.

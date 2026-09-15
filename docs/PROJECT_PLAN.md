@@ -1,5 +1,8 @@
 # TaxPrep AU — Project Plan
 
+> **Implementation checkpoint — 15 September 2026:** The original plan below remains the longer-term roadmap. Milestones 1–3 are merged. Milestone 4 connects the CSV screen to the ASP.NET Core preview API, adds endpoint/React tests and handles malformed uploads. See [Milestone 4](MILESTONE_4_IMPORT_API_TESTS.md) and [development guide](DEVELOPMENT.md). The next product milestone is expense amounts, work-use percentages, evidence status and preparation totals for Sarah's guided demo. Storage and final tax calculations remain future work.
+
+
 ## 1. Document Purpose
 
 This document turns the TaxPrep AU product idea into an actionable software-development plan. It defines the work required for Version 1 (V1), the boundaries of the project, delivery stages, quality expectations, and the decisions that must be made before implementation.
