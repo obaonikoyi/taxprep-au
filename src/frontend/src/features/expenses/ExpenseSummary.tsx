@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import ReportExport from '../reports/ReportExport'
+import SourceTransactions from '../transactions/SourceTransactions'
 import { categories, categoryLabels, currency, evidenceLabels, reimbursementLabels, fetchExpenseReview, type Expense, type ExpenseCategory, type ExpenseReviewResult } from './expenseReview'
 
 interface Props { expenses: Expense[]; onEdit: (category: ExpenseCategory) => void; onRemove: (category: ExpenseCategory) => void }
@@ -61,6 +62,7 @@ export default function ExpenseSummary({ expenses, onEdit, onRemove }: Props) {
                 <div><dt>Evidence</dt><dd>{evidenceLabels[expense.evidence]}{expense.evidenceReference ? ` · ${expense.evidenceReference}` : ''}</dd></div>
               </dl>
               {reviewed && reviewed.actions.length > 0 && <ul className="review-actions">{reviewed.actions.map(action => <li key={action}>{action}</li>)}</ul>}
+              {expense.sources && <SourceTransactions sources={expense.sources} amount={expense.amount} />}
               <div className="expense-card-actions"><button className="text-button" onClick={() => onEdit(category)}>Edit {categoryLabels[category].toLowerCase()}</button><button className="text-button remove-expense" onClick={() => onRemove(category)}>Remove {categoryLabels[category].toLowerCase()}</button></div>
             </> : <><p>No expense recorded.</p><button className="text-button" onClick={() => onEdit(category)}>Add {categoryLabels[category].toLowerCase()}</button></>}
           </article>

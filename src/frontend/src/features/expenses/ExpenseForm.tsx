@@ -1,16 +1,17 @@
 import { useRef, useState, type FormEvent } from 'react'
 import { categoryLabels, sampleExpenses, type Expense, type ExpenseCategory, type Evidence, type Reimbursement } from './expenseReview'
+import SourceTransactions from '../transactions/SourceTransactions'
 
 interface Props {
   category: ExpenseCategory
-  initial?: Expense
+  initial?: Partial<Expense>
   onSave: (expense: Expense) => void
   onCancel: () => void
 }
 
 export default function ExpenseForm({ category, initial, onSave, onCancel }: Props) {
-  const [amount, setAmount] = useState(initial?.amount.toString() ?? '')
-  const [percent, setPercent] = useState(initial?.workUsePercent.toString() ?? '')
+  const [amount, setAmount] = useState(initial?.amount?.toString() ?? '')
+  const [percent, setPercent] = useState(initial?.workUsePercent?.toString() ?? '')
   const [purpose, setPurpose] = useState(initial?.purpose ?? '')
   const [basis, setBasis] = useState(initial?.workUseBasis ?? '')
   const [reimbursement, setReimbursement] = useState<Reimbursement | ''>(initial?.reimbursement ?? '')
@@ -44,15 +45,16 @@ export default function ExpenseForm({ category, initial, onSave, onCancel }: Pro
     }
     onSave({ category, amount: Number(amount), workUsePercent: Number(percent), purpose: purpose.trim(),
       workUseBasis: basis.trim(), reimbursement: reimbursement as Reimbursement, evidence: evidence as Evidence,
-      evidenceReference: evidence === 'available' ? reference.trim() : '' })
+      evidenceReference: evidence === 'available' ? reference.trim() : '', sources: initial?.sources })
   }
 
   return (
     <form className="expense-form" ref={form} onSubmit={save} noValidate aria-label={`${categoryLabels[category]} details`}>
-      <p className="lead">Record one fictional expense in this category. You can leave notes unfinished and return to them from the summary.</p>
+      <p className="lead">{initial?.sources?.length ? 'Review the selected spending. These rows share one work-use percentage, reimbursement status and evidence checklist. Cancel and select a smaller group if they need different treatment.' : 'Record one fictional expense in this category. You can leave notes unfinished and return to them from the summary.'}</p>
+      {initial?.sources && <SourceTransactions sources={initial.sources} amount={Number(amount) || 0} />}
       {category === 'travel' && <p className="field-help">Use bus, train or taxi fares for this example. Own-car costs and kilometre calculations need a separate workflow.</p>}
       {category === 'phone' && <p className="field-help">Use a phone service bill for this example. Buying a handset needs a separate equipment review.</p>}
-      <button className="text-button" type="button" onClick={loadExample}>Use example details</button>
+      {!initial?.sources && <button className="text-button" type="button" onClick={loadExample}>Use example details</button>}
       {Object.keys(errors).length > 0 && <p role="alert" className="form-message form-message--error">Check the highlighted fields.</p>}
       <div className="expense-fields">
         <div>

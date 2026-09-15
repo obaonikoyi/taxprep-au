@@ -98,3 +98,16 @@ it('starts a UTF-8 download and releases its temporary URL after the browser can
   vi.advanceTimersByTime(30_000)
   expect(revoke).toHaveBeenCalledWith('blob:report')
 })
+
+it('retains escaped source references and distinguishes adjusted totals from original spending', () => {
+  const sources = [{ key: 'source-1', fileName: '<script>alert(1)</script>.csv', rowNumber: 4, date: '2025-07-01', description: '<img src=x onerror=alert(1)> Café / 中文', amount: -50.3 }]
+  const expenses = sampleExpenses.map(e => e.category === 'phone' ? { ...e, sources } : e)
+  const report = createPreparationReport(expenses, review, demoProfile, generatedAt)
+  const doc = parse(report.html)
+  expect(doc.querySelectorAll('script, img')).toHaveLength(0)
+  expect(doc.querySelector('.report-sources')?.textContent).toContain(sources[0].fileName)
+  expect(doc.querySelector('.report-sources')?.textContent).toContain(sources[0].description)
+  expect(doc.querySelector('.report-sources')?.textContent).toContain('Amount adjusted to $600.00. Original CSV spending remains $50.30.')
+  sources[0].description = 'Later changed'
+  expect(report.html).not.toContain('Later changed')
+})

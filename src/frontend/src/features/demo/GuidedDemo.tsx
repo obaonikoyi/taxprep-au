@@ -2,14 +2,17 @@ import { useEffect, useRef, useState } from 'react'
 import { demoProfile, demoQuestions } from './demoData'
 import ExpenseForm from '../expenses/ExpenseForm'
 import ExpenseSummary from '../expenses/ExpenseSummary'
+import TransactionUpload from '../../components/TransactionUpload'
+import { selectionError, sourceTotal, type ExpenseSource } from '../transactions/expenseImport'
 import { categoryLabels, currency, sampleExpenses, type Expense, type ExpenseCategory } from '../expenses/expenseReview'
 
 type Step = { kind: 'welcome' | 'income' | 'summary' } | { kind: 'questions'; index: number }
-  | { kind: 'details'; category: ExpenseCategory; returnTo: 'questions' | 'summary'; index: number }
+  | { kind: 'details'; category: ExpenseCategory; returnTo: 'questions' | 'summary'; index: number; draft?: Partial<Expense> }
 
 export default function GuidedDemo() {
   const [step, setStep] = useState<Step>({ kind: 'welcome' })
   const [expenses, setExpenses] = useState<Expense[]>([])
+  const [session, setSession] = useState(0)
   const heading = useRef<HTMLHeadingElement>(null)
   const mounted = useRef(false)
   useEffect(() => {
@@ -32,10 +35,15 @@ export default function GuidedDemo() {
     if (step.kind === 'details' && step.returnTo === 'questions') nextQuestion(step.index)
     else setStep({ kind: 'summary' })
   }
-  function restart() { setExpenses([]); setStep({ kind: 'welcome' }) }
+  function restart() { setExpenses([]); setSession(value => value + 1); setStep({ kind: 'welcome' }) }
+  function prepareSelection(category: ExpenseCategory, sources: ExpenseSource[]) {
+    const used = new Map(expenses.flatMap(expense => (expense.sources ?? []).map(row => [row.key, categoryLabels[expense.category]] as const)))
+    if (step.kind === 'details' || expenses.some(expense => expense.category === category) || selectionError(sources, used)) return
+    setStep({ kind: 'details', category, returnTo: 'summary', index: 0, draft: { amount: sourceTotal(sources), sources } })
+  }
 
   return (
-    <section className="demo" id="guided-demo" aria-labelledby="demo-title">
+    <><section className="demo" id="guided-demo" aria-labelledby="demo-title">
       <div className="demo-heading">
         <div><p className="eyebrow">Interactive portfolio demo</p><h2 id="demo-title">Turn expense details into a clear checklist.</h2></div>
         <span className="demo-badge">Fictional data</span>
@@ -68,7 +76,7 @@ export default function GuidedDemo() {
               </div>
               <button className="text-button question-back" onClick={() => setStep(step.index === 0 ? { kind: 'income' } : { kind: 'questions', index: step.index - 1 })}>Previous step</button>
             </>}
-            {step.kind === 'details' && <ExpenseForm key={step.category} category={step.category} initial={expenses.find(item => item.category === step.category)} onSave={saveExpense} onCancel={() => setStep(step.returnTo === 'summary' ? { kind: 'summary' } : { kind: 'questions', index: step.index })} />}
+            {step.kind === 'details' && <ExpenseForm key={step.category} category={step.category} initial={step.draft ?? expenses.find(item => item.category === step.category)} onSave={saveExpense} onCancel={() => setStep(step.returnTo === 'summary' ? { kind: 'summary' } : { kind: 'questions', index: step.index })} />}
             {step.kind === 'summary' && <>
               {/* Remount on an edited list so old totals/errors disappear immediately and its request is aborted. */}
               <ExpenseSummary key={JSON.stringify(expenses)} expenses={expenses} onEdit={category => setStep({ kind: 'details', category, returnTo: 'summary', index: 0 })} onRemove={category => setExpenses(current => current.filter(item => item.category !== category))} />
@@ -79,5 +87,7 @@ export default function GuidedDemo() {
         </div>
       </div>
     </section>
+    <TransactionUpload key={session} selection={{ expenses, disabled: step.kind === 'details', onPrepare: prepareSelection }} />
+    </>
   )
 }

@@ -2,7 +2,7 @@
 
 TaxPrep AU is an Australian tax-preparation assistant that helps individuals organise financial records, review possible work-related deductions, and prepare a clear summary before lodging through myTax or consulting a registered tax agent.
 
-> **Project status:** Milestone 6 — preparation report and evidence checklist
+> **Project status:** Milestone 7 — CSV spending connected to expense review
 > **Important:** TaxPrep AU is an organisational and educational tool. It does not provide tax, legal, or financial advice and does not lodge tax returns.
 
 ## The Problem
@@ -159,7 +159,7 @@ Try **Explore example summary** for an immediate walkthrough, or **Try demo** to
 
 See [Milestone 5](docs/MILESTONE_5_EXPENSE_REVIEW.md) for the current user stories, sample numbers and API contract. Entries remain only in the current tab; restart or refresh clears them. Summary requests are processed in memory and are not stored.
 
-The CSV screen now uploads a fictional CSV to the ASP.NET Core API for validation. Try the built-in 20-row sample, review valid rows alongside errors, retry a failed request or clear the preview. Totals come from the backend. Transactions are processed in memory and not saved.
+The CSV screen now uploads a fictional CSV to the ASP.NET Core API for validation. Try the built-in 20-row sample, review valid rows alongside errors, retry a failed request or clear the preview. Totals come from the backend. Uploads are processed in memory. Selected rows can be saved into an expense for this tab; there is no persistent storage.
 
 - [Run and test locally](docs/DEVELOPMENT.md)
 - [Milestone 4 and API contract](docs/MILESTONE_4_IMPORT_API_TESTS.md)
@@ -167,9 +167,12 @@ The CSV screen now uploads a fictional CSV to the ASP.NET Core API for validatio
 
 After a successful expense review, use **Download report (HTML)** for an offline copy, **Preview report** to inspect it, or **Print / save PDF** to open the browser print dialog. The report preserves evidence notes, rounded amounts and partial-total labels. No extra data is sent to the server for export. Downloaded copies stay on your device after a restart.
 
-Next: connect selected CSV transactions to editable expense records. The guided expense demo and CSV preview currently remain separate workflows; neither decides deductibility or estimates refunds.
+Select validated CSV spending, choose a category and complete its expense draft. Up to 50 rows can form one category record; original source references remain visible in the summary and report. Work-use and evidence answers stay explicit, and matching saved rows cannot be silently imported twice.
+
+Next: save and resume a fictional preparation session. The app does not decide deductibility or estimate refunds.
 
 - [Milestone 5 issue #7](https://github.com/obaonikoyi/taxprep-au/issues/7)
+- [Milestone 7 CSV-to-expense flow](docs/MILESTONE_7_CSV_EXPENSE_REVIEW.md) / [issue #11](https://github.com/obaonikoyi/taxprep-au/issues/11)
 - [Milestone 6 report format and verification](docs/MILESTONE_6_PREPARATION_REPORT.md) / [issue #9](https://github.com/obaonikoyi/taxprep-au/issues/9)
 
 ## Disclaimer
