@@ -37,7 +37,7 @@ Open `http://localhost:5173` (or Vite's printed URL). The Vite development proxy
 6. Select **Sunrise Mobile Services**, choose **Phone service** and click **Review selected spending**. Enter 40% work use, no reimbursement and missing evidence; save to see an $18 work portion.
 7. Inspect its source row in the summary and report. Upload the same sample again: that row is unavailable. Remove the expense to release it, or restart to clear the session.
 
-The upload sends the CSV to TaxPrep AU and processes it in memory. Use fictional data. Saved expenses and source references live only in this tab. Nothing is persisted, classified as deductible or submitted to the ATO.
+The upload sends the CSV to TaxPrep AU and processes it in memory. Use fictional data. Expenses and source references remain in this tab unless saved with **Save progress**. That explicit snapshot stays in the same browser; nothing is persisted on the server, classified as deductible or submitted to the ATO.
 
 ## Try the guided expense review
 
@@ -45,11 +45,23 @@ The upload sends the CSV to TaxPrep AU and processes it in memory. Use fictional
 2. Expect $792.60 entered, $312.60 recorded work portions and one item needing attention.
 3. Edit the phone expense: $100 at 40% produces a $40 work portion. The combined total becomes $112.60.
 4. Select **Partly reimbursed / not sure** to see an unresolved amount and a clearly labelled partial total.
-5. Remove an expense, add a skipped category or restart. Cancel changes preserves the previous entry; restart/refresh clears everything.
+5. Remove an expense, add a skipped category or restart. Cancel changes preserves the previous entry; restart clears the tab and saved browser copy; refresh keeps only the last explicit Save progress snapshot.
 6. Alternatively, choose **Try demo**, confirm sample income and answer each Yes/No question. **Use example details** speeds up each form.
 7. Stop the API while requesting a summary. Entries remain editable; restart the API and click **Retry review**.
 
 [Milestone 5](MILESTONE_5_EXPENSE_REVIEW.md) explains input bounds, rounding and the difference between work portions and tax eligibility.
+
+## Save and resume
+
+1. Enter an unfinished expense or complete the summary, then click **Save progress**.
+2. Refresh or reopen the page in the same browser and choose **Resume saved progress**.
+3. Confirm the step, draft text and source references return. The CSV preview must be empty.
+4. For a resumed summary, verify a new review request and report. Stop the API to check retry without cached totals.
+5. Make an edit: the controls should mark it unsaved until you click Save progress again.
+6. Delete the saved copy and verify current entries remain. Restart must clear both.
+7. Open a second tab and resume. Save a change in the first tab; the second must announce it and preserve its current entries until explicit resume.
+
+[Milestone 8](MILESTONE_8_SAVE_RESUME.md) documents the schema, size limits, storage failures and conflict limitations. Saving is explicit, local to this browser profile and origin, and for fictional data only.
 
 ## Keep a report
 
@@ -95,4 +107,4 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-The script starts/stops its own API and Vite processes on 5087/5173 (stop your development servers first). It checks the guided expense interview, edits and partial totals, manual mobile entry, validation focus, real service interruption/retry and reset, plus the CSV upload regression flow and selected spending → expense draft → API review → offline report. It checks renamed/reordered uploads, original versus adjusted amounts, unsupported rows, cancellation and the 50-row grouping limit. Desktop and 390px mobile widths are covered. The report checks verify the print action and browser print-event capability, real HTML download bytes, offline reopening without network requests, partial amounts and long notes. They also generate A4 PDFs from the downloaded HTML for inspection. It writes screenshots and a JSON report to ignored `test-results/browser/`. CI installs browser system dependencies and uploads these files alongside the API test report as a seven-day artifact.
+The script starts/stops its own API and Vite processes on 5087/5173 (stop your development servers first). It checks the guided expense interview, edits and partial totals, manual mobile entry, validation focus, real service interruption/retry and reset, plus real localStorage save/resume, new-tab restoration, two-tab conflicts, corrupt-copy recovery, and the CSV upload regression flow and selected spending → expense draft → API review → offline report. It checks renamed/reordered uploads, original versus adjusted amounts, unsupported rows, cancellation and the 50-row grouping limit. Desktop and 390px mobile widths are covered. The report checks verify the print action and browser print-event capability, real HTML download bytes, offline reopening without network requests, partial amounts and long notes. They also generate A4 PDFs from the downloaded HTML for inspection. It writes screenshots and a JSON report to ignored `test-results/browser/`. CI installs browser system dependencies and uploads these files alongside the API test report as a seven-day artifact.

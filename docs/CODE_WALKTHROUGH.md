@@ -1,6 +1,6 @@
 # TaxPrep AU code walkthrough
 
-This is a beginner-friendly tour of the current application. The frontend handles the screen and temporary entries. The backend validates requests and calculates organising amounts. Neither application saves a return or lodges with the ATO.
+This is a beginner-friendly tour of the current application. The frontend handles the screen, current entries and an optional browser progress snapshot. The backend validates requests and calculates organising amounts. Neither application saves a return or lodges with the ATO.
 
 ## Where to start
 
@@ -11,6 +11,9 @@ This is a beginner-friendly tour of the current application. The frontend handle
 | `features/demo/demoData.ts` | Fictional profile and three discovery questions |
 | `features/expenses/ExpenseForm.tsx` | Unsaved form input, validation and example details |
 | `features/expenses/ExpenseSummary.tsx` | Review request, retry, totals and evidence checklist |
+| `features/progress/progressStorage.ts` | Versioned snapshot schema, validation and storage reads |
+| `features/progress/useSavedProgress.ts` | Explicit save/resume/delete and cross-tab conflict checks |
+| `features/expenses/expenseDraft.ts` | Incomplete text fields kept separately from committed numbers |
 | `features/expenses/expenseReview.ts` | Shared types, sample expenses and API response validation |
 | `src/backend/TaxPrepAu.Api/Expenses/ExpenseReview.cs` | JSON endpoint, server validation and decimal calculations |
 | `src/backend/TaxPrepAu.Api/Program.cs` | Starts the API and registers its routes |
@@ -39,7 +42,7 @@ A fully reimbursed or 0%-work item contributes zero. Partial/unknown reimburseme
 
 React's saved expense array changes whenever an item is saved or removed. The summary has a key based on that small list. A changed list unmounts the old summary, aborts its request and starts a fresh summary with no old totals. The active-request flag also ignores a late response if a transport does not respect cancellation.
 
-The form remains editable when the API is unavailable. Retry sends the same saved entries. The 15-second timeout restores retry even if a request never settles. Restart or refresh clears the in-tab data; there is no database or local-storage copy.
+The form remains editable when the API is unavailable. Retry sends the same saved entries. The 15-second timeout restores retry even if a request never settles. Refresh clears unsaved changes. An explicit **Save progress** snapshot can restore the entered facts from localStorage; restarting deletes that copy too. There is no server database.
 
 ## The connected CSV flow
 
@@ -64,6 +67,16 @@ There is one authoritative CSV parser in C#. After validation, `TransactionSelec
 The same HTML string feeds the preview, the download and browser printing. A temporary Blob URL lets the browser save a file without a new API call. The preview iframe permits printing and same-origin access but cannot run report scripts. The report contains no scripts or external resources. Print readiness is checked before calling that frame's `window.print()`.
 
 For example, if the API returns a $40 work portion, the page and report both display $40. Editing the cost creates a new review and report; it cannot alter a file the visitor already downloaded.
+
+## Save facts, then review again
+
+`ExpenseForm` now groups its text fields into an `ExpenseDraft` and tells the journey when they change. That lets a snapshot include an unfinished value such as `12.` without treating it as a committed expense. The focus effect depends on the screen identity, not every draft change, so typing keeps the cursor in its field.
+
+`useSavedProgress` writes only when **Save progress** is clicked. It tracks the last saved data to show unsaved changes. `progressStorage.ts` validates localStorage JSON at runtime and constructs a clean object; a TypeScript type assertion alone would not detect an invalid question index or duplicated source rows.
+
+Resume remounts the journey's form, CSV upload and expense summary. Old file previews and API responses disappear. The restored expense facts go through a fresh backend review before totals and export become available. This avoids treating yesterday's derived result as today's source of truth.
+
+A storage event from another tab updates the saved-copy notice without replacing current work. Before saving or deleting, the hook rereads the key and checks that it still matches the expected copy. This catches stale operations but is not an atomic cross-tab lock; the limits are documented in [Milestone 8](MILESTONE_8_SAVE_RESUME.md).
 
 ## What to learn from this milestone
 

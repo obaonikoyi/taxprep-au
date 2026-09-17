@@ -52,7 +52,8 @@ The duplicate key combines exact date, trimmed description, signed amount and oc
 | Clear/replace CSV preview | Clears checkbox selection; saved records and an open draft remain |
 | Upload matching rows again | Marks previously saved rows unavailable, naming their category |
 | Remove expense | Releases its source keys and clears the old review/export |
-| Restart or refresh | Clears expenses, preview, draft and duplicate tracking |
+| Restart | Clears expenses, preview, draft, duplicate tracking and the saved browser copy |
+| Refresh | Clears unsaved work; Milestone 8 can resume the last explicit browser snapshot |
 
 ## Data boundaries
 
@@ -70,6 +71,6 @@ The report escapes source descriptions and filenames, includes every saved sourc
 - Browser checks: real CSV upload → editable form → real expense API → offline report; partial CSV errors, mobile layout, amount edit, repeated upload, removal/cancellation and the full 50-row limit.
 - Existing frontend/API tests and expense/CSV/report browser regressions remain in CI. A4 PDFs and screenshots are uploaded for visual review.
 
-## Next milestone
+## Follow-up delivered
 
-Save and resume a fictional preparation session, with clear controls for discarding saved data. This will let a visitor leave the app and return to their progress.
+[Milestone 8](MILESTONE_8_SAVE_RESUME.md) adds explicit same-browser save/resume, including selected source references and unfinished imported drafts.

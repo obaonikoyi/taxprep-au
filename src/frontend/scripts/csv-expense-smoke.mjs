@@ -24,11 +24,17 @@ export async function verifyCsvExpenses(page, artifacts) {
     await demo.getByLabel('How was the percentage worked out?', { exact: false }).fill('Fictional usage diary.');
     await demo.getByLabel('Was Sarah reimbursed?', { exact: true }).selectOption('none');
     await demo.getByLabel('Supporting evidence', { exact: true }).selectOption('missing');
-    const pending = page.waitForResponse(r => r.url().endsWith('/api/expenses/review') && r.request().method() === 'POST');
+    // Development remounts can abort a request after its response headers arrive.
+    // Capture the completed request so its body is available to these assertions.
+    const pending = page.waitForEvent('requestfinished', {
+      predicate: request => request.url().endsWith('/api/expenses/review') && request.method() === 'POST',
+    });
     await button('Save expense').click();
-    const result = await pending;
+    const request = await pending;
+    const result = await request.response();
+    assert.ok(result);
     assert.equal(result.status(), 200);
-    const sent = result.request().postDataJSON();
+    const sent = request.postDataJSON();
     assert.equal(Object.hasOwn(sent.expenses[0], 'sources'), false);
     return await result.json();
   };
