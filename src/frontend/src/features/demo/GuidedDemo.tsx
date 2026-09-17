@@ -5,20 +5,25 @@ import ExpenseSummary from '../expenses/ExpenseSummary'
 import TransactionUpload from '../../components/TransactionUpload'
 import { selectionError, sourceTotal, type ExpenseSource } from '../transactions/expenseImport'
 import { categoryLabels, currency, sampleExpenses, type Expense, type ExpenseCategory } from '../expenses/expenseReview'
-
-type Step = { kind: 'welcome' | 'income' | 'summary' } | { kind: 'questions'; index: number }
-  | { kind: 'details'; category: ExpenseCategory; returnTo: 'questions' | 'summary'; index: number; draft?: Partial<Expense> }
+import type { PreparationData, PreparationStep } from '../progress/progressStorage'
+import { useSavedProgress } from '../progress/useSavedProgress'
+import ProgressControls from '../progress/ProgressControls'
 
 export default function GuidedDemo() {
-  const [step, setStep] = useState<Step>({ kind: 'welcome' })
+  const [step, setStep] = useState<PreparationStep>({ kind: 'welcome' })
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [session, setSession] = useState(0)
+  function restore(data: PreparationData) {
+    setExpenses(data.expenses); setStep(data.step); setSession(value => value + 1)
+  }
+  const progressStorage = useSavedProgress({ expenses, step }, restore)
+  const focusKey = `${session}:${step.kind}:${step.kind === 'details' ? step.category : step.kind === 'questions' ? step.index : ''}`
   const heading = useRef<HTMLHeadingElement>(null)
   const mounted = useRef(false)
   useEffect(() => {
     if (mounted.current) heading.current?.focus()
     mounted.current = true
-  }, [step])
+  }, [focusKey])
 
   const question = step.kind === 'questions' ? demoQuestions[step.index] : null
   const title = step.kind === 'welcome' ? `Meet ${demoProfile.name}`
@@ -35,7 +40,7 @@ export default function GuidedDemo() {
     if (step.kind === 'details' && step.returnTo === 'questions') nextQuestion(step.index)
     else setStep({ kind: 'summary' })
   }
-  function restart() { setExpenses([]); setSession(value => value + 1); setStep({ kind: 'welcome' }) }
+  function restart() { if (progressStorage.remove(true)) { setExpenses([]); setSession(value => value + 1); setStep({ kind: 'welcome' }) } }
   function prepareSelection(category: ExpenseCategory, sources: ExpenseSource[]) {
     const used = new Map(expenses.flatMap(expense => (expense.sources ?? []).map(row => [row.key, categoryLabels[expense.category]] as const)))
     if (step.kind === 'details' || expenses.some(expense => expense.category === category) || selectionError(sources, used)) return
@@ -48,6 +53,7 @@ export default function GuidedDemo() {
         <div><p className="eyebrow">Interactive portfolio demo</p><h2 id="demo-title">Turn expense details into a clear checklist.</h2></div>
         <span className="demo-badge">Fictional data</span>
       </div>
+      <ProgressControls progress={progressStorage} />
       <div className="demo-shell">
         <aside className="demo-sidebar" aria-label="Demo progress">
           <p className="sidebar-label">Preparation journey</p>
@@ -76,13 +82,13 @@ export default function GuidedDemo() {
               </div>
               <button className="text-button question-back" onClick={() => setStep(step.index === 0 ? { kind: 'income' } : { kind: 'questions', index: step.index - 1 })}>Previous step</button>
             </>}
-            {step.kind === 'details' && <ExpenseForm key={step.category} category={step.category} initial={step.draft ?? expenses.find(item => item.category === step.category)} onSave={saveExpense} onCancel={() => setStep(step.returnTo === 'summary' ? { kind: 'summary' } : { kind: 'questions', index: step.index })} />}
+            {step.kind === 'details' && <ExpenseForm key={`${session}:${step.category}`} initialDraft={step.fields} onDraftChange={fields => setStep(current => current.kind === 'details' ? { ...current, fields } : current)} category={step.category} initial={step.draft ?? expenses.find(item => item.category === step.category)} onSave={saveExpense} onCancel={() => setStep(step.returnTo === 'summary' ? { kind: 'summary' } : { kind: 'questions', index: step.index })} />}
             {step.kind === 'summary' && <>
               {/* Remount on an edited list so old totals/errors disappear immediately and its request is aborted. */}
-              <ExpenseSummary key={JSON.stringify(expenses)} expenses={expenses} onEdit={category => setStep({ kind: 'details', category, returnTo: 'summary', index: 0 })} onRemove={category => setExpenses(current => current.filter(item => item.category !== category))} />
+              <ExpenseSummary key={`${session}:${JSON.stringify(expenses)}`} expenses={expenses} onEdit={category => setStep({ kind: 'details', category, returnTo: 'summary', index: 0 })} onRemove={category => setExpenses(current => current.filter(item => item.category !== category))} />
               <button className="secondary-button" onClick={restart}>Restart demo</button>
             </>}
-            <p className="demo-data-note">Fictional details only. Saved entries stay in this tab until restart or refresh. Viewing a summary sends them to the server for an in-memory review; they are not stored.</p>
+            <p className="demo-data-note">Fictional details only. Save progress keeps a browser copy until you delete it, restart, or clear browser data. Changes after saving need another save. Viewing a summary sends expense details to the server for an in-memory review; the server does not store them.</p>
           </div>
         </div>
       </div>

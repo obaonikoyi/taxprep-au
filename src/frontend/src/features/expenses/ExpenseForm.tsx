@@ -1,31 +1,32 @@
 import { useRef, useState, type FormEvent } from 'react'
 import { categoryLabels, sampleExpenses, type Expense, type ExpenseCategory, type Evidence, type Reimbursement } from './expenseReview'
 import SourceTransactions from '../transactions/SourceTransactions'
+import { createExpenseDraft, type ExpenseDraft } from './expenseDraft'
 
 interface Props {
   category: ExpenseCategory
   initial?: Partial<Expense>
+  initialDraft?: ExpenseDraft
+  onDraftChange?: (draft: ExpenseDraft) => void
   onSave: (expense: Expense) => void
   onCancel: () => void
 }
 
-export default function ExpenseForm({ category, initial, onSave, onCancel }: Props) {
-  const [amount, setAmount] = useState(initial?.amount?.toString() ?? '')
-  const [percent, setPercent] = useState(initial?.workUsePercent?.toString() ?? '')
-  const [purpose, setPurpose] = useState(initial?.purpose ?? '')
-  const [basis, setBasis] = useState(initial?.workUseBasis ?? '')
-  const [reimbursement, setReimbursement] = useState<Reimbursement | ''>(initial?.reimbursement ?? '')
-  const [evidence, setEvidence] = useState<Evidence | ''>(initial?.evidence ?? '')
-  const [reference, setReference] = useState(initial?.evidenceReference ?? '')
+export default function ExpenseForm({ category, initial, initialDraft, onDraftChange, onSave, onCancel }: Props) {
+  const [draft, setDraft] = useState(() => initialDraft ?? createExpenseDraft(initial))
+  const { amount, percent, purpose, basis, reimbursement, evidence, reference } = draft
+  function updateDraft(change: Partial<ExpenseDraft>) {
+    const next = { ...draft, ...change }
+    setDraft(next)
+    onDraftChange?.(next)
+  }
   const [errors, setErrors] = useState<Record<string, string>>({})
   const form = useRef<HTMLFormElement>(null)
 
   function loadExample() {
     const example = sampleExpenses.find(item => item.category === category)!
-    setAmount(String(example.amount)); setPercent(String(example.workUsePercent))
-    setPurpose(example.purpose); setBasis(example.workUseBasis)
-    setReimbursement(example.reimbursement); setEvidence(example.evidence)
-    setReference(example.evidenceReference); setErrors({})
+    const next = createExpenseDraft(example)
+    setDraft(next); onDraftChange?.(next); setErrors({})
   }
 
   function save(event: FormEvent) {
@@ -59,32 +60,32 @@ export default function ExpenseForm({ category, initial, onSave, onCancel }: Pro
       <div className="expense-fields">
         <div>
           <label htmlFor="expense-amount">Amount paid (AUD)</label>
-          <input id="expense-amount" name="amount" inputMode="decimal" value={amount} maxLength={12} onChange={event => setAmount(event.target.value)} aria-invalid={!!errors.amount} aria-describedby={errors.amount ? 'amount-error' : undefined} />
+          <input id="expense-amount" name="amount" inputMode="decimal" value={amount} maxLength={12} onChange={event => updateDraft({ amount: event.target.value })} aria-invalid={!!errors.amount} aria-describedby={errors.amount ? 'amount-error' : undefined} />
           {errors.amount && <p id="amount-error" className="field-error">{errors.amount}</p>}
         </div>
         <div>
           <label htmlFor="expense-percent">Work use (%)</label>
-          <input id="expense-percent" name="percent" inputMode="numeric" value={percent} maxLength={3} onChange={event => setPercent(event.target.value)} aria-invalid={!!errors.percent} aria-describedby={errors.percent ? 'percent-error' : 'percent-help'} />
+          <input id="expense-percent" name="percent" inputMode="numeric" value={percent} maxLength={3} onChange={event => updateDraft({ percent: event.target.value })} aria-invalid={!!errors.percent} aria-describedby={errors.percent ? 'percent-error' : 'percent-help'} />
           {errors.percent ? <p id="percent-error" className="field-error">{errors.percent}</p> : <p id="percent-help" className="field-help">0 = personal use; 100 = all work use.</p>}
         </div>
       </div>
       <label htmlFor="expense-purpose">Work purpose <span>(optional)</span></label>
-      <textarea id="expense-purpose" rows={2} maxLength={300} value={purpose} onChange={event => setPurpose(event.target.value)} placeholder="How was this used for Sarah’s work?" />
+      <textarea id="expense-purpose" rows={2} maxLength={300} value={purpose} onChange={event => updateDraft({ purpose: event.target.value })} placeholder="How was this used for Sarah’s work?" />
       <label htmlFor="expense-basis">How was the percentage worked out? <span>(optional)</span></label>
-      <textarea id="expense-basis" rows={2} maxLength={300} value={basis} onChange={event => setBasis(event.target.value)} placeholder="For example, a usage diary. Up to 300 characters." />
+      <textarea id="expense-basis" rows={2} maxLength={300} value={basis} onChange={event => updateDraft({ basis: event.target.value })} placeholder="For example, a usage diary. Up to 300 characters." />
       <label htmlFor="expense-reimbursement">Was Sarah reimbursed?</label>
-      <select id="expense-reimbursement" name="reimbursement" value={reimbursement} onChange={event => setReimbursement(event.target.value as Reimbursement)} aria-invalid={!!errors.reimbursement} aria-describedby={errors.reimbursement ? 'reimbursement-error' : undefined}>
+      <select id="expense-reimbursement" name="reimbursement" value={reimbursement} onChange={event => updateDraft({ reimbursement: event.target.value as Reimbursement })} aria-invalid={!!errors.reimbursement} aria-describedby={errors.reimbursement ? 'reimbursement-error' : undefined}>
         <option value="">Choose an option</option><option value="none">No reimbursement</option><option value="full">Fully reimbursed</option><option value="unsure">Partly reimbursed / not sure</option>
       </select>
       {errors.reimbursement && <p id="reimbursement-error" className="field-error">{errors.reimbursement}</p>}
       <label htmlFor="expense-evidence">Supporting evidence</label>
-      <select id="expense-evidence" name="evidence" value={evidence} onChange={event => setEvidence(event.target.value as Evidence)} aria-invalid={!!errors.evidence} aria-describedby={errors.evidence ? 'evidence-error' : undefined}>
+      <select id="expense-evidence" name="evidence" value={evidence} onChange={event => updateDraft({ evidence: event.target.value as Evidence })} aria-invalid={!!errors.evidence} aria-describedby={errors.evidence ? 'evidence-error' : undefined}>
         <option value="">Choose an option</option><option value="available">Available</option><option value="missing">Missing</option><option value="unsure">Not sure</option>
       </select>
       {errors.evidence && <p id="evidence-error" className="field-error">{errors.evidence}</p>}
       {evidence === 'available' && <>
         <label htmlFor="expense-reference">Evidence reference <span>(optional)</span></label>
-        <input id="expense-reference" maxLength={120} value={reference} onChange={event => setReference(event.target.value)} placeholder="For example, sample phone bill and diary" />
+        <input id="expense-reference" maxLength={120} value={reference} onChange={event => updateDraft({ reference: event.target.value })} placeholder="For example, sample phone bill and diary" />
         <p className="field-help">A reminder of where the evidence is. No receipt files are uploaded.</p>
       </>}
       <div className="button-row">

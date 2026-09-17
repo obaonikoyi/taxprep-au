@@ -1,6 +1,6 @@
 # TaxPrep AU — Project Plan
 
-> **Implementation checkpoint — 15 September 2026:** Milestones 1–7 are implemented. [Milestone 7](MILESTONE_7_CSV_EXPENSE_REVIEW.md) connects selected CSV spending to editable category records and carries original source references into the preparation report. Next: save and resume a fictional preparation session. The original plan below remains the longer-term roadmap; persistent storage and final tax calculations are future work.
+> **Implementation checkpoint — 17 September 2026:** Milestones 1–8 are implemented. [Milestone 8](MILESTONE_8_SAVE_RESUME.md) adds explicit browser save/resume, unfinished form snapshots, validated restoration and delete/conflict recovery. Next: publish a hosted portfolio demo. The original plan below remains the longer-term roadmap; server-side persistence and final tax calculations are future work.
 
 
 ## 1. Document Purpose

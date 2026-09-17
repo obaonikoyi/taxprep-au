@@ -1,6 +1,7 @@
 import { chromium } from 'playwright';
 import { verifyExpenses } from './expense-smoke.mjs';
 import { verifyCsvExpenses } from './csv-expense-smoke.mjs';
+import { verifyProgress } from './progress-smoke.mjs';
 import { spawn } from 'node:child_process';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -54,8 +55,12 @@ async function ready(url){for(let i=0;i<80;i++){try{if((await fetch(url)).ok)ret
   await page.locator('.transaction-upload').screenshot({path:artifacts+'/mobile.png'});
   await page.getByRole('button',{name:'Clear preview'}).click();assert.equal(await page.locator('tbody tr').count(),0);
   const csvExpenses = await verifyCsvExpenses(page, artifacts);
+  const progress = await verifyProgress(browser, artifacts, {
+    stopApi: async () => { const exited = new Promise(resolve => api.once('exit', resolve)); api.kill('SIGTERM'); await exited; },
+    startApi: async () => { api = startApi(); await ready('http://127.0.0.1:5087/api/health'); },
+  });
   assert.equal(await page.locator('vite-error-overlay').count(),0);assert.deepEqual(errors,[]);
-  const report={csvExpenses,expenses:expenseReport,sampleRows:20,netTotal:1374.12,partialRows:true,physicalRowNumbers:true,duplicateHeaders:true,realBackendRecovery:true,mobileWidth:390,horizontalOverflow:false,pageErrors:errors};
+  const report={progress,csvExpenses,expenses:expenseReport,sampleRows:20,netTotal:1374.12,partialRows:true,physicalRowNumbers:true,duplicateHeaders:true,realBackendRecovery:true,mobileWidth:390,horizontalOverflow:false,pageErrors:errors};
   writeFileSync(artifacts+'/report.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report));
  } finally {if(browser)await browser.close();for(const p of children)p.kill('SIGTERM');}
 })().catch(e=>{console.error(e);process.exitCode=1;});
