@@ -13,8 +13,14 @@ builder.Services.Configure<FormOptions>(options =>
 });
 var app = builder.Build();
 
-// Local Vite forwards to the HTTP development profile; production requires HTTPS.
-if (!app.Environment.IsDevelopment()) app.UseHttpsRedirection();
+// The deployment container is reached through Railway's HTTPS edge. Its private
+// upstream is HTTP; redirecting there would break healthchecks or create a loop.
+// Standalone hosts keep HTTPS redirection unless explicitly configured otherwise.
+if (!app.Environment.IsDevelopment() && !builder.Configuration.GetValue<bool>("Hosting:HttpsHandledByProxy"))
+    app.UseHttpsRedirection();
+
+app.UseDefaultFiles();
+app.UseStaticFiles();
 
 app.MapGet("/api/health", () => Results.Ok(new
 {

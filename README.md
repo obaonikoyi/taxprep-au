@@ -2,7 +2,7 @@
 
 TaxPrep AU is an Australian tax-preparation assistant that helps individuals organise financial records, review possible work-related deductions, and prepare a clear summary before lodging through myTax or consulting a registered tax agent.
 
-> **Project status:** Milestone 8 — save and resume preparation progress
+> **Project status:** Milestone 9 — standalone demo hosting and verification
 > **Important:** TaxPrep AU is an organisational and educational tool. It does not provide tax, legal, or financial advice and does not lodge tax returns.
 
 ## The Problem
@@ -171,9 +171,12 @@ Select validated CSV spending, choose a category and complete its expense draft.
 
 **Save progress** includes your current step, unfinished form text, expense records and selected source references. **Resume saved progress** restores that copy and requests a fresh review. **Delete saved progress** removes the copy while keeping current entries; **Restart demo** clears both. Save again after later changes. This is same-browser storage, with no account or device sync.
 
-Next: publish a hosted portfolio demo that visitors can try from a shared link. The app does not decide deductibility or estimate refunds.
+The standalone deployment packages the website and API together. Follow the on-page **Try one useful task: a phone expense** walkthrough to turn a sample bill into a report. See [Milestone 9](docs/MILESTONE_9_STANDALONE_DEMO.md) for hosting, verification and the readiness decision. Publication is separate from adding the project to Obadiah's portfolio website.
+
+Next: make a bounded expense checklist useful for a visitor's own situation, test it with people and decide when to showcase it. The current demo uses fictional data and does not decide deductibility or estimate refunds.
 
 - [Milestone 5 issue #7](https://github.com/obaonikoyi/taxprep-au/issues/7)
+- [Milestone 9 standalone demo](docs/MILESTONE_9_STANDALONE_DEMO.md) / [issue #15](https://github.com/obaonikoyi/taxprep-au/issues/15)
 - [Milestone 8 save/resume contract](docs/MILESTONE_8_SAVE_RESUME.md) / [issue #13](https://github.com/obaonikoyi/taxprep-au/issues/13)
 - [Milestone 7 CSV-to-expense flow](docs/MILESTONE_7_CSV_EXPENSE_REVIEW.md) / [issue #11](https://github.com/obaonikoyi/taxprep-au/issues/11)
 - [Milestone 6 report format and verification](docs/MILESTONE_6_PREPARATION_REPORT.md) / [issue #9](https://github.com/obaonikoyi/taxprep-au/issues/9)
