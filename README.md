@@ -183,7 +183,7 @@ Select validated CSV spending, choose a category and complete its expense draft.
 
 The standalone deployment packages the website and API together. Follow the on-page **Try one useful task: a phone expense** walkthrough to turn a sample bill into a report. See [Milestone 9](docs/MILESTONE_9_STANDALONE_DEMO.md) for hosting, verification and the readiness decision. Publication is separate from adding the project to Obadiah's portfolio website.
 
-Current: [Milestone 10 — document intake and evidence matching](docs/MILESTONE_10_DOCUMENT_INTAKE.md). Next: explainable deduction assessment, followed by supported return preparation. The current demo uses fictional data and does not decide deductibility or estimate refunds.
+Current: [Milestone 10 — document intake and evidence matching](docs/MILESTONE_10_DOCUMENT_INTAKE.md). Next: [Milestone 11 — explainable phone-expense assessment](https://github.com/obaonikoyi/taxprep-au/issues/21), followed by supported return preparation. The current demo uses fictional data and does not decide deductibility or estimate refunds.
 
 - [Milestone 5 issue #7](https://github.com/obaonikoyi/taxprep-au/issues/7)
 - [Milestone 9 standalone demo](docs/MILESTONE_9_STANDALONE_DEMO.md) / [issue #15](https://github.com/obaonikoyi/taxprep-au/issues/15)

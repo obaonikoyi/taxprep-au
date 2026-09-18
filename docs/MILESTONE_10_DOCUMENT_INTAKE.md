@@ -42,3 +42,11 @@ Only one receipt per page is supported, with bounded English/AUD input. Expense 
 Milestone 11 should add one professionally reviewed deduction category/year, a versioned ATO-source register, explicit applicability conditions, tested calculations, and unresolved outcomes where facts or scope are missing. Receipt extraction and deduction approval remain separate decisions.
 
 Implementation references: [Tesseract.js API](https://github.com/naptha/tesseract.js/blob/master/docs/api.md), [local installation](https://github.com/naptha/tesseract.js/blob/master/docs/local-installation.md), [PDF.js examples](https://mozilla.github.io/pdf.js/examples/).
+
+## Publication record
+
+- Feature merged in [PR #20](https://github.com/obaonikoyi/taxprep-au/pull/20), commit `b3f5d7a43f29297bfaf6ba38a817cb727690ef16`.
+- [Final feature CI](https://github.com/obaonikoyi/taxprep-au/actions/runs/35331091158): frontend, backend and production-container checks passed, including 106 frontend tests and 46 API tests.
+- Standalone Railway deployment `62d3b1a3-4424-4bdf-8e72-5846d278c6c9` reported SUCCESS on 18 September 2026. [Open the demo](https://taxprep-au-production.up.railway.app).
+- Updating `deployment.json` runs the existing hosted verification workflow against the public URL. It exercises the same actual OCR, review and export journey and publishes the browser/evaluation artifacts; see the publication PR checks for that release result.
+- Next work: [Milestone 11 / issue #21](https://github.com/obaonikoyi/taxprep-au/issues/21). The portfolio website is unchanged.
