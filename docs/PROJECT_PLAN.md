@@ -1,6 +1,6 @@
 # TaxPrep AU — Project Plan
 
-> **Implementation checkpoint — 18 September 2026:** Milestones 1–9 are implemented. [Milestone 9](MILESTONE_9_STANDALONE_DEMO.md) publishes a standalone hosted demo and verifies a complete visitor task. The owner's portfolio website stays unchanged until he decides the app is useful enough to showcase. Next: a bounded checklist for the visitor's own expenses and usability feedback. The original plan below remains the longer-term roadmap; server-side persistence and final tax calculations are future work.
+> **Implementation checkpoint — 18 September 2026:** Milestones 1–9 are implemented. The [current product direction](PRODUCT_DIRECTION.md) supersedes the organiser-only ambition in the original plan below: build toward document-led, explainable tax preparation for supported cases. Next is [Milestone 10: document intake and evidence matching](https://github.com/obaonikoyi/taxprep-au/issues/18), with reviewed tax rules and the operating model developed alongside it. The hosted app remains a fictional-data demo; its limitations still apply. The portfolio website stays unchanged until Obadiah decides the user outcome is useful enough to showcase.
 
 
 ## 1. Document Purpose
@@ -13,7 +13,7 @@ This plan contains product and engineering information only. Real tax records, b
 
 TaxPrep AU is an Australian tax-preparation assistant for individual taxpayers. It will help users import transaction records, review possible work-related expenses, track supporting evidence, and generate an organised preparation summary.
 
-TaxPrep AU supports preparation only. It will not lodge tax returns, replace myTax, act as a registered tax agent, or provide personalised tax, legal, or financial advice.
+The current implementation supports preparation only and does not lodge returns or provide personalised tax advice. Those current limits are not permanent exclusions from the future roadmap; see [Product direction](PRODUCT_DIRECTION.md) for the required operating model and staged scope. The remaining original plan describes the initial organiser release and its boundaries.
 
 ## 3. Problem Statement
 

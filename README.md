@@ -7,6 +7,8 @@ TaxPrep AU is an Australian tax-preparation assistant that helps individuals org
 **[Try the standalone demo](https://taxprep-au-production.up.railway.app)** — fictional data, no account needed. Start with **Try one useful task: a phone expense**. This has not been added to the owner's portfolio website.
 > **Important:** TaxPrep AU is an organisational and educational tool. It does not provide tax, legal, or financial advice and does not lodge tax returns.
 
+**Product direction, clarified 18 September 2026:** The long-term goal is document-led tax preparation: upload receipts and transactions, resolve gaps, assess supported deductions using applicable-year guidance, and prepare for lodgment or accountant review. The current demo is the foundation. [Product direction and staged roadmap](docs/PRODUCT_DIRECTION.md) supersedes organiser-only descriptions of the future goal below; it does not imply those capabilities already exist.
+
 ## The Problem
 
 Preparing an Australian individual tax return can be confusing and time-consuming. Information may be spread across bank statements, receipts, invoices, notes, and multiple jobs. People may struggle to:
@@ -175,7 +177,7 @@ Select validated CSV spending, choose a category and complete its expense draft.
 
 The standalone deployment packages the website and API together. Follow the on-page **Try one useful task: a phone expense** walkthrough to turn a sample bill into a report. See [Milestone 9](docs/MILESTONE_9_STANDALONE_DEMO.md) for hosting, verification and the readiness decision. Publication is separate from adding the project to Obadiah's portfolio website.
 
-Next: make a bounded expense checklist useful for a visitor's own situation, test it with people and decide when to showcase it. The current demo uses fictional data and does not decide deductibility or estimate refunds.
+Next: [Milestone 10 — document intake and evidence matching](https://github.com/obaonikoyi/taxprep-au/issues/18), followed by explainable deduction assessment and supported return preparation. The current demo uses fictional data and does not decide deductibility or estimate refunds.
 
 - [Milestone 5 issue #7](https://github.com/obaonikoyi/taxprep-au/issues/7)
 - [Milestone 9 standalone demo](docs/MILESTONE_9_STANDALONE_DEMO.md) / [issue #15](https://github.com/obaonikoyi/taxprep-au/issues/15)
