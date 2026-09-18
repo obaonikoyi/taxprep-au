@@ -2,6 +2,14 @@
 
 [Tracking issue #15](https://github.com/obaonikoyi/taxprep-au/issues/15)
 
+## Published demo
+
+**[Open TaxPrep AU](https://taxprep-au-production.up.railway.app)**
+
+First published on 18 September 2026 from commit `e9e5fac6d469ee117b9796eaf306723401fecf61`, Railway deployment `87ca38d9-c44f-46fa-a3b3-2b5aa23af8fb`. The service tracks `main`; later commits may redeploy. Hosting identifiers and the public address are recorded in [`deployment.json`](../deployment.json), without credentials.
+
+The [production build verification](https://github.com/obaonikoyi/taxprep-au/actions/runs/35322971382) passed all three jobs: frontend, backend and production container. The [hosted verification workflow](https://github.com/obaonikoyi/taxprep-au/actions/workflows/verify-hosted.yml) runs the same visitor journey against the actual public address whenever `deployment.json` changes, and can also be run manually. Its artifact contains screenshots, the downloaded sample report and JSON results. Obadiah's portfolio and custom domains remain unchanged.
+
 ## Purpose
 
 Give someone a link they can open and try without installing the project. Obadiah's portfolio website and custom domains stay unchanged until he decides this is useful enough to showcase.
@@ -36,7 +44,7 @@ Official references: [Railway Dockerfiles](https://docs.railway.com/builds/docke
 - Create a separate Railway project/service from `obaonikoyi/taxprep-au`, branch `main`, with the repository root as the build context.
 - The root `Dockerfile` and `railway.json` configure the build and healthcheck. No application secrets or database variables are required.
 - Generate a Railway service domain after deployment. Do not attach the portfolio domain.
-- Record the actual URL and successful deployed commit in this document after verification.
+- Keep the public URL and initial release record in this document and `deployment.json`; inspect Railway for the latest deployed commit.
 - Railway hosting uses the owner's existing account and its usage billing; this setup does not add a database or paid third-party service.
 - Inspect Railway build/runtime logs if a deployment fails. To roll back, use Railway's previous successful deployment or revert the relevant GitHub commit and redeploy.
 - Same-browser progress belongs to the exact origin. Moving to a different domain does not transfer saved copies. Restart/delete removes the local snapshot; the server has no copy to recover.
