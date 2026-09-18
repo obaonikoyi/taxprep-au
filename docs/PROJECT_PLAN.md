@@ -1,3 +1,5 @@
+> Milestone 12A implementation: [income, completeness and combined handover](MILESTONE_12A_PREPARATION_HANDOVER.md). Return/refund calculations remain a later part of Milestone 12.
+
 > Milestone 11 engineering: [draft phone assessment and review pack](MILESTONE_11_PHONE_ASSESSMENT.md). Qualified tax review remains pending; issue #21 stays open.
 
 > Milestone 10 implementation: [document intake and evidence matching](MILESTONE_10_DOCUMENT_INTAKE.md). The document workspace processes fictional files locally, reconciles evidence and exports unresolved questions. The broader product direction remains authoritative.

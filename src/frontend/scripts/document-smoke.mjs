@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { verifyPreparation } from './preparation-smoke.mjs';
 import { readFileSync, writeFileSync } from 'node:fs';
 export async function verifyDocuments(context, base, artifacts) {
   const page = await context.newPage();
@@ -10,6 +11,7 @@ export async function verifyDocuments(context, base, artifacts) {
   const started = Date.now();
   const expected = { merchant: 'Sunrise Mobile Services', date: '2025-08-14', description: 'Monthly phone service', amount: '45.00' };
   const evaluation = [];
+  let preparation;
   async function setup() {
     await page.goto(base.href);
     await button('Try document intake').click();
@@ -89,6 +91,7 @@ export async function verifyDocuments(context, base, artifacts) {
     await assessment.getByText('Partly reimbursed:', { exact: false }).waitFor();
     await page.getByLabel('Employer reimbursement', { exact: true }).selectOption('no');
     assert.equal(await assessment.locator('.assessment-amount').innerText(), '$18.00');
+    preparation = await verifyPreparation(page, artifacts);
     await page.getByText('View 2 sources and original facts', { exact: true }).click();
     await page.locator('.document-workspace').screenshot({ path: artifacts + 'documents-desktop.png' });
     // The same bytes renamed still have one source identity.
@@ -125,6 +128,10 @@ export async function verifyDocuments(context, base, artifacts) {
     await page.getByText('Credit or possible refund:', { exact: false }).waitFor();
     assert.equal(await assessment.locator('.assessment-amount').count(), 0);
     await assessment.getByText('A credit from this supplier', { exact: false }).waitFor();
+    await button('Preparation summary').click();
+    assert.equal(await page.locator('.preparation-totals strong').nth(2).innerText(), 'Not assessed');
+    assert.ok((await page.locator('.preparation-gaps').innerText()).includes('A credit from this supplier'));
+    await button('Documents').click();
     assert.equal(await page.locator('.evidence-overview strong').first().innerText(), '$45.00');
     const downloadEvent = page.waitForEvent('download'); await button('Download evidence report').click();
     const download = await downloadEvent; await download.saveAs(artifacts + 'evidence-report.html');
@@ -144,6 +151,10 @@ export async function verifyDocuments(context, base, artifacts) {
     assert.equal(await page.locator('.evidence-card').count(), 0);
     await button('Start document review').click();
     assert.equal(await page.locator('.document-inventory').count(), 0);
+    await button('Preparation summary').click();
+    assert.equal(await page.locator('.income-card').count(), 0);
+    assert.equal(await button('Load fictional income example').isDisabled(), false);
+    await button('Documents').click();
     await upload({ name: 'broken.pdf', mimeType: 'application/pdf', buffer: Buffer.from('not really a pdf') });
     await page.getByText('This file does not have a valid PDF signature.', { exact: true }).waitFor();
     await button('Retry broken.pdf').click();
@@ -151,7 +162,7 @@ export async function verifyDocuments(context, base, artifacts) {
     await page.reload(); await button('Try document intake').click();
     assert.equal(await page.locator('.evidence-card').count(), 0);
     assert.deepEqual(pageErrors, []);
-    const result = { passed: true, elapsedMs: Date.now() - started, evaluation, modelRequests: 0, modelCostAud: 0, hostingAndDeviceCost: 'not measured', documentUploads: 0, repeatedFile: 'kept once', receiptBankMatch: '45.00 counted once', duplicateReceipt: 'unresolved until exclusion', correctionsRetainOriginal: true, phoneAssessment: { illustrationAud: 18, fixedRateSeparateAud: 0, partialReimbursement: 'unresolved', supplierCredit: 'unresolved', duplicateBlocksAssessment: true, claimReady: false, qualifiedReview: 'pending', exportedRuleVersion: 'employee-phone-2025-26.v1-draft' }, deleted: true, reloadEmpty: true, mobileOverflow: false, pageErrors };
+    const result = { passed: true, elapsedMs: Date.now() - started, evaluation, preparation, modelRequests: 0, modelCostAud: 0, hostingAndDeviceCost: 'not measured', documentUploads: 0, repeatedFile: 'kept once', receiptBankMatch: '45.00 counted once', duplicateReceipt: 'unresolved until exclusion', correctionsRetainOriginal: true, phoneAssessment: { illustrationAud: 18, fixedRateSeparateAud: 0, partialReimbursement: 'unresolved', supplierCredit: 'unresolved', duplicateBlocksAssessment: true, claimReady: false, qualifiedReview: 'pending', exportedRuleVersion: 'employee-phone-2025-26.v1-draft' }, deleted: true, reloadEmpty: true, mobileOverflow: false, pageErrors };
     writeFileSync(artifacts + 'document-evaluation.json', JSON.stringify(result, null, 2));
     return result;
   } catch (error) {

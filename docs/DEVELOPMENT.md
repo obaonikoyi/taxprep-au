@@ -114,3 +114,7 @@ The script starts/stops its own API and Vite processes on 5087/5173 (stop your d
 ## Draft assessment verification
 
 `npm test` and `npm run build` first verify the three captured ATO source hashes and rule bindings. Assessment rules and evidence-continuity cases run in Vitest; the existing browser scripts now cover document → linked payment → draft phone assessment → source/versioned export, including overlap, partial reimbursement, duplicate and refund blockers. See [Milestone 11](MILESTONE_11_PHONE_ASSESSMENT.md) for the qualified-review gate.
+
+## Income and combined handover
+
+Milestone 12A adds unit cases for annual-income validation, partial cent totals, duplicate decisions, changes that invalidate review, scope gaps and escaped reports. `preparation-smoke.mjs` is called from the existing actual document browser journey, so both production-container and public-hosted verification test the combined income/evidence export and offline reopening. Data remains tab-only; clearing the document session clears preparation inputs as well.
