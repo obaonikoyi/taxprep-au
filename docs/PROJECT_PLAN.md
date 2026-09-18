@@ -1,6 +1,8 @@
+> Milestone 10 implementation: [document intake and evidence matching](MILESTONE_10_DOCUMENT_INTAKE.md). The document workspace processes fictional files locally, reconciles evidence and exports unresolved questions. The broader product direction remains authoritative.
+
 # TaxPrep AU — Project Plan
 
-> **Implementation checkpoint — 18 September 2026:** Milestones 1–9 are implemented. The [current product direction](PRODUCT_DIRECTION.md) supersedes the organiser-only ambition in the original plan below: build toward document-led, explainable tax preparation for supported cases. Next is [Milestone 10: document intake and evidence matching](https://github.com/obaonikoyi/taxprep-au/issues/18), with reviewed tax rules and the operating model developed alongside it. The hosted app remains a fictional-data demo; its limitations still apply. The portfolio website stays unchanged until Obadiah decides the user outcome is useful enough to showcase.
+> **Implementation checkpoint — 18 September 2026:** Milestones 1–10 are implemented. The [current product direction](PRODUCT_DIRECTION.md) supersedes the organiser-only ambition in the original plan below: build toward document-led, explainable tax preparation for supported cases. The next milestone adds explainable deduction assessment, with reviewed tax rules and the operating model developed alongside it. The hosted app remains a fictional-data demo; its limitations still apply. The portfolio website stays unchanged until Obadiah decides the user outcome is useful enough to showcase.
 
 
 ## 1. Document Purpose

@@ -1,3 +1,4 @@
+import { verifyDocuments } from './document-smoke.mjs';
 import assert from 'node:assert/strict';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { chromium } from 'playwright';
@@ -58,7 +59,8 @@ try {
   assert.equal(await page.evaluate(() => localStorage.getItem('taxprep-au:preparation-progress')), null);
   assert.deepEqual(errors, []);
   assert.deepEqual(failedRequests, []);
-  const result = { url: base.href, checkedAt: new Date().toISOString(), health: true, missingApiRoute404: true,
+  const documents = await verifyDocuments(context, base, artifacts);
+  const result = { documents, url: base.href, checkedAt: new Date().toISOString(), health: true, missingApiRoute404: true,
     sampleRows: 20, workPortion: 18, reportDownloaded: true, selectedSourcesIncluded: true,
     saveRefreshResume: true, clearProgress: true, mobileOverflow: false, errors, failedRequests };
   writeFileSync(artifacts + 'report.json', JSON.stringify(result, null, 2));
