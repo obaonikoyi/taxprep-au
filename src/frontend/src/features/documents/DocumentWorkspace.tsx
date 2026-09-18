@@ -6,9 +6,13 @@ import { sampleDocuments } from './sampleDocuments'
 import EvidenceCard from './EvidenceCard'
 import { emptyPhoneAnswers, phoneCredits } from '../assessment/phone'
 import SourceRegister from '../assessment/SourceRegister'
+import PreparationWorkspace from '../preparation/PreparationWorkspace'
+import { emptyPreparation } from '../preparation/preparation'
 import './documents.css'
 interface Job { id: string; name: string; status: string; failed: boolean; file?: File }
 export default function DocumentWorkspace() {
+  const [view, setView] = useState<'documents' | 'preparation'>('documents')
+  const [preparation, setPreparation] = useState(emptyPreparation)
   const [year, setYear] = useState('')
   const [context, setContext] = useState('')
   const [started, setStarted] = useState(false)
@@ -75,6 +79,7 @@ export default function DocumentWorkspace() {
     if (JSON.stringify(old?.facts) !== JSON.stringify(item.facts)) setSeparate(current => current.filter(key => !key.split('|').includes(item.id)))
   }
   function clear() {
+    setPreparation(emptyPreparation()); setView('documents')
     sourcesRef.current = []; setSources([]); setRecords([]); setLinks([]); setSeparate([]); setJobs([]); setMessage('Documents and extracted records cleared from this session.'); setStarted(false)
   }
   function remove(id: string) {
@@ -84,11 +89,14 @@ export default function DocumentWorkspace() {
   }
   return <section className="document-workspace" aria-labelledby="documents-title">
     <div className="workspace-heading"><div><p className="eyebrow">Document intake · preview</p><h2 id="documents-title">From documents to one evidence list.</h2><p>Read a receipt, find its bank payment, and keep both sources without counting the purchase twice.</p></div><span className="demo-badge">Fictional data only</span></div>
-    <p className="document-privacy">Files are processed in this browser tab. No document uploads, external AI service or saved document history. Refreshing, closing or clearing this workspace removes the session. Download a report before leaving.</p>
+    <p className="document-privacy">Files are processed in this browser tab. No document uploads, external AI service or saved document history. Refreshing, closing or clearing this workspace removes the session. Income and preparation answers also stay in this tab. Download a report before leaving.</p>
     {!started ? <div className="workspace-setup"><div className="evidence-form"><label>Financial year<select aria-label="Financial year" value={year} onChange={event => setYear(event.target.value)}><option value="">Select a year</option><option value="2025-26">2025–26 · 1 Jul 2025–30 Jun 2026</option><option value="other">Another financial year</option></select></label><label>Tax situation<select aria-label="Tax situation" value={context} onChange={event => setContext(event.target.value)}><option value="">Select a situation</option><option value="employee">Employee · phone-service example</option><option value="complex">Business, rental, investments, foreign income or other circumstances</option></select></label></div>
     {(year === 'other' || context === 'complex') && <p role="status" className="document-warning">This prototype does not cover that year or situation. It cannot prepare those sections. Choose the fictional employee example to explore supported document intake.</p>}
     <button className="primary-button" disabled={!ready} onClick={() => setStarted(true)}>Start document review</button></div> : <>
       <div className="workspace-toolbar"><p><strong>{YEAR}</strong> · Employee phone-service example</p><button className="text-button" disabled={busy} onClick={clear}>Clear document session</button></div>
+      <nav className="workspace-tabs" aria-label="Preparation workspace views"><button className="secondary-button" aria-pressed={view === 'documents'} onClick={() => setView('documents')}>Documents</button><button className="secondary-button" aria-pressed={view === 'preparation'} onClick={() => setView('preparation')}>Preparation summary</button></nav>
+      {view === 'preparation' && <PreparationWorkspace value={preparation} onChange={setPreparation} records={records} links={links} separate={separate} sources={sources} importIssues={jobs.filter(job => job.failed).map(job => `${job.name}: ${job.status}`)} onDocuments={() => setView('documents')} onMessage={setMessage} busy={busy} />}
+      <div hidden={view !== 'documents'}>
       <div className="document-drop"><h3>Add your fictional documents</h3><p>Up to 6 files, 2 MB each. PNG/JPG up to 12 megapixels; PDFs up to 3 pages. English, AUD, one receipt per page. CSV: Date,Description,Amount; up to 100 rows; negative amounts mean spending.</p><label className="document-file-label">Choose documents<input ref={upload} type="file" multiple accept=".csv,.png,.jpg,.jpeg,.pdf" disabled={busy} onChange={event => { const files = Array.from(event.target.files ?? []); if (files.length) void processFiles(files) }} /></label><div className="button-row"><button className="primary-button" disabled={busy} onClick={async () => { try { await processFiles(await sampleDocuments()) } catch { setMessage('Sample documents could not be loaded. Try again.') } }}>Try sample documents</button>{busy && <button className="secondary-button" onClick={() => controller.current?.abort()}>Cancel processing</button>}</div><p className="field-help">First use loads the reading engine. Some receipt layouts need manual correction. No deduction is approved by scanning.</p></div>
       <div aria-live="polite" aria-atomic="false" className="document-jobs">{jobs.map((job, index) => <div key={job.id} className={job.failed ? 'document-warning' : ''}><strong>{job.name}</strong><span>{job.status}</span>{job.failed && !busy && <div>{job.file && <button className="text-button" onClick={() => void processFiles([job.file!])}>Retry {job.name}</button>}<button className="text-button" onClick={() => setJobs(current => current.filter((_, i) => i !== index))}>Dismiss {job.name}</button></div>}</div>)}</div>
       {sources.length > 0 && <details className="document-inventory"><summary>{sources.length} source files in this session</summary><ul>{sources.map(source => <li key={source.id}><span>{source.name}</span><button className="text-button" disabled={busy} onClick={() => remove(source.id)}>Remove {source.name}</button></li>)}</ul></details>}
@@ -104,6 +112,7 @@ export default function DocumentWorkspace() {
       <div className="evidence-list">{groups.map(group => <EvidenceCard key={group.item.id} item={group.item} evidence={group.evidence} sources={sources} credits={phoneCredits(group.item, records)} questions={group.unresolved} counted={group.counted} onChange={change} onUnlink={() => setLinks(current => current.filter(link => link.receipt !== group.item.id))} />)}</div>
       <SourceRegister />
       <div className="evidence-export"><h3>Take the facts and assessment with you</h3><p>The report includes source references, corrections, draft phone assessments and unanswered questions. Tax rules await qualified review; no deduction is approved and no tax return is calculated.</p><button className="primary-button" disabled={busy} onClick={() => { try { downloadEvidenceReport(evidenceReport(records, links, separate, sources, 'Employee phone-service example', jobs.filter(job => job.failed).map(job => `${job.name}: ${job.status}`))); setMessage('Evidence report downloaded. Your source files are not embedded; keep them separately.') } catch { setMessage('Download failed. Please try again.') } }}>Download evidence report</button></div></>}
+      </div>
     </>}
     <p role="status" className="document-message">{message}</p>
   </section>

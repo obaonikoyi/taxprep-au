@@ -23,7 +23,7 @@ function App() {
         <p className="eyebrow">Australian expense preparation demo</p>
         <h1 id="page-title">Organise expenses. See what needs checking.</h1>
         <p className="intro">
-          Read sample receipts and bank transactions, review their facts, and build an evidence report.
+          Read sample receipts and bank transactions, review their facts, and bring income and expenses into one preparation handover.
           You can also explore the guided expense demo. No account required.
         </p>
         <aside className="notice" aria-label="Project disclaimer">
