@@ -1,0 +1,10 @@
+{
+  "url": "https://taxprep-au-production.up.railway.app",
+  "provider": "Railway",
+  "projectId": "6978b59a-af18-4aa6-ae56-b92d7367a205",
+  "serviceId": "3d80d439-8a34-483a-9337-33626f3db358",
+  "environmentId": "04d8b884-6426-41b5-8253-c88a44c0cd35",
+  "initialDeploymentId": "87ca38d9-c44f-46fa-a3b3-2b5aa23af8fb",
+  "initialCommit": "e9e5fac6d469ee117b9796eaf306723401fecf61",
+  "portfolioPublished": false
+}
