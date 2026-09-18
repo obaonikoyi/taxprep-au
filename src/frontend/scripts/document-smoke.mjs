@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, writeFileSync } from 'node:fs';
 export async function verifyDocuments(context, base, artifacts) {
   const page = await context.newPage();
-  page.setDefaultTimeout(120_000);
+  page.setDefaultTimeout(20_000);
   const requests = [], pageErrors = [];
   page.on('request', request => requests.push({ url: request.url(), method: request.method() }));
   page.on('pageerror', error => pageErrors.push(error.message));
@@ -31,7 +31,7 @@ export async function verifyDocuments(context, base, artifacts) {
   }
   async function upload(file) {
     await page.getByLabel('Choose documents', { exact: true }).setInputFiles(file);
-    await page.waitForFunction(() => !document.querySelector('input[type=file]')?.disabled);
+    await page.waitForFunction(() => !document.querySelector('input[type=file]')?.disabled, undefined, { timeout: 120_000 });
   }
   async function inspect(card, type, expectedFacts) {
     await card.getByRole('button', { name: 'Review extracted facts', exact: true }).click();
@@ -42,9 +42,9 @@ export async function verifyDocuments(context, base, artifacts) {
   try {
     await setup();
     await button('Try sample documents').click();
-    await page.locator('.evidence-card').nth(1).waitFor();
+    await page.locator('.evidence-card').nth(1).waitFor({ timeout: 120_000 });
     await button('Try sample documents').waitFor({ state: 'visible' });
-    await page.waitForFunction(() => !document.querySelector('input[type=file]')?.disabled);
+    await page.waitForFunction(() => !document.querySelector('input[type=file]')?.disabled, undefined, { timeout: 120_000 });
     assert.equal(await page.locator('.evidence-card').count(), 2);
     const receipt = page.locator('.evidence-card').nth(1), bank = page.locator('.evidence-card').nth(0);
     await inspect(receipt, 'PDF OCR', expected);
@@ -119,7 +119,9 @@ export async function verifyDocuments(context, base, artifacts) {
     writeFileSync(artifacts + 'document-evaluation.json', JSON.stringify(result, null, 2));
     return result;
   } catch (error) {
-    writeFileSync(artifacts + 'document-evaluation.json', JSON.stringify({ passed: false, evaluation, pageErrors, error: String(error) }, null, 2));
+    const failure = { passed: false, evaluation, pageErrors, error: String(error), visibleText: (await page.locator('body').innerText()).slice(-14000) };
+    console.error(JSON.stringify(failure));
+    writeFileSync(artifacts + 'document-evaluation.json', JSON.stringify(failure, null, 2));
     await page.screenshot({ path: artifacts + 'documents-failure.png', fullPage: true });
     throw error;
   } finally { await page.close(); }
