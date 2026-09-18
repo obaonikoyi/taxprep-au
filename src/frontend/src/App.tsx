@@ -16,16 +16,26 @@ function App() {
       </header>
 
       <section className="hero" aria-labelledby="page-title">
-        <p className="eyebrow">Australian tax preparation assistant</p>
-        <h1 id="page-title">Tax preparation, explained simply.</h1>
+        <p className="eyebrow">Australian expense preparation demo</p>
+        <h1 id="page-title">Organise expenses. See what needs checking.</h1>
         <p className="intro">
-          Answer a short series of questions, identify preparation items and see
-          what still needs attention before using myTax or speaking with an agent.
+          Turn sample spending into an expense summary, record work-use details
+          and download a checklist of evidence still needed. No account required.
         </p>
         <aside className="notice" aria-label="Project disclaimer">
-          <strong>Preparation only.</strong> TaxPrep AU does not provide tax
-          advice or lodge tax returns.
+          <strong>Try it with fictional data.</strong> This demo organises expenses;
+          it does not approve deductions, estimate refunds or lodge tax returns.
         </aside>
+        <details className="quick-start">
+          <summary>Try one useful task: a phone expense</summary>
+          <ol>
+            <li>Scroll to <strong>Review your transactions</strong> and choose <strong>Try sample CSV</strong>.</li>
+            <li>Select <strong>Sunrise Mobile Services</strong>, choose <strong>Phone service</strong> and click <strong>Review selected spending</strong>.</li>
+            <li>Enter <strong>40%</strong> work use, choose <strong>Not reimbursed</strong> and <strong>Evidence missing</strong>, then save the expense.</li>
+            <li>See the <strong>$18 work portion</strong> and evidence checklist. Download the report or save progress to return later.</li>
+          </ol>
+          <p>The $18 is an organising calculation, not an approved tax deduction.</p>
+        </details>
       </section>
 
       <GuidedDemo />

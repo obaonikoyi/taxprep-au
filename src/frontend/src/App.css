@@ -218,3 +218,7 @@ button:focus-visible, .table-scroll:focus-visible { outline: 3px solid #bd800a; 
 .saved-progress .progress-message { margin: 16px 0 0; }
 .saved-progress button:disabled { opacity: .55; cursor: default; }
 .saved-progress .field-error { color: #972626; }
+.quick-start { margin-top: 1.5rem; padding: 1rem 1.25rem; border: 1px solid var(--border, #c6d8d0); border-radius: 12px; }
+.quick-start summary { cursor: pointer; font-weight: 700; }
+.quick-start li { margin: .75rem 0; line-height: 1.6; }
+.quick-start p { font-size: .9rem; }

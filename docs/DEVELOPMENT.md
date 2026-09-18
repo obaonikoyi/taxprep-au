@@ -100,6 +100,8 @@ See [Milestone 4](MILESTONE_4_IMPORT_API_TESTS.md) for supported formats, bounds
 
 ## Real browser verification
 
+For the built production container and a standalone deployment, see [Milestone 9](MILESTONE_9_STANDALONE_DEMO.md). `npm run test:hosted` checks a running production app using `DEMO_URL` (defaults to `http://127.0.0.1:8080`), including CSV import, a phone expense, downloaded report, save/resume and mobile layout. It does not launch a server. Production CI builds and runs the actual Docker image before that check.
+
 After a Release backend build, run from `src/frontend`:
 
 ```powershell

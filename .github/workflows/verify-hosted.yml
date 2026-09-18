@@ -1,0 +1,50 @@
+name: Verify hosted demo
+on:
+  push:
+    branches: [main]
+    paths: [deployment.json]
+  pull_request:
+    branches: [main]
+    paths: [deployment.json]
+  workflow_dispatch:
+    inputs:
+      demo_url:
+        description: HTTPS URL of the standalone Railway demo
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: src/frontend/package-lock.json
+      - name: Install browser dependencies
+        working-directory: src/frontend
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Verify public demo
+        working-directory: src/frontend
+        env:
+          DEMO_URL: ${{ inputs.demo_url }}
+        run: |
+          node --input-type=module <<'JS'
+          import { readFileSync } from 'node:fs';
+          const u = new URL(process.env.DEMO_URL || JSON.parse(readFileSync('../../deployment.json', 'utf8')).url);
+          if (u.protocol !== 'https:' || !u.hostname.endsWith('.up.railway.app')) throw new Error('Expected the Railway demo HTTPS URL');
+          process.env.DEMO_URL = u.href;
+          await import('./scripts/hosted-smoke.mjs');
+          JS
+      - name: Upload hosted verification
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hosted-verification
+          path: test-results/hosted/
+          retention-days: 7

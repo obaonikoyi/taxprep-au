@@ -1,6 +1,6 @@
 # TaxPrep AU — Project Plan
 
-> **Implementation checkpoint — 17 September 2026:** Milestones 1–8 are implemented. [Milestone 8](MILESTONE_8_SAVE_RESUME.md) adds explicit browser save/resume, unfinished form snapshots, validated restoration and delete/conflict recovery. Next: publish a hosted portfolio demo. The original plan below remains the longer-term roadmap; server-side persistence and final tax calculations are future work.
+> **Implementation checkpoint — 18 September 2026:** Milestones 1–8 are implemented. [Milestone 9](MILESTONE_9_STANDALONE_DEMO.md) prepares a standalone hosted demo and verifies a complete visitor task. The owner's portfolio website stays unchanged until he decides the app is useful enough to showcase. Next: a bounded checklist for the visitor's own expenses and usability feedback. The original plan below remains the longer-term roadmap; server-side persistence and final tax calculations are future work.
 
 
 ## 1. Document Purpose

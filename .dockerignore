@@ -1,0 +1,13 @@
+.git
+.github
+**/node_modules
+**/bin
+**/obj
+**/dist
+**/.env
+**/.env.*
+**/*.user
+**/*.log
+test-results
+tests
+docs
