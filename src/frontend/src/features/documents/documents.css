@@ -58,3 +58,16 @@
 .source-facts dd { margin: 6px 0 0; font-size: .9rem; }
 .evidence-source h5 { font-size: .88rem; margin: 22px 0 8px; }
 @media(max-width:760px) { .source-facts { grid-template-columns: 1fr; } }
+.phone-assessment { border-top: 1px solid #dce7df; padding-top: 24px; margin-top: 24px; line-height: 1.65; }
+.phone-assessment h4 { font-size: 1.2rem; margin: 8px 0; }
+.assessment-result { padding: 22px; background: #edf4f0; border: 1px solid #b8cec0; border-radius: 12px; }
+.assessment-label { font-weight: 650; margin: 0 0 8px; }
+.assessment-amount { display: block; font-size: 2rem; }
+.assessment-gate { font-size: .9rem; color: #755018; margin-bottom: 0; }
+.assessment-findings { font-size: .88rem; padding-left: 22px; }
+.assessment-findings li { margin: 14px 0; }
+.assessment-findings a { display: inline-block; margin-right: 10px; }
+.assessment-sources { padding: 24px; margin-top: 26px; background: #f3f6f4; border-radius: 12px; font-size: .9rem; line-height: 1.7; }
+.assessment-sources summary { font-weight: 650; cursor: pointer; }
+.assessment-sources li { padding: 18px 0; }
+.assessment-sources code { overflow-wrap: anywhere; }

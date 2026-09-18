@@ -110,3 +110,7 @@ npm run test:e2e
 ```
 
 The script starts/stops its own API and Vite processes on 5087/5173 (stop your development servers first). It checks the guided expense interview, edits and partial totals, manual mobile entry, validation focus, real service interruption/retry and reset, plus real localStorage save/resume, new-tab restoration, two-tab conflicts, corrupt-copy recovery, and the CSV upload regression flow and selected spending → expense draft → API review → offline report. It checks renamed/reordered uploads, original versus adjusted amounts, unsupported rows, cancellation and the 50-row grouping limit. Desktop and 390px mobile widths are covered. The report checks verify the print action and browser print-event capability, real HTML download bytes, offline reopening without network requests, partial amounts and long notes. They also generate A4 PDFs from the downloaded HTML for inspection. It writes screenshots and a JSON report to ignored `test-results/browser/`. CI installs browser system dependencies and uploads these files alongside the API test report as a seven-day artifact.
+
+## Draft assessment verification
+
+`npm test` and `npm run build` first verify the three captured ATO source hashes and rule bindings. Assessment rules and evidence-continuity cases run in Vitest; the existing browser scripts now cover document → linked payment → draft phone assessment → source/versioned export, including overlap, partial reimbursement, duplicate and refund blockers. See [Milestone 11](MILESTONE_11_PHONE_ASSESSMENT.md) for the qualified-review gate.

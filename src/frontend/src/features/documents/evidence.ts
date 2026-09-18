@@ -1,4 +1,5 @@
 import Papa from 'papaparse'
+import type { PhoneAnswers } from '../assessment/phone'
 
 export const YEAR = '2025–26'
 export interface Facts { merchant: string; date: string; description: string; cents: number | null }
@@ -6,7 +7,7 @@ export interface Answers { purpose: string; reimbursed: '' | 'no' | 'yes' | 'uns
 export interface Evidence {
   id: string; documentId: string; fileName: string; location: string; kind: 'bank' | 'receipt'
   original: Facts; facts: Facts; raw: string; credit: boolean; confirmed: boolean
-  excluded: string; answers: Answers
+  excluded: string; answers: Answers; phone?: PhoneAnswers
 }
 export interface EvidenceLink { bank: string; receipt: string }
 export const emptyAnswers = (): Answers => ({ purpose: '', reimbursed: '', workUse: '', basis: '' })
@@ -79,6 +80,20 @@ export function validLink(link: EvidenceLink, records: Evidence[]) {
   return !!bank && !!receipt && bank.kind === 'bank' && receipt.kind === 'receipt' && bank.confirmed && receipt.confirmed && potentialMatch(bank, receipt) && inYear(receipt.facts.date) && bank.facts.date === receipt.facts.date && merchantKey(bank.facts.merchant).length > 2 && merchantKey(bank.facts.merchant) === merchantKey(receipt.facts.merchant)
 }
 export const pairKey = (a: string, b: string) => [a, b].sort().join('|')
+// Carry answers across a receipt/bank link, but never choose between conflicting answers.
+function mergeFields<T extends object>(a: T, b: T): T | null {
+  const merged = { ...a }
+  for (const key of Object.keys(b) as (keyof T)[]) {
+    if (a[key] && b[key] && a[key] !== b[key]) return null
+    if (b[key]) merged[key] = b[key]
+  }
+  return merged
+}
+export function mergeWorkDetails(bank: Evidence, receipt: Evidence): Pick<Evidence, 'answers' | 'phone'> | null {
+  const answers = mergeFields(bank.answers, receipt.answers)
+  const phone = bank.phone && receipt.phone ? mergeFields(bank.phone, receipt.phone) : receipt.phone ?? bank.phone
+  return !answers || phone === null ? null : { answers, ...(phone ? { phone: { ...phone } } : {}) }
+}
 export function reconcile(records: Evidence[], links: EvidenceLink[], separate: string[]) {
   const validLinks = links.filter(link => validLink(link, records))
   const bankIds = new Set(validLinks.map(link => link.bank))

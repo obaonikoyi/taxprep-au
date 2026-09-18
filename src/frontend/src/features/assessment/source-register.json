@@ -1,0 +1,74 @@
+{
+  "version": "ato-phone-2025-26.2026-09-18",
+  "sources": [
+    {
+      "id": "phone",
+      "title": "Mobile phone, mobile internet and other devices",
+      "url": "https://www.ato.gov.au/individuals-and-families/income-deductions-offsets-and-records/deductions-you-can-claim/work-related-deductions/tools-computers-and-items-you-use-for-work/mobile-phone-mobile-internet-and-other-devices",
+      "qc": "72140",
+      "snapshot": "sources/phone.txt",
+      "sha256": "a1ecdbc3ce40e60a847ec1bd81393139a33395f199572645b51e00848b04b69f",
+      "updatedAt": "2026-06-08",
+      "retrievedAt": "2026-09-18",
+      "applicableYears": [
+        "2025-26"
+      ],
+      "applicability": "Provisional mapping from the captured guidance and 2025\u201326 examples; qualified review pending.",
+      "reviewStatus": "pending",
+      "reviewedAt": null,
+      "reviewer": null,
+      "conflict": false,
+      "conditions": [
+        "scope",
+        "work-duty",
+        "payer",
+        "reimbursement",
+        "apportionment",
+        "records",
+        "overlap"
+      ]
+    },
+    {
+      "id": "fixed",
+      "title": "Fixed rate method",
+      "url": "https://www.ato.gov.au/individuals-and-families/income-deductions-offsets-and-records/deductions-you-can-claim/work-related-deductions/working-from-home-expenses/fixed-rate-method",
+      "qc": "72159",
+      "snapshot": "sources/fixed.txt",
+      "sha256": "5c29157c7239c74c41d29ae48a1331ad434f5a3014283539e9c56357bb17e25f",
+      "updatedAt": "2026-06-08",
+      "retrievedAt": "2026-09-18",
+      "applicableYears": [
+        "2025-26"
+      ],
+      "applicability": "Provisional mapping from the captured guidance and 2025\u201326 examples; qualified review pending.",
+      "reviewStatus": "pending",
+      "reviewedAt": null,
+      "reviewer": null,
+      "conflict": false,
+      "conditions": [
+        "overlap"
+      ]
+    },
+    {
+      "id": "records",
+      "title": "Records you need to keep",
+      "url": "https://www.ato.gov.au/individuals-and-families/income-deductions-offsets-and-records/records-you-need-to-keep",
+      "qc": "72206",
+      "snapshot": "sources/records.txt",
+      "sha256": "0307dd8da7a2d4f152c4f6a8120a4ca7fa4413b5511f99430ba2fe990f8dc519",
+      "updatedAt": "2026-06-08",
+      "retrievedAt": "2026-09-18",
+      "applicableYears": [
+        "2025-26"
+      ],
+      "applicability": "Provisional mapping from the captured guidance and 2025\u201326 examples; qualified review pending.",
+      "reviewStatus": "pending",
+      "reviewedAt": null,
+      "reviewer": null,
+      "conflict": false,
+      "conditions": [
+        "records"
+      ]
+    }
+  ]
+}

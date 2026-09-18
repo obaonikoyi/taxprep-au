@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import { money, pairKey, reconcile, validLink, YEAR, type Evidence, type EvidenceLink } from './evidence'
+import { mergeWorkDetails, money, pairKey, reconcile, validLink, YEAR, type Evidence, type EvidenceLink } from './evidence'
 import { fingerprint, MAX_FILES, readDocument, validateDocument, type DocumentSource } from './documentReader'
 import { downloadEvidenceReport, evidenceReport } from './evidenceReport'
 import { sampleDocuments } from './sampleDocuments'
 import EvidenceCard from './EvidenceCard'
+import { emptyPhoneAnswers, phoneCredits } from '../assessment/phone'
+import SourceRegister from '../assessment/SourceRegister'
 import './documents.css'
 interface Job { id: string; name: string; status: string; failed: boolean; file?: File }
 export default function DocumentWorkspace() {
@@ -63,6 +65,8 @@ export default function DocumentWorkspace() {
     if (upload.current) upload.current.value = ''
   }
   function change(item: Evidence) {
+    const previous = records.find(record => record.id === item.id)
+    if (item.phone && previous && ['merchant', 'date', 'description'].some(key => previous.facts[key as keyof typeof previous.facts] !== item.facts[key as keyof typeof item.facts])) item = { ...item, phone: emptyPhoneAnswers() }
     const updated = records.map(record => record.id === item.id ? item : record)
     setRecords(updated)
     setLinks(current => current.filter(link => validLink(link, updated)))
@@ -93,11 +97,13 @@ export default function DocumentWorkspace() {
         const a = records.find(record => record.id === aId)!; const b = records.find(record => record.id === bId)!
         const bank = a.kind === 'bank' ? a : b; const receipt = a.kind === 'receipt' ? a : b
         const alreadyLinked = links.some(link => [aId, bId].includes(link.bank) || [aId, bId].includes(link.receipt))
-        const canLink = a.kind !== b.kind && validLink({ bank: bank.id, receipt: receipt.id }, records) && !alreadyLinked
-        return <div key={pairKey(aId, bId)}><p><strong>{a.facts.merchant} · {money(a.facts.cents!)}</strong><br />{a.fileName} ({a.location}) + {b.fileName} ({b.location})</p><div className="button-row">{a.kind !== b.kind && <button className="primary-button" disabled={!canLink || busy} onClick={() => setLinks(current => [...current, { bank: bank.id, receipt: receipt.id }])}>Link as one purchase</button>}<button className="secondary-button" disabled={!a.confirmed || !b.confirmed || busy} onClick={() => setSeparate(current => [...current, pairKey(aId, bId)])}>These are different purchases</button></div><p className="field-help">Review each item below before deciding. Linking requires matching confirmed merchant, date and amount. Keep valid source dates unchanged; differing payment dates remain unresolved in this version. For a duplicate, exclude it with a reason. Separate an existing link before changing its match.</p></div>
+        const details = mergeWorkDetails(bank, receipt)
+        const canLink = a.kind !== b.kind && validLink({ bank: bank.id, receipt: receipt.id }, records) && !alreadyLinked && details !== null
+        return <div key={pairKey(aId, bId)}><p><strong>{a.facts.merchant} · {money(a.facts.cents!)}</strong><br />{a.fileName} ({a.location}) + {b.fileName} ({b.location})</p><div className="button-row">{a.kind !== b.kind && <button className="primary-button" disabled={!canLink || busy} onClick={() => { if (details) change({ ...receipt, ...details }); setLinks(current => [...current, { bank: bank.id, receipt: receipt.id }]) }}>Link as one purchase</button>}<button className="secondary-button" disabled={!a.confirmed || !b.confirmed || busy} onClick={() => setSeparate(current => [...current, pairKey(aId, bId)])}>These are different purchases</button></div>{!details && <p className="document-warning">Work answers differ between these items. Review and align those answers before linking; neither answer is silently discarded.</p>}<p className="field-help">Review each item below before deciding. Linking requires matching confirmed merchant, date and amount. Keep valid source dates unchanged; differing payment dates remain unresolved in this version. For a duplicate, exclude it with a reason. Separate an existing link before changing its match.</p></div>
       })}</section>}
-      <div className="evidence-list">{groups.map(group => <EvidenceCard key={group.item.id} item={group.item} evidence={group.evidence} sources={sources} questions={group.unresolved} counted={group.counted} onChange={change} onUnlink={() => setLinks(current => current.filter(link => link.receipt !== group.item.id))} />)}</div>
-      <div className="evidence-export"><h3>Take the facts and questions with you</h3><p>The report includes source references, original and corrected values, unresolved questions and excluded items. It does not approve deductions or calculate a tax return.</p><button className="primary-button" disabled={busy} onClick={() => { try { downloadEvidenceReport(evidenceReport(records, links, separate, sources, 'Employee phone-service example', jobs.filter(job => job.failed).map(job => `${job.name}: ${job.status}`))); setMessage('Evidence report downloaded. Your source files are not embedded; keep them separately.') } catch { setMessage('Download failed. Please try again.') } }}>Download evidence report</button></div></>}
+      <div className="evidence-list">{groups.map(group => <EvidenceCard key={group.item.id} item={group.item} evidence={group.evidence} sources={sources} credits={phoneCredits(group.item, records)} questions={group.unresolved} counted={group.counted} onChange={change} onUnlink={() => setLinks(current => current.filter(link => link.receipt !== group.item.id))} />)}</div>
+      <SourceRegister />
+      <div className="evidence-export"><h3>Take the facts and assessment with you</h3><p>The report includes source references, corrections, draft phone assessments and unanswered questions. Tax rules await qualified review; no deduction is approved and no tax return is calculated.</p><button className="primary-button" disabled={busy} onClick={() => { try { downloadEvidenceReport(evidenceReport(records, links, separate, sources, 'Employee phone-service example', jobs.filter(job => job.failed).map(job => `${job.name}: ${job.status}`))); setMessage('Evidence report downloaded. Your source files are not embedded; keep them separately.') } catch { setMessage('Download failed. Please try again.') } }}>Download evidence report</button></div></>}
     </>}
     <p role="status" className="document-message">{message}</p>
   </section>

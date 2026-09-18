@@ -1,8 +1,10 @@
+> Milestone 11 engineering: [draft phone assessment and review pack](MILESTONE_11_PHONE_ASSESSMENT.md). Qualified tax review remains pending; issue #21 stays open.
+
 > Milestone 10 implementation: [document intake and evidence matching](MILESTONE_10_DOCUMENT_INTAKE.md). The document workspace processes fictional files locally, reconciles evidence and exports unresolved questions. The broader product direction remains authoritative.
 
 # TaxPrep AU — Project Plan
 
-> **Implementation checkpoint — 18 September 2026:** Milestones 1–10 are implemented. The [current product direction](PRODUCT_DIRECTION.md) supersedes the organiser-only ambition in the original plan below: build toward document-led, explainable tax preparation for supported cases. The next milestone adds explainable deduction assessment, with reviewed tax rules and the operating model developed alongside it. The hosted app remains a fictional-data demo; its limitations still apply. The portfolio website stays unchanged until Obadiah decides the user outcome is useful enough to showcase.
+> **Implementation checkpoint — 18 September 2026:** Milestones 1–10 are implemented. The [current product direction](PRODUCT_DIRECTION.md) supersedes the organiser-only ambition in the original plan below: build toward document-led, explainable tax preparation for supported cases. Milestone 11 now implements a draft phone assessment and source register; professional rule/example review and the operating model remain outstanding. The hosted app remains a fictional-data demo; its limitations still apply. The portfolio website stays unchanged until Obadiah decides the user outcome is useful enough to showcase.
 
 
 ## 1. Document Purpose
