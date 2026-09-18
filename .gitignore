@@ -17,3 +17,5 @@ coverage/
 TestResults/
 
 test-results/
+
+src/frontend/public/document-engine/

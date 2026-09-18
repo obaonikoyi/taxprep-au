@@ -1,8 +1,12 @@
+import { lazy, Suspense, useState } from 'react'
 import './App.css'
 import ApiStatus from './components/ApiStatus'
 import GuidedDemo from './features/demo/GuidedDemo'
 
+const DocumentWorkspace = lazy(() => import('./features/documents/DocumentWorkspace'))
+
 function App() {
+  const [documents, setDocuments] = useState(false)
   // A React component is a function that returns the page structure it owns.
   // App is currently the top-level component, so it arranges the whole screen.
   return (
@@ -19,8 +23,8 @@ function App() {
         <p className="eyebrow">Australian expense preparation demo</p>
         <h1 id="page-title">Organise expenses. See what needs checking.</h1>
         <p className="intro">
-          Turn sample spending into an expense summary, record work-use details
-          and download a checklist of evidence still needed. No account required.
+          Read sample receipts and bank transactions, review their facts, and build an evidence report.
+          You can also explore the guided expense demo. No account required.
         </p>
         <aside className="notice" aria-label="Project disclaimer">
           <strong>Try it with fictional data.</strong> This demo organises expenses;
@@ -36,9 +40,10 @@ function App() {
           </ol>
           <p>The $18 is an organising calculation, not an approved tax deduction.</p>
         </details>
+        <div className="workspace-switch"><button className="primary-button" onClick={() => setDocuments(value => !value)}>{documents ? 'Return to expense demo' : 'Try document intake'}</button></div>
       </section>
 
-      <GuidedDemo />
+      {documents ? <Suspense fallback={<p role="status">Loading document workspace…</p>}><DocumentWorkspace /></Suspense> : <GuidedDemo />}
 
       <details className="developer-details">
         <summary>Developer connection check</summary>

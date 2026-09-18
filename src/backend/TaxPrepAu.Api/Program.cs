@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.StaticFiles;
 using TaxPrepAu.Api.Transactions;
 using TaxPrepAu.Api.Expenses;
 
@@ -20,7 +21,13 @@ if (!app.Environment.IsDevelopment() && !builder.Configuration.GetValue<bool>("H
     app.UseHttpsRedirection();
 
 app.UseDefaultFiles();
-app.UseStaticFiles();
+// The browser document engine is hosted here; documents never enter this API.
+var assetTypes = new FileExtensionContentTypeProvider();
+foreach (var extension in new[] { ".bcmap", ".pfb", ".icc", ".gz" })
+    assetTypes.Mappings[extension] = "application/octet-stream";
+assetTypes.Mappings[".wasm"] = "application/wasm";
+assetTypes.Mappings[".mjs"] = "text/javascript";
+app.UseStaticFiles(new StaticFileOptions { ContentTypeProvider = assetTypes });
 
 app.MapGet("/api/health", () => Results.Ok(new
 {

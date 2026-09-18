@@ -9,6 +9,12 @@ TaxPrep AU is an Australian tax-preparation assistant that helps individuals org
 
 **Product direction, clarified 18 September 2026:** The long-term goal is document-led tax preparation: upload receipts and transactions, resolve gaps, assess supported deductions using applicable-year guidance, and prepare for lodgment or accountant review. The current demo is the foundation. [Product direction and staged roadmap](docs/PRODUCT_DIRECTION.md) supersedes organiser-only descriptions of the future goal below; it does not imply those capabilities already exist.
 
+## Document intake preview
+
+Choose **Try document intake** in the [standalone demo](https://taxprep-au-production.up.railway.app). Select **2025–26** and the employee example, then **Try sample documents**. Review both extracted records and link them to count a $45 payment once with two sources. Add the missing work details and download the evidence report.
+
+Milestone 10 adds real browser OCR for bounded fictional CSV/PDF/PNG/JPG inputs, original-source review, duplicate/refund/date flags, corrections and export. Documents stay in the tab; no external AI account is required. Refreshing clears the document session. This prepares evidence, not approved deductions or a full tax return. See [implementation and limits](docs/MILESTONE_10_DOCUMENT_INTAKE.md).
+
 ## The Problem
 
 Preparing an Australian individual tax return can be confusing and time-consuming. Information may be spread across bank statements, receipts, invoices, notes, and multiple jobs. People may struggle to:

@@ -8,7 +8,7 @@ TaxPrep AU should turn a person's receipts, bank transactions and relevant tax d
 
 The intended benefit is less manual tax work and less dependence on separately hiring an expensive tax agent for a straightforward return. A useful accountant handover is also a supported outcome. The project should eventually help people claim legitimate entitlements and avoid unsupported claims. It cannot promise universal correctness, guaranteed savings or the largest refund.
 
-The existing app is a foundation: CSV validation, three expense categories, work-use calculations, source references, reports, browser save/resume, tests and hosting. Receipt scanning, AI analysis, a maintained tax-rule collection, personalised deduction conclusions, full-return calculations and ATO integration are not implemented yet.
+The existing app is a foundation: CSV validation, three expense categories, work-use calculations, source references, reports, browser save/resume, tests and hosting. Milestone 10 adds browser OCR, bounded document intake, evidence matching, correction and export. Generative AI analysis, a maintained tax-rule collection, personalised deduction conclusions, full-return calculations and ATO integration are not implemented yet. See [Milestone 10](MILESTONE_10_DOCUMENT_INTAKE.md) for the local processing design and its limitations.
 
 ## Eight intended user cases
 
