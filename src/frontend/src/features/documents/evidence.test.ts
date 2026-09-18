@@ -61,6 +61,11 @@ describe('evidence reconciliation', () => {
     expect(result.groups).toHaveLength(2); expect(result.groups.every(group => !group.counted)).toBe(true)
     expect(result.groups[0].unresolved.join(' ')).toContain('possible refund')
   })
+  it('flags nearby payment dates without merging different source dates', () => {
+    const bank = record('bank', 'bank'), receipt = { ...record('receipt'), facts: { ...facts, date: '2025-08-15' } }
+    expect(reconcile([bank, receipt], [], []).conflicts).toHaveLength(1)
+    expect(validLink({ bank: bank.id, receipt: receipt.id }, [bank, receipt])).toBe(false)
+  })
   it('exports original and corrected values, missing facts, errors and safe HTML', () => {
     const a = { ...record('receipt'), raw: '<script>steal()</script>', facts: { ...facts, description: '<img src=x onerror=steal()>' } }
     const html = evidenceReport([a], [], [], [], 'Employee', ['Failed unreadable.pdf'])

@@ -102,6 +102,7 @@ export function questions(item: Evidence, evidence: Evidence[], conflict: boolea
   if (item.credit) result.push('Credit or possible refund: establish its purpose and relationship to spending. Not automatically offset.')
   if (conflict) result.push('Possible duplicate or matching evidence: resolve before this spending is counted.')
   if (!evidence.some(source => source.kind === 'receipt')) result.push('Receipt or itemised evidence is missing.')
+  if (item.answers.reimbursed === 'yes') result.push('Record the reimbursed amount before assessing any work-related claim; gross spending is unchanged here.')
   if (!item.answers.purpose.trim()) result.push('Explain the work purpose.')
   if (!item.answers.reimbursed || item.answers.reimbursed === 'unsure') result.push('Confirm whether the employer reimbursed any of this cost.')
   if (!/^\d{1,3}(?:\.\d{1,2})?$/.test(item.answers.workUse) || Number(item.answers.workUse) > 100) result.push('Record a work-use percentage from 0 to 100.')

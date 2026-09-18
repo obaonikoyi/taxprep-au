@@ -40,7 +40,7 @@ export async function readDocument(file: File, id: string, signal: AbortSignal, 
     const { data } = await worker.recognize(canvas)
     check()
     previews.push(canvas.toDataURL('image/jpeg', 0.85))
-    records.push(makeEvidence(id, file.name, `Page ${page}`, extractFacts(data.text, data.confidence), 'receipt', data.text))
+    records.push(makeEvidence(id, file.name, `Page ${page}`, extractFacts(data.text, data.confidence), 'receipt', data.text, /\b(?:refund|credit note|credit memo)\b/i.test(data.text)))
   }
   // Cancellation also rejects work waiting on a failed/stalled engine download.
   let abortListener: (() => void) | undefined
