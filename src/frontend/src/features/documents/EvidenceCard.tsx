@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { factError, money, parseMoney, type Evidence, type Facts } from './evidence'
 import type { DocumentSource } from './documentReader'
+import PhoneAssessment from '../assessment/PhoneAssessment'
 
 function FactList({ facts }: { facts: Facts }) {
   return <dl className="source-facts"><div><dt>Merchant</dt><dd>{facts.merchant || 'Unresolved'}</dd></div><div><dt>Date</dt><dd>{facts.date || 'Unresolved'}</dd></div><div><dt>Description</dt><dd>{facts.description || 'Unresolved'}</dd></div><div><dt>Amount</dt><dd>{facts.cents === null ? 'Unresolved' : money(facts.cents)}</dd></div></dl>
 }
-interface Props { item: Evidence; evidence: Evidence[]; sources: DocumentSource[]; questions: string[]; counted: boolean; onChange: (item: Evidence) => void; onUnlink: () => void }
-export default function EvidenceCard({ item, evidence, sources, questions, counted, onChange, onUnlink }: Props) {
+interface Props { item: Evidence; evidence: Evidence[]; sources: DocumentSource[]; credits: Evidence[]; questions: string[]; counted: boolean; onChange: (item: Evidence) => void; onUnlink: () => void }
+export default function EvidenceCard({ item, evidence, sources, credits, questions, counted, onChange, onUnlink }: Props) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(item.facts)
   const [amount, setAmount] = useState(item.facts.cents === null ? '' : (item.facts.cents / 100).toFixed(2))
@@ -44,6 +45,7 @@ export default function EvidenceCard({ item, evidence, sources, questions, count
       <label>Work use (%)<input inputMode="decimal" maxLength={6} value={item.answers.workUse} onChange={event => onChange({ ...item, answers: { ...item.answers, workUse: event.target.value } })} /></label>
       <label>Work-use evidence or basis<input maxLength={500} value={item.answers.basis} onChange={event => onChange({ ...item, answers: { ...item.answers, basis: event.target.value } })} /></label>
     </div></details>}
+    {!item.excluded && !item.credit && <PhoneAssessment item={item} evidence={evidence} credits={credits} counted={counted} onChange={onChange} />}
     <div className="evidence-actions">{evidence.length > 1 && <button className="text-button" onClick={onUnlink}>Separate linked evidence</button>}
     {item.excluded ? <button className="text-button" onClick={() => onChange({ ...item, excluded: '' })}>Restore item for review</button> : <details><summary>Exclude this item</summary><label>Reason for exclusion<input value={reason} maxLength={200} onChange={event => setReason(event.target.value)} /></label><button className="text-button" disabled={!reason.trim()} onClick={() => { onChange({ ...item, excluded: reason.trim() }); setEditing(false) }}>Record exclusion</button></details>}</div>
   </article>
