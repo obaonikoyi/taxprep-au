@@ -52,3 +52,9 @@
 .document-message { margin-top: 20px; line-height: 1.6; }
 .workspace-switch { margin: 26px 0 0; }
 @media(max-width:760px) { .workspace-heading { flex-direction: column; gap: 0; } .evidence-form, .evidence-overview { grid-template-columns: 1fr; } .workspace-setup,.document-drop,.evidence-card,.match-panel,.evidence-export { padding: 20px; } .evidence-form > p,.evidence-form > .button-row { grid-column: auto; } .document-inventory ul { padding-left: 18px; } }
+
+.source-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 20px; padding: 16px; background: #f4f8f5; border-radius: 8px; }
+.source-facts dt { font-size: .8rem; color: #4b6557; }
+.source-facts dd { margin: 6px 0 0; font-size: .9rem; }
+.evidence-source h5 { font-size: .88rem; margin: 22px 0 8px; }
+@media(max-width:760px) { .source-facts { grid-template-columns: 1fr; } }

@@ -1,7 +1,10 @@
 import { useState } from 'react'
-import { factError, money, parseMoney, type Evidence } from './evidence'
+import { factError, money, parseMoney, type Evidence, type Facts } from './evidence'
 import type { DocumentSource } from './documentReader'
 
+function FactList({ facts }: { facts: Facts }) {
+  return <dl className="source-facts"><div><dt>Merchant</dt><dd>{facts.merchant || 'Unresolved'}</dd></div><div><dt>Date</dt><dd>{facts.date || 'Unresolved'}</dd></div><div><dt>Description</dt><dd>{facts.description || 'Unresolved'}</dd></div><div><dt>Amount</dt><dd>{facts.cents === null ? 'Unresolved' : money(facts.cents)}</dd></div></dl>
+}
 interface Props { item: Evidence; evidence: Evidence[]; sources: DocumentSource[]; questions: string[]; counted: boolean; onChange: (item: Evidence) => void; onUnlink: () => void }
 export default function EvidenceCard({ item, evidence, sources, questions, counted, onChange, onUnlink }: Props) {
   const [editing, setEditing] = useState(false)
@@ -23,7 +26,7 @@ export default function EvidenceCard({ item, evidence, sources, questions, count
     <details className="evidence-source"><summary>View {evidence.length} source{evidence.length > 1 ? 's' : ''} and original facts</summary>{evidence.map(record => {
       const source = sources.find(source => source.id === record.documentId)
       const page = Number(record.location.replace('Page ', ''))
-      return <div key={record.id}><h4>{record.fileName} · {record.location}</h4>{source?.previews[page - 1] && <img src={source.previews[page - 1]} alt={`${record.fileName}, ${record.location}`} />}<dl><dt>Original extracted facts</dt><dd>{JSON.stringify(record.original)}</dd><dt>Current reviewed facts</dt><dd>{JSON.stringify(record.facts)}</dd></dl><pre>{record.raw || 'No readable text was found.'}</pre></div>
+      return <div key={record.id}><h4>{record.fileName} · {record.location}</h4>{source?.previews[page - 1] && <img src={source.previews[page - 1]} alt={`${record.fileName}, ${record.location}`} />}<h5>Original extracted facts</h5><FactList facts={record.original} /><h5>Current reviewed facts</h5><FactList facts={record.facts} /><pre>{record.raw || 'No readable text was found.'}</pre></div>
     })}</details>
     {questions.length > 0 && <ul className="evidence-questions">{questions.map(question => <li key={question}>{question}</li>)}</ul>}
     {editing ? <form className="evidence-form" onSubmit={event => { event.preventDefault(); confirm() }}>
