@@ -68,3 +68,12 @@ No practitioner has been contacted or represented as having approved this work. 
 Local lint, TypeScript production build and frontend tests cover the rules, source-health failures, monetary bounds, evidence continuity and escaped reports. Existing GitHub gates also run the API tests, actual browser OCR journey and production-container journey.
 
 The browser scenario carries a work answer from bank to receipt, produces $18, changes to fixed-rate overlap ($0), changes to partial reimbursement (unresolved), introduces duplicate evidence (assessment paused), and introduces a possible refund (unresolved). It checks report contents, source links, mobile overflow and that the document journey makes no upload or external AI request. These tests verify software behavior, not professional tax correctness. Release-specific CI, screenshots and deployment records are recorded after verification.
+
+## Publication record
+
+- Feature merged in [PR #23](https://github.com/obaonikoyi/taxprep-au/pull/23), commit `9bbe20dd6b4c6a87328a31ac57018637af914d70`.
+- [Feature CI](https://github.com/obaonikoyi/taxprep-au/actions/runs/35404110488) passed all three jobs: frontend, backend/browser and production container. There are 159 passing frontend tests; existing API tests also passed.
+- Production browser evidence: $18 illustration, $0 separate amount under fixed-rate overlap, partial reimbursement and same-supplier credit unresolved, duplicate evidence blocks the assessment, report contains rule/source versions, no document upload/external model requests, no mobile overflow or page errors. Desktop and mobile screenshots inspected.
+- Railway deployment `c044253e-083e-4a89-a596-4550edfa3a28` reported SUCCESS for the feature commit on 18 September 2026. [Standalone demo](https://taxprep-au-production.up.railway.app).
+- This publication update changes `deployment.json` to run the existing hosted verification against the public URL. The publication PR records the actual live-browser result and artifact.
+- [Issue #21](https://github.com/obaonikoyi/taxprep-au/issues/21) remains open for qualified review and approved outcomes. The public result remains a fictional draft; the portfolio website is unchanged.
