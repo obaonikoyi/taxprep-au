@@ -7,7 +7,7 @@ export async function verifyProgress(browser, artifacts, { stopApi, startApi }) 
   const openPage = async () => {
     const page = await context.newPage();
     page.on('pageerror', error => errors.push(error.message));
-    await page.goto('http://127.0.0.1:5173'); await page.getByRole('button', { name: 'Expense demo', exact: true }).click();
+    await page.goto('http://127.0.0.1:5173'); await page.getByRole('button', { name: 'Guided example', exact: true }).click();
     return page;
   };
   const button = (page, name) => page.getByRole('button', { name, exact: true });
@@ -26,7 +26,7 @@ export async function verifyProgress(browser, artifacts, { stopApi, startApi }) 
     const savedDraft = JSON.parse(await rawCopy(page));
     assert.equal(savedDraft.data.step.fields.amount, '12.');
     assert.equal(savedDraft.data.expenses.length, 0);
-    await page.reload(); await page.getByRole('button', { name: 'Expense demo', exact: true }).click(); await button(page, 'Resume saved progress').waitFor();
+    await page.reload(); await page.getByRole('button', { name: 'Guided example', exact: true }).click(); await button(page, 'Resume saved progress').waitFor();
     assert.equal(reviewRequests, 0);
     await button(page, 'Resume saved progress').click();
     assert.equal(await page.getByLabel('Amount paid (AUD)', { exact: true }).inputValue(), '12.');
@@ -47,7 +47,7 @@ export async function verifyProgress(browser, artifacts, { stopApi, startApi }) 
     await page.locator('.saved-progress').screenshot({ path: artifacts + '/progress-saved-desktop.png' });
 
     await stopApi(); apiStopped = true;
-    await page.reload(); await page.getByRole('button', { name: 'Expense demo', exact: true }).click(); await button(page, 'Resume saved progress').click();
+    await page.reload(); await page.getByRole('button', { name: 'Guided example', exact: true }).click(); await button(page, 'Resume saved progress').click();
     await page.locator('.review-error').waitFor();
     assert.equal(await button(page, 'Download report (HTML)').count(), 0);
     await page.getByText('$100.00 × 40% work use', { exact: true }).waitFor();
@@ -85,7 +85,7 @@ export async function verifyProgress(browser, artifacts, { stopApi, startApi }) 
     await page.getByLabel('Supporting evidence', { exact: true }).selectOption('missing');
     await button(page, 'Save expense').click();
     await page.getByText('$18.00 recorded work portion', { exact: true }).waitFor();
-    await button(page, 'Save progress').click(); await page.reload(); await page.getByRole('button', { name: 'Expense demo', exact: true }).click();
+    await button(page, 'Save progress').click(); await page.reload(); await page.getByRole('button', { name: 'Guided example', exact: true }).click();
     await button(page, 'Resume saved progress').click();
     await page.getByText('$18.00 recorded work portion', { exact: true }).waitFor();
     await button(page, 'Try sample CSV').click();
@@ -114,7 +114,7 @@ export async function verifyProgress(browser, artifacts, { stopApi, startApi }) 
     assert.equal(await button(other, 'Save progress').isDisabled(), true);
     await other.close();
 
-    await page.evaluate(key => localStorage.setItem(key, '{broken'), key); await page.reload(); await page.getByRole('button', { name: 'Expense demo', exact: true }).click();
+    await page.evaluate(key => localStorage.setItem(key, '{broken'), key); await page.reload(); await page.getByRole('button', { name: 'Guided example', exact: true }).click();
     await page.locator('.saved-progress').getByRole('alert').waitFor();
     assert.equal(await button(page, 'Save progress').isDisabled(), true);
     assert.equal(await rawCopy(page), '{broken');

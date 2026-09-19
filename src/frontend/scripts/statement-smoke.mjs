@@ -7,7 +7,7 @@ export async function verifyStatements(context,base,artifacts){
  const totals=()=>page.locator('.statement-metrics strong').allTextContents();
  const upload=async(name)=>{const f=JSON.parse(readFileSync(new URL(`../../../sample-data/statements/${name}.json`,import.meta.url),'utf8'));await page.getByLabel('Choose bank statement',{exact:true}).setInputFiles({name:name+'.pdf',mimeType:'application/pdf',buffer:Buffer.from(f.pdfBase64,'base64')});await page.getByRole('status').filter({hasText:/transactions read|^$/}).first().waitFor();};
  try{
-  await page.goto(base.href);await button('Statement analysis').click();await page.getByRole('heading',{name:'Your statements, made clear.',exact:true}).waitFor();
+  await page.goto(base.href);await button('Bank spending').click();await page.getByRole('heading',{name:'Your statements, made clear.',exact:true}).waitFor();
   await page.screenshot({path:artifacts+'statement-landing-desktop.png',fullPage:true});
   await button('Try example statement').click();await page.getByRole('status').filter({hasText:'33 transactions read.'}).waitFor();
   assert.deepEqual(await totals(),['$12,649.00','$5,016.75','$7,632.25','33']);
@@ -41,7 +41,7 @@ export async function verifyStatements(context,base,artifacts){
   assert.ok((await page.locator('.statement-period').innerText()).includes('balance check unavailable'));
   await button('Clear statement').click();assert.equal(await page.locator('.statement-metrics').count(),0);
   await button('Try example statement').click();await page.getByRole('status').filter({hasText:'33 transactions read.'}).waitFor();
-  await page.reload();await button('Statement analysis').click();await page.getByRole('heading',{name:'Your statements, made clear.',exact:true}).waitFor();assert.equal(await page.locator('.statement-metrics').count(),0);
+  await page.reload();await button('Bank spending').click();await page.getByRole('heading',{name:'Your statements, made clear.',exact:true}).waitFor();assert.equal(await page.locator('.statement-metrics').count(),0);
   assert.deepEqual(await page.evaluate(()=>Object.keys(localStorage).filter(k=>/statement/i.test(k))),[]);
   assert.deepEqual(errors,[]);assert.ok(requests.every(r=>r.method==='GET'));assert.ok(requests.every(r=>r.url.startsWith(base.origin)||r.url.startsWith('blob:')||r.url.startsWith('data:')));
   const result={passed:true,syntheticOnly:true,rows:33,creditsAud:12649,debitsAud:5016.75,netAud:7632.25,balancesMatch:true,correctionsPreserveAmounts:true,dateFilter:true,mismatchPreservesSession:true,emptyStatement:true,csv:true,clearAndRefresh:true,offlineExport:true,mobileOverflow:false,documentUploads:0,modelRequests:0,pageErrors:errors};writeFileSync(artifacts+'statement-evaluation.json',JSON.stringify(result,null,2));return result;

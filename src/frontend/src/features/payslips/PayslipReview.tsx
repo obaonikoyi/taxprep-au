@@ -1,14 +1,34 @@
-import { fields, labels, confirmationIssues, type Payslip, type PayFacts } from './payslip'
+import { labels, confirmationIssues, type Payslip, type PayFacts, type PayField } from './payslip'
+
+const groups: { title: string; fields: PayField[] }[] = [
+  { title: 'Employer and dates', fields: ['employer', 'periodStart', 'periodEnd', 'payDate'] },
+  { title: 'Amounts for this pay period', fields: ['gross', 'withheld', 'deductions', 'net', 'super'] },
+]
+const help: Record<PayField, string> = {
+  employer: 'The employer named on this payslip.', periodStart: 'First day covered by this payslip.', periodEnd: 'Last day covered by this payslip.', payDate: 'The date this payment was made.',
+  gross: 'Your pay before tax and other deductions.', withheld: 'May be called PAYG or income tax.', deductions: 'Other amounts taken out. Enter 0 if there are none.', net: 'The amount paid to you after deductions.', super: 'Optional. Leave blank if it is not shown.',
+}
 export default function PayslipReview({ slip, all, onChange, onConfirm, onClose, onRemove }: { slip: Payslip; all: Payslip[]; onChange: (facts: PayFacts) => void; onConfirm: () => void; onClose: () => void; onRemove: () => void }) {
   const issues = confirmationIssues(slip, all)
-  return <section className="statement-panel pay-review" aria-label="Review payslip"><div className="panel-heading"><div><p className="eyebrow">Check against your payslip</p><h3>{slip.name}</h3></div><button className="text-button" onClick={onClose}>Close review</button></div>
-    <p>Enter current-period amounts only. Changing a field removes this record from the charts until you confirm it again. Missing withholding is not zero.</p>
+  return <section className="statement-panel pay-review" aria-label="Review payslip">
+    <div className="panel-heading"><div><p className="eyebrow">{slip.hash ? 'Read from your PDF' : 'Enter from your payslip'}</p><h3>{slip.facts.employer || 'New payslip'}</h3><p className="pay-source-name">{slip.name}</p></div><button className="text-button" onClick={onClose}>Close review</button></div>
+    <p className="pay-review-tip">Use the amounts for <strong>this pay period</strong>, not the year-to-date (YTD) totals.</p>
+    {slip.hash && <details className="statement-help pay-source"><summary>Compare with text from your PDF</summary><pre>{slip.text}</pre><details><summary>File reference</summary><p>Page 1 · SHA-256 {slip.hash}</p></details></details>}
     <form onSubmit={event => { event.preventDefault(); if (!issues.length) onConfirm() }}>
-      <div className="pay-fields">{fields.map(key => <label key={key}>{labels[key]}{key === 'super' ? ' (AUD, optional)' : ['gross', 'withheld', 'deductions', 'net'].includes(key) ? ' (AUD)' : ''}<input aria-label={labels[key] + (key === 'super' ? ' (AUD, optional)' : ['gross', 'withheld', 'deductions', 'net'].includes(key) ? ' (AUD)' : '')} value={slip.facts[key]} maxLength={key === 'employer' ? 120 : 30} type={key === 'periodStart' || key === 'periodEnd' || key === 'payDate' ? 'date' : 'text'} inputMode={['gross', 'withheld', 'deductions', 'net', 'super'].includes(key) ? 'decimal' : undefined} onChange={event => onChange({ ...slip.facts, [key]: event.target.value })} />{slip.original[key] !== slip.facts[key] && <small>Original: {slip.original[key] || 'not supplied'}</small>}</label>)}</div>
-      <p className="chart-note">Other deductions: enter 0 only if there are none. Super: leave blank if unknown. Reimbursements, salary packaging or adjustments may need a different layout; do not change figures just to make them balance.</p>
-      {issues.length > 0 && <div className="pay-checks"><strong>Before confirming</strong><ul>{issues.map(issue => <li key={issue}>{issue}</li>)}</ul></div>}
-      <div className="pay-actions"><button className="primary-button" disabled={issues.length > 0 || slip.confirmed} type="submit">{slip.confirmed ? 'Figures confirmed' : 'Confirm these figures'}</button><button className="text-button" type="button" onClick={onRemove}>Remove this payslip</button></div>
+      {groups.map(group => <fieldset key={group.title}><legend>{group.title}</legend><div className="pay-fields">{group.fields.map(key => {
+        const monetary = ['gross', 'withheld', 'deductions', 'net', 'super'].includes(key)
+        const label = labels[key] + (key === 'super' ? ' (AUD, optional)' : monetary ? ' (AUD)' : '')
+        return <div className={`pay-field pay-field-${key}`} key={key}>
+          <label htmlFor={`pay-${key}`}>{label}</label>
+          <input id={`pay-${key}`} aria-describedby={`pay-help-${key}`} value={slip.facts[key]} maxLength={key === 'employer' ? 120 : 30} type={['periodStart', 'periodEnd', 'payDate'].includes(key) ? 'date' : 'text'} inputMode={monetary ? 'decimal' : undefined} onChange={event => onChange({ ...slip.facts, [key]: event.target.value })} />
+          <small id={`pay-help-${key}`}>{help[key]}</small>
+          {slip.hash && slip.original[key] !== slip.facts[key] && <small className="pay-original">Read from PDF: {slip.original[key] || 'not shown'}</small>}
+        </div>
+      })}</div></fieldset>)}
+      {issues.length > 0 && <details className="pay-checks" open={!!slip.hash}><summary>{issues.length} thing{issues.length === 1 ? '' : 's'} to check before continuing</summary><ul>{issues.map(issue => <li key={issue}>{issue}</li>)}</ul></details>}
+      <div className="pay-confirm-row"><button className="primary-button" disabled={issues.length > 0 || slip.confirmed} type="submit">{slip.confirmed ? 'Figures confirmed' : 'Confirm and continue'}</button><p>{slip.confirmed ? 'Editing a figure will remove this payslip from totals until you confirm it again.' : issues.length ? 'Complete the required figures above to continue.' : 'By continuing, you confirm these match your payslip.'}</p></div>
+      <details className="statement-help"><summary>My figures don’t add up — what should I do?</summary><p>Check that you used current-period amounts and included other deductions. Salary packaging, reimbursements or adjustments may need a different pay layout. Keep the true figures; don’t change them just to make the check pass.</p></details>
+      <button className="text-button pay-clear" type="button" onClick={onRemove}>Remove this payslip</button>
     </form>
-    <details className="statement-help"><summary>Original extracted text and source</summary><p>{slip.hash ? `Page 1 · File SHA-256 ${slip.hash}` : 'Manual entry; no source document attached.'}</p><pre>{slip.text || 'Check these figures against your own original payslip.'}</pre></details>
   </section>
 }

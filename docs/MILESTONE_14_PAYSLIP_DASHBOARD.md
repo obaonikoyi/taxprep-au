@@ -7,10 +7,20 @@ Tracking: [#35](https://github.com/obaonikoyi/taxprep-au/issues/35). The new def
 1. Choose **Try example payslips**. Six fictional PDFs are read by the real PDF.js pipeline. Only shipped example records are pre-reviewed.
 2. See $10,450 gross earnings, $8,815 take-home pay and $1,555 withheld (14.9% of gross). These are invented amounts, not tax-table examples.
 3. Super totals $1,110 from 5 of 6 records. Missing super is unknown; the graph breaks where a group is incomplete.
-4. Filter by employer/year and switch monthly or payday charts. Open the exact data table for accessible numeric values.
-5. Review a record and edit a field. It immediately leaves totals until valid figures are confirmed again. Original values remain visible.
-6. Download the pay report, or clear the example and upload supported PDFs / enter figures manually. User records always begin unconfirmed.
+4. In **View summary**, filter by employer/year, choose **Pay / Tax / Super** and switch monthly or payday charts. Open the exact data table for accessible numeric values.
+5. Open **Check figures**, choose a payslip card and edit a field. It immediately leaves totals until valid figures are confirmed again. Original values remain visible.
+6. Download the pay report, or choose **Use my own payslips** and upload supported PDFs / enter figures manually. User records always begin unconfirmed.
 7. Export before refreshing or switching workspaces: the session is not persisted.
+
+## Usability update — issue #40
+
+The dashboard uses three reversible steps: **Add payslips → Check figures → View summary**. Moving between these steps preserves tab-local history. Switching to another tool still clears it. Tool navigation explains each area: **My pay**, **Bank spending**, **Tax documents**, **Guided example**.
+
+Own uploads/manual entries open directly in review. Each confirmation selects the next unchecked payslip or opens the summary. Cards replace the wide review table on mobile. Forms group dates and amounts, explain payroll terms and keep source text available near the fields. Required empty fields remain empty. Invalid figures cannot be confirmed.
+
+Summary cards are absent until there are checked records in the selected view, avoiding misleading zero totals. Pending records have a direct review action. The summary explains gross − withholding − other deductions = net. A single larger chart switches between Pay / Tax / Super, with currency axes, readable dates, an exact-value table and explicit missing-super gaps. Filter combinations with no records offer a reset. Clear history requires confirmation; example-to-own-data reset is immediate because the example is fictional.
+
+This is an interface improvement to Milestone 14, not the start of Milestone 15. No calculation or input-compatibility expansion. Browser verification covers each step, automatic batch progression, history retention between steps, corrections, filters, export, clearing and narrow mobile screens. Release evidence is tracked in [issue #40](https://github.com/obaonikoyi/taxprep-au/issues/40).
 
 ## Supported input contract
 

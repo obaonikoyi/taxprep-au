@@ -17,13 +17,20 @@ function App() {
       <header className="site-header">
         <a className="brand" href="/" aria-label="TaxPrep AU home">
           <span className="brand-mark" aria-hidden="true">T</span>
-          <span>TaxPrep AU</span>
+          <span>TaxPrep AU<small>Understand your pay. Prepare for tax time.</small></span>
         </a>
         <span className="status">Portfolio prototype</span>
       </header>
 
-      <nav className="workspace-nav" aria-label="TaxPrep workspaces"><button aria-pressed={view==='payslips'} onClick={()=>setView('payslips')}>Payslip dashboard</button><button aria-pressed={view==='statements'} onClick={()=>setView('statements')}>Statement analysis</button><button aria-pressed={view==='documents'} onClick={()=>setView('documents')}>Try document intake</button><button aria-pressed={view==='expenses'} onClick={()=>setView('expenses')}>Expense demo</button></nav>
-      {(view === 'expenses' || view === 'documents') && <section className="hero" aria-labelledby="page-title">
+      <nav className="workspace-nav" aria-label="TaxPrep tools">
+        {([
+          ['payslips', 'My pay', 'Understand your payslips'],
+          ['statements', 'Bank spending', 'Explore bank transactions'],
+          ['documents', 'Tax documents', 'Review receipts and records'],
+          ['expenses', 'Guided example', 'Try tax preparation'],
+        ] as const).map(([key, title, description]) => <button key={key} aria-label={title} aria-pressed={view === key} onClick={() => setView(key)}><strong>{title}</strong><small>{description}</small></button>)}
+      </nav>
+      {(view === 'expenses' || view === 'documents') && <section className="hero compact-hero" aria-labelledby="page-title">
         <p className="eyebrow">Australian expense preparation demo</p>
         <h1 id="page-title">Organise expenses. See what needs checking.</h1>
         <p className="intro">
@@ -34,7 +41,7 @@ function App() {
           <strong>Try it with fictional data.</strong> This demo organises expenses;
           it does not approve deductions, estimate refunds or lodge tax returns.
         </aside>
-        <details className="quick-start">
+        {view === 'expenses' && <details className="quick-start">
           <summary>Try one useful task: a phone expense</summary>
           <ol>
             <li>Scroll to <strong>Review your transactions</strong> and choose <strong>Try sample CSV</strong>.</li>
@@ -43,7 +50,7 @@ function App() {
             <li>See the <strong>$18 work portion</strong> and evidence checklist. Download the report or save progress to return later.</li>
           </ol>
           <p>The $18 is an organising calculation, not an approved tax deduction.</p>
-        </details>
+        </details>}
       </section>}
 
       {view === 'payslips' ? <Suspense key="payslips" fallback={<p role="status">Loading payslip dashboard…</p>}><PayslipDashboard /></Suspense> : view === 'statements' ? <Suspense key="statements" fallback={<p role="status">Loading statement analyser…</p>}><StatementDashboard /></Suspense> : view === 'documents' ? <Suspense key="documents" fallback={<p role="status">Loading document workspace…</p>}><DocumentWorkspace /></Suspense> : <GuidedDemo />}
