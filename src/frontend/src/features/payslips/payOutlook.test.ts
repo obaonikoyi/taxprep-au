@@ -22,6 +22,9 @@ describe('pay outlook calendar arithmetic', () => {
     expect(payDatesThroughYearEnd('2027-01-31', '2026–27', 'monthly')).toEqual([
       '2027-01-31', '2027-02-28', '2027-03-31', '2027-04-30', '2027-05-31', '2027-06-30',
     ])
+    expect(payDatesThroughYearEnd('2026-12-31', '2026–27', 'monthly').slice(0, 3)).toEqual([
+      '2026-12-31', '2027-01-31', '2027-02-28',
+    ])
   })
 
   it('stops recurring dates at 30 June across weekly and four-weekly schedules', () => {
