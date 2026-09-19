@@ -14,9 +14,11 @@ type Props = {
 export default function PayOutlook({ allSlips, slips, year, employer, employerName }: Props) {
   const scopedAll = useMemo(() => {
     if (year === 'all' || employer === 'all') return []
-    return allSlips.filter(s => /^\d{4}-\d{2}-\d{2}$/.test(s.facts.payDate)
-      && financialYear(s.facts.payDate) === year
-      && employerKey(s.facts.employer) === employer)
+    return allSlips.filter(s => {
+      if (employerKey(s.facts.employer) !== employer) return false
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(s.facts.payDate)) return true
+      return financialYear(s.facts.payDate) === year
+    })
   }, [allSlips, year, employer])
 
   const pending = scopedAll.filter(s => !s.confirmed || confirmationIssues(s, allSlips).length)
@@ -41,7 +43,7 @@ export default function PayOutlook({ allSlips, slips, year, employer, employerNa
     setHistoryComplete(false)
     setIssues([])
     setResult(null)
-  }, [scopeKey])
+  }, [scopeKey, latest?.facts.gross, latest?.facts.withheld])
 
   function invalidate() {
     setIssues([])
