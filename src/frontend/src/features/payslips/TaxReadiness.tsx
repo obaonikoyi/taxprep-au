@@ -7,6 +7,7 @@ import {
   taxReadinessQuestions,
   taxReadinessSources,
   TAX_READINESS_REVIEW,
+  TAX_READINESS_SOURCE_VERSION,
   type ReadinessAnswer,
   type TaxReadinessAnswers,
   type TaxReadinessResult,
@@ -139,7 +140,7 @@ export default function TaxReadiness({ allSlips, year, employerFilter }: Props) 
 
       <details className="statement-help tax-readiness-sources">
         <summary>Why these questions?</summary>
-        <p>These ATO links are terminology references only. TaxPrep is not applying a withholding schedule or annual-tax rule in this readiness step.</p>
+        <p>These ATO links are terminology references only (reference version {TAX_READINESS_SOURCE_VERSION}). TaxPrep is not applying a withholding schedule or annual-tax rule in this readiness step.</p>
         <ul>{taxReadinessSources.map(source => <li key={source.id}><a href={source.url} target="_blank" rel="noreferrer">{source.title}</a></li>)}</ul>
       </details>
     </>}
