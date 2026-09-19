@@ -18,7 +18,7 @@ The first automatic reader supports the **PAYSLIP SUMMARY v1** layout demonstrat
 
 Files are processed in the browser tab with no model requests, uploads or saved pay history. Refreshing or switching workspaces clears the session; download a report first. Example and personal records cannot be mixed. Super means **recorded on the payslip**, not confirmed fund receipt. This release checks arithmetic and data consistency, not award compliance, employer remittances, final tax or refund entitlement. TaxPrep does not lodge returns.
 
-Next: [Milestone 15 — tax outlook](https://github.com/obaonikoyi/taxprep-au/issues/36) and [Milestone 16 — year-end preparation](https://github.com/obaonikoyi/taxprep-au/issues/37). Existing tax-rule review remains open in #21 and #28.
+In development: [Milestone 15A — pay outlook](docs/MILESTONE_15A_PAY_OUTLOOK.md) adds an optional one-employer scenario after the checked pay summary. It asks for the next payday, regular frequency and editable normal pay, then shows entered gross, 20% less and 20% more through 30 June. Future withholding is carried forward only for the unchanged entered-pay pattern; changed-gross rows deliberately say **Not estimated**. This is pay arithmetic, not final tax or a refund estimate.\n\nNext after 15A: the reviewed tax-profile/withholding work in [Milestone 15](https://github.com/obaonikoyi/taxprep-au/issues/36) and [Milestone 16 — year-end preparation](https://github.com/obaonikoyi/taxprep-au/issues/37). Existing tax-rule review remains open in #21 and #28.
 
 ## Statement analysis
 

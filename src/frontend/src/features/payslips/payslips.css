@@ -143,3 +143,47 @@
 .payslip-dashboard .pay-metrics > div:first-child small { color: #52685e; }
 .payslip-dashboard .pay-metrics > div:nth-child(2) { background: #173f35; color: #fff; border-color: #173f35; }
 .payslip-dashboard .pay-metrics > div:nth-child(2) small { color: #d0e4d7; }
+
+
+/* Milestone 15A: explicit one-employer pay outlook. */
+.pay-outlook { margin-top: 30px; padding: 26px; border: 1px solid #cfded3; border-radius: 16px; background: #fbfdfb; }
+.pay-outlook-heading, .pay-outlook-result-heading { display: flex; align-items: start; justify-content: space-between; gap: 20px; }
+.pay-outlook-heading h3, .pay-outlook-result-heading h4 { margin: 0 0 8px; }
+.pay-outlook-heading p:not(.eyebrow), .pay-outlook-result-heading p { margin: 0; max-width: 680px; color: var(--pay-muted); font-size: .86rem; line-height: 1.65; }
+.pay-outlook-status { flex-shrink: 0; display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border-radius: 999px; background: #e4f2e8; color: #245a3d; font-size: .72rem; font-weight: 700; }
+.pay-outlook-status.warning { background: #fff0d8; color: #7a531c; }
+.pay-outlook-blocked { margin-top: 20px; padding: 18px; border: 1px solid #ead8b8; border-radius: 10px; background: #fff8eb; }
+.pay-outlook-blocked p { margin: 7px 0 0; color: #6c5a37; font-size: .84rem; line-height: 1.65; }
+.pay-outlook-recorded { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 22px 0; }
+.pay-outlook-recorded > div { display: grid; gap: 6px; padding: 16px; border: 1px solid #dae5dc; border-radius: 10px; background: #fff; }
+.pay-outlook-recorded span { color: var(--pay-muted); font-size: .74rem; }
+.pay-outlook-recorded strong { font-size: 1rem; overflow-wrap: anywhere; }
+.pay-outlook-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin: 22px 0; }
+.pay-outlook-form label { display: grid; gap: 7px; font-size: .82rem; font-weight: 650; }
+.pay-outlook-form input, .pay-outlook-form select { width: 100%; }
+.pay-outlook-form small { color: var(--pay-muted); font-size: .74rem; font-weight: 400; line-height: 1.55; }
+.pay-outlook-checks { display: grid; gap: 12px; padding: 18px; margin-bottom: 18px; border-radius: 10px; background: #eef5ef; }
+.pay-outlook-checks label { display: flex; align-items: start; gap: 10px; font-size: .82rem; line-height: 1.55; }
+.pay-outlook-checks input[type=checkbox] { min-height: 0; width: 18px; height: 18px; margin-top: 2px; flex-shrink: 0; }
+.pay-outlook-checks p { margin: 0; color: var(--pay-muted); font-size: .76rem; line-height: 1.6; }
+.pay-outlook-errors { margin: 0 0 18px; padding: 16px 18px; border: 1px solid #e6c7b7; border-radius: 10px; background: #fff5ef; color: #6f3e2b; font-size: .82rem; line-height: 1.6; }
+.pay-outlook-errors ul { margin-bottom: 0; padding-left: 20px; }
+.pay-outlook-results { margin-top: 26px; padding-top: 24px; border-top: 1px solid #d8e4db; }
+.pay-outlook-table-wrap { width: 100%; overflow-x: auto; margin: 18px 0; }
+.pay-outlook-table { width: 100%; min-width: 860px; border-collapse: collapse; font-size: .79rem; }
+.pay-outlook-table th, .pay-outlook-table td { padding: 11px 10px; border-bottom: 1px solid #dde6df; text-align: left; vertical-align: top; font-variant-numeric: tabular-nums; }
+.pay-outlook-table th[scope=row] { min-width: 130px; color: #264e3f; }
+.pay-outlook-note { padding: 14px 16px; border-radius: 9px; background: #fff7e8; color: #66512e; font-size: .8rem; line-height: 1.65; }
+.pay-outlook-dates { margin: 16px 0; }
+.pay-outlook-dates ol { columns: 3; padding-left: 22px; font-size: .8rem; }
+.pay-outlook-dates li { padding: 3px 0; break-inside: avoid; }
+@media (max-width: 700px) {
+  .pay-outlook { padding: 20px; }
+  .pay-outlook-heading, .pay-outlook-result-heading { flex-direction: column; }
+  .pay-outlook-recorded, .pay-outlook-form { grid-template-columns: 1fr; }
+  .pay-outlook-dates ol { columns: 2; }
+}
+@media (max-width: 420px) {
+  .pay-outlook { padding: 17px; }
+  .pay-outlook-dates ol { columns: 1; }
+}

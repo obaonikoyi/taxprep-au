@@ -141,7 +141,7 @@ export default function PayslipDashboard() {
     {stage === 'summary' && <>
       <div className="pay-section-heading"><div><p className="eyebrow">Step 3 of 3</p><h2 ref={stageHeading} tabIndex={-1}>Your pay at a glance</h2><p>Totals from the payslips you checked. This is your pay history, not a tax refund estimate.</p></div><button className="primary-button" onClick={download}>Download pay report</button></div>
       {pending.length > 0 && <aside className="pay-pending"><div><strong>{pending.length} payslip{pending.length === 1 ? '' : 's'} still to check</strong><p>They are not included in these totals yet.</p></div><button className="secondary-button" onClick={() => openReview(pending[0].id)}>Check remaining payslips</button></aside>}
-      <PayslipSummary slips={confirmed} years={years} employers={employers} year={year} employer={employer} grouping={grouping}
+      <PayslipSummary allSlips={slips} slips={confirmed} years={years} employers={employers} year={year} employer={employer} grouping={grouping}
         onYear={setYear} onEmployer={setEmployer} onGrouping={setGrouping}
         onResetFilters={() => { setYear('all'); setEmployer('all') }} />
       <div className="pay-summary-actions"><button className="secondary-button" onClick={() => { setStage('add'); setError(''); setMessage(''); focusStart() }}>Add another payslip</button><button className="text-button" onClick={() => openReview(pending[0]?.id ?? slips[0].id)}>Review or edit payslips</button></div>
