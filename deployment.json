@@ -8,9 +8,9 @@
   "initialCommit": "e9e5fac6d469ee117b9796eaf306723401fecf61",
   "portfolioPublished": false,
   "latestMilestone": 15,
-  "latestFeatureCommit": "3fbbe515e29132f5dcc5d713499f312f10b6e056",
-  "latestFeatureDeploymentId": "cd1067bf-d7ef-4e97-a48f-0f34b6de1d96",
-  "latestMilestoneStatus": "Milestone 15A pay outlook published with explicit one-employer scenarios, calendar pay dates and source-linked export; final tax and refund estimates remain out of scope",
+  "latestFeatureCommit": "26bc12f9d12793d4d7edbfe9f173cc787788d37f",
+  "latestFeatureDeploymentId": "50f28ea3-a868-45ae-aba6-ad2d4132808c",
+  "latestMilestoneStatus": "Milestone 15B-1 tax readiness published with whole-year/all-employer coverage, explicit profile blockers and a permanently locked tax result pending qualified review",
   "qualifiedTaxReview": "pending",
-  "latestMilestonePhase": "15A"
+  "latestMilestonePhase": "15B-1"
 }

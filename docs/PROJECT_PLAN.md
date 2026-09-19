@@ -20,14 +20,14 @@ The first useful result should require no account: try fictional payslips or ent
 | 13: statement analysis | Local bank PDF/CSV analysis, categorisation and report | Published; [scope](MILESTONE_13_STATEMENT_ANALYSIS.md) |
 | **14: payslip dashboard** | Confirm pay facts, explore earnings/withholding/super charts, review changes and export | Published: [#35](https://github.com/obaonikoyi/taxprep-au/issues/35), [implementation and publication record](MILESTONE_14_PAYSLIP_DASHBOARD.md) |
 | **15A: pay outlook** | Explore explicit one-employer regular-pay scenarios through 30 June without treating withholding as final tax | Published: [#43](https://github.com/obaonikoyi/taxprep-au/issues/43), [scope and publication record](MILESTONE_15A_PAY_OUTLOOK.md) |
-| **15B-1: tax readiness** | Collect whole-year profile facts, missing information and unsupported circumstances without producing a tax estimate | In progress: [#46](https://github.com/obaonikoyi/taxprep-au/issues/46), [scope](MILESTONE_15B1_TAX_READINESS.md) |
+| **15B-1: tax readiness** | Collect whole-year profile facts, missing information and unsupported circumstances without producing a tax estimate | Published: [#46](https://github.com/obaonikoyi/taxprep-au/issues/46), [scope and publication record](MILESTONE_15B1_TAX_READINESS.md) |
 | **15B-2: reviewed withholding/tax outlook** | Apply reviewed declaration-aware PAYG schedules and a bounded annual-tax position | Planned under [#36](https://github.com/obaonikoyi/taxprep-au/issues/36); depends on qualified review in #28 |
 | **16: year-end preparation** | Reconcile pay history, annual statements and expense evidence into one handover | Planned: [#37](https://github.com/obaonikoyi/taxprep-au/issues/37) |
 | Later: coverage and integrations | Broader payroll layouts, reviewed tax treatments, supported AI extraction and authorised integrations | Separate scopes after measured user trials and appropriate operating arrangements |
 
 Annual-income statement extraction [#30](https://github.com/obaonikoyi/taxprep-au/issues/30) remains a deferred input format for reconciliation. An annual statement and the payslips it summarises must not be counted as separate income.
 
-Milestone 14 usability follow-up [#40](https://github.com/obaonikoyi/taxprep-au/issues/40) simplified the Add → Check → Summary journey. Milestone 15A is now published; Milestone 15B remains gated by reviewed tax rules.
+Milestone 14 usability follow-up [#40](https://github.com/obaonikoyi/taxprep-au/issues/40) simplified the Add → Check → Summary journey. Milestones 15A and 15B-1 are published; applying reviewed PAYG/annual-tax rules remains gated by #28.
 
 ## Eight user cases
 

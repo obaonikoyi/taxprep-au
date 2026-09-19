@@ -2,7 +2,7 @@
 
 TaxPrep helps Australian workers understand their pay, track withholding and recorded super, and prepare for tax time with fewer surprises. The longer-term goal remains supported self-preparation or a useful accountant handover.
 
-> **Published: Milestone 15A — pay outlook.** Checked pay history can now feed explicit one-employer earnings scenarios through 30 June. Final tax, refund estimates, broad payroll compatibility and personalised tax conclusions remain later work.
+> **Published: Milestone 15B-1 — tax readiness.** Checked pay history can now feed a whole-year readiness check that explains missing and unsupported circumstances. Tax/refund results remain locked pending qualified review.
 
 **[Try the standalone app](https://taxprep-au-production.up.railway.app)** — no account needed. Choose **Try example payslips** for six fictional PDFs and an immediate pay-history dashboard. The owner's portfolio website has not been changed.
 
@@ -20,7 +20,7 @@ Files are processed in the browser tab with no model requests, uploads or saved 
 
 Published: [Milestone 15A — pay outlook](docs/MILESTONE_15A_PAY_OUTLOOK.md) adds an optional one-employer scenario after the checked pay summary. It asks for the next payday, regular frequency and editable normal pay, then shows entered gross, 20% less and 20% more through 30 June. Future withholding is carried forward only for the unchanged entered-pay pattern; changed-gross rows deliberately say **Not estimated**. This is pay arithmetic, not final tax or a refund estimate.
 
-In development: [Milestone 15B-1 — tax readiness](docs/MILESTONE_15B1_TAX_READINESS.md) collects whole-year profile facts, missing information and unsupported circumstances while keeping every tax/refund result locked. The reviewed withholding/annual-tax work remains under [Milestone 15](https://github.com/obaonikoyi/taxprep-au/issues/36) after #28; [Milestone 16 — year-end preparation](https://github.com/obaonikoyi/taxprep-au/issues/37) follows later. Existing tax-rule review remains open in #21 and #28.
+Published: [Milestone 15B-1 — tax readiness](docs/MILESTONE_15B1_TAX_READINESS.md) collects whole-year profile facts, missing information and unsupported circumstances while keeping every tax/refund result locked. The reviewed withholding/annual-tax work remains under [Milestone 15](https://github.com/obaonikoyi/taxprep-au/issues/36) after #28; [Milestone 16 — year-end preparation](https://github.com/obaonikoyi/taxprep-au/issues/37) follows later. Existing tax-rule review remains open in #21 and #28.
 
 ## Statement analysis
 
@@ -214,7 +214,7 @@ Select validated CSV spending, choose a category and complete its expense draft.
 
 The standalone deployment packages the website and API together. Follow the on-page **Try one useful task: a phone expense** walkthrough to turn a sample bill into a report. See [Milestone 9](docs/MILESTONE_9_STANDALONE_DEMO.md) for hosting, verification and the readiness decision. Publication is separate from adding the project to Obadiah's portfolio website.
 
-Current: [Milestone 15A — pay outlook](docs/MILESTONE_15A_PAY_OUTLOOK.md) builds on [Milestone 14 — payslip dashboard](docs/MILESTONE_14_PAYSLIP_DASHBOARD.md), alongside [Milestone 13 — statement analysis](docs/MILESTONE_13_STATEMENT_ANALYSIS.md). The separate document workspace retains [Milestone 12B — fictional tax position](docs/MILESTONE_12B_TAX_POSITION.md), [Milestone 12A — income and preparation handover](docs/MILESTONE_12A_PREPARATION_HANDOVER.md), and the [draft phone assessment](docs/MILESTONE_11_PHONE_ASSESSMENT.md). [Issue #21](https://github.com/obaonikoyi/taxprep-au/issues/21) and [issue #28](https://github.com/obaonikoyi/taxprep-au/issues/28) remain open for qualified review. Statement analysis does not feed bank deposits or flagged spending into the tax calculation.
+Current: [Milestone 15B-1 — tax readiness](docs/MILESTONE_15B1_TAX_READINESS.md) builds on [Milestone 15A — pay outlook](docs/MILESTONE_15A_PAY_OUTLOOK.md) and [Milestone 14 — payslip dashboard](docs/MILESTONE_14_PAYSLIP_DASHBOARD.md), alongside [Milestone 13 — statement analysis](docs/MILESTONE_13_STATEMENT_ANALYSIS.md). The separate document workspace retains [Milestone 12B — fictional tax position](docs/MILESTONE_12B_TAX_POSITION.md), [Milestone 12A — income and preparation handover](docs/MILESTONE_12A_PREPARATION_HANDOVER.md), and the [draft phone assessment](docs/MILESTONE_11_PHONE_ASSESSMENT.md). [Issue #21](https://github.com/obaonikoyi/taxprep-au/issues/21) and [issue #28](https://github.com/obaonikoyi/taxprep-au/issues/28) remain open for qualified review. Statement analysis does not feed bank deposits or flagged spending into the tax calculation.
 
 - [Milestone 5 issue #7](https://github.com/obaonikoyi/taxprep-au/issues/7)
 - [Milestone 9 standalone demo](docs/MILESTONE_9_STANDALONE_DEMO.md) / [issue #15](https://github.com/obaonikoyi/taxprep-au/issues/15)

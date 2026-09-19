@@ -1,6 +1,6 @@
 # Milestone 15B-1 — tax-profile readiness without a tax estimate
 
-Status: implementation in progress for [issue #46](https://github.com/obaonikoyi/taxprep-au/issues/46), as the safe first part of [Milestone 15](https://github.com/obaonikoyi/taxprep-au/issues/36).
+Status: published for [issue #46](https://github.com/obaonikoyi/taxprep-au/issues/46), as the safe first part of [Milestone 15](https://github.com/obaonikoyi/taxprep-au/issues/36).
 
 Milestone 15A can project explicit one-employer gross-pay scenarios. 15B-1 changes scope deliberately: tax readiness is a **whole-person, one-financial-year** check. It collects facts that a later reviewed calculation would need, while keeping every refund, debt and final-tax result locked.
 
@@ -120,4 +120,6 @@ Automated coverage includes:
 - desktop/mobile screenshots and overflow checks; and
 - existing request monitoring for no document upload/model request.
 
-Feature CI, Railway publication and hosted verification are recorded here after the PR passes. The portfolio website remains unchanged.
+Feature [PR #47](https://github.com/obaonikoyi/taxprep-au/pull/47) merged as `26bc12f9d12793d4d7edbfe9f173cc787788d37f`. Feature CI run `35422385886` passed frontend lint/tests/build, backend/API plus browser smoke, and the production-container browser journey.
+
+Railway feature deployment `50f28ea3-a868-45ae-aba6-ad2d4132808c` succeeded for that exact merge commit at the existing standalone URL. The publication PR records the deployment and must pass the dedicated public hosted-browser workflow before merge. Final hosted evidence is recorded in issue #46. The portfolio website remains unchanged.
