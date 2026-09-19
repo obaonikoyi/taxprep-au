@@ -1,6 +1,7 @@
 import { confirmationIssues, employerKey, financialYear, type Payslip } from './payslip'
 
 export const TAX_READINESS_VERSION = 'tax-readiness-profile-v1'
+export const TAX_READINESS_SOURCE_VERSION = 'ato-profile-terminology.2026-09-19'
 export const TAX_READINESS_REVIEW = 'Profile readiness only. Reliable tax/refund calculations remain locked while qualified rule, source and rounding review in issue #28 is pending.'
 
 export type ReadinessAnswer = '' | 'yes' | 'no' | 'unsure'
@@ -46,7 +47,7 @@ export const taxReadinessSources = [
   {
     id: 'loans',
     title: 'ATO — Study and training loan repayment thresholds and rates',
-    url: 'https://www.ato.gov.au/tax-rates-and-codes/study-and-training-support-loans-compulsory-repayments',
+    url: 'https://www.ato.gov.au/api/public/content/0-541493af-7e73-48ae-aeac-89705f225c09',
   },
 ] as const
 
