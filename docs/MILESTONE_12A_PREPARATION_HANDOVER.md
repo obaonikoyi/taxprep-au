@@ -47,3 +47,12 @@ The unit cases verify money parsing, zero/blank, partial totals, year/finality/o
 Software tests validate the implementation, not tax correctness. Milestone 12's next part still needs an explicitly bounded return model, versioned calculation inputs/rules, reviewed expected outcomes and a suitable operating model before reliable real-user tax conclusions.
 
 The standalone demo can publish this fictional-data feature. The portfolio website remains unchanged.
+
+## Publication record
+
+- Feature merged in [PR #26](https://github.com/obaonikoyi/taxprep-au/pull/26), commit `594ac5847fc48072dbc8b542d53e6a8c288e7c48`.
+- [Final feature CI](https://github.com/obaonikoyi/taxprep-au/actions/runs/35407622691) passed frontend, backend/browser and production-container checks, including 195 frontend tests. The first production run exposed an accessible-name issue on the prefilled notes field; the fix has a regression test and the complete rerun passed.
+- Production artifact `10573461810` records the $82,150 income/$17,100 withholding sample, corrected $83,150 income, separate $18 draft phone illustration, duplicate/year/ownership controls, unresolved circumstances and offline handover. No document upload/external model request, page error or mobile overflow was observed. Desktop and mobile screenshots inspected.
+- Railway deployment `c5722716-737e-4a16-848c-4d222e8f3b1d` reported SUCCESS for the feature commit on 19 September 2026. [Standalone demo](https://taxprep-au-production.up.railway.app).
+- Updating `deployment.json` runs the existing hosted verification against the public URL. The publication PR records the final live-browser result and artifact before merge.
+- This completes the input/handover work in issue #25, not all of Milestone 12. Return calculations and myTax mapping remain later work; professional review remains open in #21. Portfolio website unchanged.

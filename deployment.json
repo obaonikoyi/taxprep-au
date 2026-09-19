@@ -7,9 +7,10 @@
   "initialDeploymentId": "87ca38d9-c44f-46fa-a3b3-2b5aa23af8fb",
   "initialCommit": "e9e5fac6d469ee117b9796eaf306723401fecf61",
   "portfolioPublished": false,
-  "latestMilestone": 11,
-  "latestFeatureCommit": "9bbe20dd6b4c6a87328a31ac57018637af914d70",
-  "latestFeatureDeploymentId": "c044253e-083e-4a89-a596-4550edfa3a28",
-  "latestMilestoneStatus": "engineering complete; qualified tax review pending",
-  "qualifiedTaxReview": "pending"
+  "latestMilestone": 12,
+  "latestFeatureCommit": "594ac5847fc48072dbc8b542d53e6a8c288e7c48",
+  "latestFeatureDeploymentId": "c5722716-737e-4a16-848c-4d222e8f3b1d",
+  "latestMilestoneStatus": "12A income and handover implemented; return calculations and qualified tax review pending",
+  "qualifiedTaxReview": "pending",
+  "latestMilestonePart": "A"
 }
