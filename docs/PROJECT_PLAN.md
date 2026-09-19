@@ -1,4 +1,4 @@
-> Milestone 12A implementation: [income, completeness and combined handover](MILESTONE_12A_PREPARATION_HANDOVER.md). Return/refund calculations remain a later part of Milestone 12.
+> Milestone 12B implementation: [bounded fictional tax position](MILESTONE_12B_TAX_POSITION.md). Qualified tax-rule and rounding review, reliable personal estimates and full myTax mapping remain pending.
 
 > Milestone 11 engineering: [draft phone assessment and review pack](MILESTONE_11_PHONE_ASSESSMENT.md). Qualified tax review remains pending; issue #21 stays open.
 

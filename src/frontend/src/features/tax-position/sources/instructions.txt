@@ -1,0 +1,290 @@
+ATO source capture — 2026-09-19
+URL: https://www.ato.gov.au/individuals-and-families/your-tax-return/instructions-to-complete-your-tax-return/mytax-instructions/2026/medicare-and-private-health-insurance/medicare-levy-reduction-or-exemption
+Selected current guidance and 2025–26 section; unrelated year tables omitted where present.
+
+myTax 2026 Medicare levy reduction or exemption
+How to determine your eligibility for Medicare levy reduction or exemption when lodging your tax return using myTax.
+Latest
+Applies to
+1 July 2025
+–
+30 June 2026
+Print or Download
+Things to know
+Complete this section to work out whether you qualify for a Medicare levy reduction or exemption.
+Australian residents for tax purposes are subject to a Medicare levy of 2.0% of their taxable income unless they qualify for a reduction or exemption.
+We base a:
+Medicare levy reduction
+on your taxable income. In some cases, you may not have to pay the levy at all. If your taxable income is above the thresholds, you may still qualify for a
+reduction based on your family income
+.
+Medicare levy exemption
+on specific categories
+you meet
+certain medical requirements
+you're a
+foreign resident
+you're
+not entitled to Medicare benefits
+.
+You need to consider your eligibility for a reduction or an exemption separately.
+If you were not an
+Australian resident for tax purposes
+for the whole of 2025–26, you may be exempt from the Medicare levy.
+Completing this section
+At
+Personalise return
+, you
+don't
+need to make a selection to show Medicare levy reduction or exemption. It will always display at Prepare return.
+At
+Prepare return
+, select 'Add/Edit' at the Medicare and private health insurance details banner.
+At the
+Medicare levy reduction
+heading:
+Show the
+Number of dependent children and students
+.
+For more information, see
+Working out your number of dependent children
+.
+Note:
+We may have populated this for you based on information previously provided to us. Check and correct if necessary.
+At the
+Medicare levy exemption
+heading:
+Indicate if you were in one of the
+exemption categories
+at any time during 2025–26.
+If
+Yes
+, go to step 3.
+If
+No
+, go to step 6.
+Work out the number of days that you qualify for full exemption and then enter the number into
+Full 2% levy exemption – number of days
+.
+Work out the number of days that you qualify for half exemption and then enter the number into
+Half 2% levy exemption – number of days
+.
+If you entered one or more days in
+Full 2% levy exemption – number of days
+, answer the question
+Were you a temporary resident for Medicare purposes and have a Medicare entitlement statement from Services Australia?
+For more information about applying for a Medicare entitlement statement, see
+Claiming an exemption
+.
+You have completed the Medicare levy reduction or exemption section and can go to the
+Medicare levy surcharge
+section.
+We use this information to work out any Medicare levy reduction or exemption for you.
+Medicare levy reduction – your number of dependent children
+A dependent child is any child who was an Australian resident whom you
+maintained
+in 2025–26 and whose
+adjusted taxable income
+(ATI) was less than the amounts in the table.
+Table 1 – Dependent children – ATI thresholds
+Category of dependent child
+ATI if maintained for the whole year
+ATI if not maintained for the whole year
+Any child under 21 years old you maintained who
+wasn't
+a full-time student
+For the first child:
+$1,786
+For each additional child:
+$1,410
+For the first child:
+$282 plus $28.92 for each week you maintained them
+For each additional child:
+$282 plus $21.70 for each week you maintained them
+Any full-time student who was under 25 years old at a school, college or university
+$1,786
+$282 plus $28.92 for each week you maintained them
+If you had a spouse on 30 June 2026, or your spouse died during 2025–26 and you didn't have another spouse on or before 30 June 2026, count all your dependent children.
+If you were single or separated on 30 June 2026, count only the number of dependent children for whom you received the family tax benefit (FTB) during all or part of 2025–26. Count them even if you received only the rental assistance component of FTB Part A and you shared the care of the dependent child.
+How we work out your Medicare levy reduction
+We base your eligibility for a Medicare levy reduction on your and your
+spouse's
+taxable income and your number of dependent children.
+Based on the information in your tax return, we'll work out any reduction for you.
+If you would like to understand more about how we calculate the levy reduction, please use the following information.
+Work out your individual Medicare levy threshold
+Using Table 2, work out the Medicare threshold that applies to you.
+Table 2 – Medicare levy thresholds for a single individual
+Category
+Lower threshold
+Upper threshold
+If you received an amount of
+seniors and pensioners tax offset
+$44,268
+$55,335*
+All other taxpayers
+$28,011
+$35,013
+* The entitlement to the seniors and pensioners tax offset for singles ceases when rebate income reaches $52,759.
+If you have a spouse, you may not get the seniors and pensioners tax offset even if you meet all the eligibility conditions as we base the amount of the tax offset on your individual rebate income, not your combined rebate income. If you don't get the tax offset, merely being eligible for it won't entitle you to a Medicare levy reduction.
+Work out where your circumstances fit
+Using Table 3, work out your circumstances and how they apply to the calculation of the levy.
+Table 3 – Where do you fit?
+Your circumstance
+What to do
+Your taxable income is equal to or less than your lower threshold amount.
+You don't have to pay the Medicare levy.
+Your taxable income is greater than your lower threshold amount and less than or equal to your upper threshold amount.
+You pay only part of the Medicare levy. We'll work it out.
+Go to
+Medicare levy exemption
+if you're single with no dependants to see if you qualify for an exemption.
+Your taxable income is over your upper threshold amount, and you're single with no dependants.
+You don't qualify for a reduction.
+Go to
+Medicare levy exemption
+to see if you qualify for an exemption.
+Your taxable income is greater than your lower threshold amount but you:
+had a spouse
+had a spouse who died during 2025–26, and you didn't have another spouse in 2025–26
+were entitled to an
+invalid and invalid carer tax offset
+in respect of your child, or
+at any time during 2025–26 had
+sole care
+of one or more dependent children or students.
+You may be eligible for a Medicare levy reduction based on
+family taxable income
+.
+to work out your family taxable income, use
+worksheet 1
+and to work out your family taxable income limit, use
+worksheet 2
+.
+Family taxable income
+Family taxable income is either:
+the combined taxable incomes of you and your spouse (including a spouse who died during 2025–26)
+your taxable income if you were a sole parent.
+Worksheet 1 – Family taxable income
+Row
+Calculation
+Amount
+a
+Your taxable income from
+Taxable income
+. If the amount is less than $0 (zero), write $0.
+$
+b
+Your spouse's taxable income from
+Taxable income
+in their tax return (if applicable). If the amount is less than $0 (zero), write $0.
+$
+c
+Add rows
+a
+and row
+b
+. This is your family taxable income.
+$
+Working out your family taxable income limit
+Your family taxable income must be equal to or less than the following limits for you to qualify for a Medicare levy reduction.
+Worksheet 2 – Family taxable income limit
+Row
+Calculation
+Amount
+d
+If you're entitled to the
+seniors and pensioners tax offset
+, enter $77,028. For all other taxpayers, enter $59,047.
+$
+e
+Number of dependent children (if applicable, see
+note
+).
+Number:
+f
+Multiply row
+e
+by $5,423 (see
+note
+).
+$
+g
+Family taxable income limit
+. Add the appropriate amount from row
+d
+to the amount at row
+f
+.
+$
+Note:
+If you were a sole parent, you can increase your family taxable income limit for a dependent child only if the family tax benefit is payable to you for that dependent child.
+If your family taxable income at row
+c
+in worksheet 1 is equal to or less than your family taxable income limit at row
+g
+in worksheet 2, you qualify for a Medicare levy reduction.
+Glossary
+Adjusted taxable income
+A person's adjusted taxable income is the sum of the following amounts:
+taxable income (excluding any assessable
+first home super saver
+released amount)
+reportable employer superannuation contributions
+deductible
+personal superannuation contributions
+adjusted fringe benefits total, which is the sum of both of the following
+reportable fringe benefits amounts from employers exempt from fringe benefits tax under section 57A of the
+Fringe Benefits Tax Assessment Act 1986
+multiplied by 0.53
+reportable fringe benefits amounts from employers not exempt from fringe benefits tax under section 57A of the
+Fringe Benefits Tax Assessment Act 1986
+certain
+tax-free government pensions or benefits
+received by the person
+target foreign income
+(income and certain other amounts from sources outside Australia not included in the person's taxable income or received as a fringe benefit)
+net financial investment loss
+(the amount where the person's deductions attributable to financial investments exceeds their total financial investment income)
+net rental property loss
+(the amount where the person's deductions attributable to rental property exceeds their rental property income)
+less
+, any
+child support payments
+the person provided to another person.
+Maintaining a dependant
+You maintained a dependant if any of the following applied:
+you both lived in the same house
+you gave them food, clothing and lodging
+you helped them to pay for their living, medical and educational costs.
+If you had a spouse for the whole of 2025–26 and your spouse worked at any time during the year, we still consider you to have maintained your spouse as a dependant for the whole income year.
+We consider you to have maintained a dependant even if the 2 of you were temporarily separated, for example, due to holidays or overseas travel.
+If you maintained a dependant for only part of the year, it may impact on the number of days they are considered a dependant.
+Shared care
+You had shared care of a child if you, and your spouse (if you had one), cared for your child for some of the income year, and someone else, such as a former spouse, cared for the child for the rest of the income year.
+If you received family tax benefit (FTB) Part B as part of a shared-care arrangement, you'll need to know your FTB shared-care percentage to calculate your spouse offset. Your FTB shared-care percentage is usually not the same as your ‘shared care percentage’ which appears on correspondence you have received from Services Australia.
+If you don't know your FTB shared-care percentage, contact
+Services Australia
+External Link
+.
+Sole care
+Sole care means that you alone had full responsibility, on a day-to-day basis, for the upbringing, welfare and maintenance of a child or student. You're not considered to have sole care if you're living with a spouse (married or de facto) unless special circumstances exist. Generally, for special circumstances to exist, you must be financially responsible for the dependent child or student and have sole care without the support that a spouse normally provides.
+Situations where special circumstances may arise include the following:
+You were married for some time during 2025–26 but
+during 2025–26, you then separated from, or were deserted by, your spouse, and
+for the remainder of 2025–26, you were not in a de facto relationship.
+Your spouse was in prison for a sentence of 12 months or more.
+Your spouse was medically certified as being permanently mentally incapable of taking part in caring for the child or student.
+If you're not sure whether special circumstances apply,
+contact us
+.
+Spouse
+Your spouse includes another person (of any sex) who, for 2025–26:
+you were in a relationship with that was registered under a prescribed state or territory law
+although not legally married to you, lived with you on a genuine domestic basis in a relationship as a couple.
+Last updated
+2 July 2026
+QC
+106831
+
+© Australian Taxation Office for the Commonwealth of Australia. Reused under the source page copyright notice permitting copying/adaptation. No ATO endorsement.

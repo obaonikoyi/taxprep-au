@@ -1,0 +1,90 @@
+{
+  "version": "ato-employee-2025-26.2026-09-19",
+  "sources": [
+    {
+      "id": "rates",
+      "title": "Tax rates \u2013 Australian resident",
+      "url": "https://www.ato.gov.au/tax-rates-and-codes/tax-rates-australian-residents",
+      "qc": "73320",
+      "snapshot": "sources/rates.txt",
+      "sha256": "d39a3d95a7b376192e9beac79d3ec6a9df8ade1d6269258194406661b5154fbe",
+      "updatedAt": "2026-08-13",
+      "retrievedAt": "2026-09-19",
+      "applicableYears": [
+        "2025-26"
+      ],
+      "reviewStatus": "pending",
+      "reviewer": null,
+      "reviewedAt": null,
+      "conflict": false
+    },
+    {
+      "id": "lito",
+      "title": "Low income tax offset",
+      "url": "https://www.ato.gov.au/individuals-and-families/income-deductions-offsets-and-records/tax-offsets/low-income-tax-offset",
+      "qc": "105020",
+      "snapshot": "sources/lito.txt",
+      "sha256": "7653c902e00df1b16ea1842effd519fe030702a1797e7ef1bc425c99b8c66b88",
+      "updatedAt": "2026-06-08",
+      "retrievedAt": "2026-09-19",
+      "applicableYears": [
+        "2025-26"
+      ],
+      "reviewStatus": "pending",
+      "reviewer": null,
+      "reviewedAt": null,
+      "conflict": false
+    },
+    {
+      "id": "medicare",
+      "title": "Medicare levy reduction for low-income earners",
+      "url": "https://www.ato.gov.au/individuals-and-families/medicare-and-private-health-insurance/medicare-levy/medicare-levy-reduction/medicare-levy-reduction-for-low-income-earners",
+      "qc": "27031",
+      "snapshot": "sources/medicare.txt",
+      "sha256": "6396030e956b6049a7f541a37ddedf63583c5ceadb8c448d117e720b8471c52e",
+      "updatedAt": "2026-06-30",
+      "retrievedAt": "2026-09-19",
+      "applicableYears": [
+        "2025-26"
+      ],
+      "reviewStatus": "pending",
+      "reviewer": null,
+      "reviewedAt": null,
+      "conflict": false
+    },
+    {
+      "id": "mls",
+      "title": "Medicare levy surcharge income, thresholds and rates",
+      "url": "https://www.ato.gov.au/individuals-and-families/medicare-and-private-health-insurance/medicare-levy-surcharge/medicare-levy-surcharge-income-thresholds-and-rates",
+      "qc": "49961",
+      "snapshot": "sources/mls.txt",
+      "sha256": "3336e92768e7268bc9ee4b3204349edb3d88560c71974cc814078144a88c8341",
+      "updatedAt": "2026-06-22",
+      "retrievedAt": "2026-09-19",
+      "applicableYears": [
+        "2025-26"
+      ],
+      "reviewStatus": "pending",
+      "reviewer": null,
+      "reviewedAt": null,
+      "conflict": false
+    },
+    {
+      "id": "instructions",
+      "title": "myTax 2026 Medicare levy reduction or exemption",
+      "url": "https://www.ato.gov.au/individuals-and-families/your-tax-return/instructions-to-complete-your-tax-return/mytax-instructions/2026/medicare-and-private-health-insurance/medicare-levy-reduction-or-exemption",
+      "qc": "106831",
+      "snapshot": "sources/instructions.txt",
+      "sha256": "2711e653e850e6f0f91b58b8ae86e34a1ff6c876a62ae40fe5c72342b0e7fc60",
+      "updatedAt": "2026-07-02",
+      "retrievedAt": "2026-09-19",
+      "applicableYears": [
+        "2025-26"
+      ],
+      "reviewStatus": "pending",
+      "reviewer": null,
+      "reviewedAt": null,
+      "conflict": false
+    }
+  ]
+}

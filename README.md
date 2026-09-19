@@ -2,7 +2,7 @@
 
 TaxPrep AU is an Australian tax-preparation assistant that helps individuals organise financial records, review possible work-related deductions, and prepare a clear summary before lodging through myTax or consulting a registered tax agent.
 
-> **Project status:** Milestone 12A — income and preparation handover; tax calculations and qualified rule review remain pending
+> **Project status:** Milestone 12B — fictional employee tax calculation; qualified rule and rounding review remain pending
 
 **[Try the standalone demo](https://taxprep-au-production.up.railway.app)** — fictional data, no account needed. Start with **Try document intake** and the sample documents. This has not been added to the owner's portfolio website.
 > **Important:** TaxPrep AU is an organisational and educational tool. It does not provide tax, legal, or financial advice and does not lodge tax returns.
@@ -21,7 +21,9 @@ Milestone 11 adds deterministic draft phone-service conditions, three captured A
 
 Inside document intake, choose **Preparation summary** → **Load fictional income example**. Review three annual records to see $82,150 recorded gross income and $17,100 tax withheld. The existing $18 phone illustration stays separate. Change figures, check unsupported circumstances, and download one handover with income, evidence and remaining questions.
 
-This first part of Milestone 12 adds input collection and completeness checks. It does not infer salary from net deposits or calculate a refund. [Milestone 12A scope and verification](docs/MILESTONE_12A_PREPARATION_HANDOVER.md).
+Milestone 12A added input collection and completeness checks. Milestone 12B adds a separate no-deduction fictional tax calculation; it never infers salary from net deposits or issues a reliable personalised refund estimate. [Milestone 12A scope and verification](docs/MILESTONE_12A_PREPARATION_HANDOVER.md).
+
+For the new calculation, start an empty document session, open **Preparation summary**, load the fictional income example and confirm its three income records. The sample shows a **$24 fictional refund balance** with a full breakdown. Expenses and unsupported circumstances block it. [Milestone 12B scope, sources and verification](docs/MILESTONE_12B_TAX_POSITION.md).
 
 ## The Problem
 
@@ -191,7 +193,7 @@ Select validated CSV spending, choose a category and complete its expense draft.
 
 The standalone deployment packages the website and API together. Follow the on-page **Try one useful task: a phone expense** walkthrough to turn a sample bill into a report. See [Milestone 9](docs/MILESTONE_9_STANDALONE_DEMO.md) for hosting, verification and the readiness decision. Publication is separate from adding the project to Obadiah's portfolio website.
 
-Current: [Milestone 12A — income and preparation handover](docs/MILESTONE_12A_PREPARATION_HANDOVER.md), built on the [draft phone assessment](docs/MILESTONE_11_PHONE_ASSESSMENT.md). [Issue #21](https://github.com/obaonikoyi/taxprep-au/issues/21) remains open for qualified tax review and approved examples, followed by supported return preparation. The current demo uses fictional data and does not decide deductibility or estimate refunds.
+Current: [Milestone 12B — fictional tax position](docs/MILESTONE_12B_TAX_POSITION.md), built on [Milestone 12A — income and preparation handover](docs/MILESTONE_12A_PREPARATION_HANDOVER.md), built on the [draft phone assessment](docs/MILESTONE_11_PHONE_ASSESSMENT.md). [Issue #21](https://github.com/obaonikoyi/taxprep-au/issues/21) remains open for qualified tax review and approved examples, followed by supported return preparation. The current demo uses fictional data. It demonstrates a bounded tax breakdown and balance, while qualified rule/rounding review and reliable personal estimates remain pending.
 
 - [Milestone 5 issue #7](https://github.com/obaonikoyi/taxprep-au/issues/7)
 - [Milestone 9 standalone demo](docs/MILESTONE_9_STANDALONE_DEMO.md) / [issue #15](https://github.com/obaonikoyi/taxprep-au/issues/15)

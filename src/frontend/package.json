@@ -12,8 +12,8 @@
     "test:e2e": "node scripts/browser-smoke.mjs",
     "test:hosted": "node scripts/hosted-smoke.mjs",
     "predev": "node scripts/prepare-document-assets.mjs",
-    "prebuild": "node scripts/verify-assessment-sources.mjs && node scripts/prepare-document-assets.mjs",
-    "pretest": "node scripts/verify-assessment-sources.mjs"
+    "prebuild": "node scripts/verify-assessment-sources.mjs && node scripts/verify-tax-sources.mjs && node scripts/prepare-document-assets.mjs",
+    "pretest": "node scripts/verify-assessment-sources.mjs && node scripts/verify-tax-sources.mjs"
   },
   "dependencies": {
     "@tesseract.js-data/eng": "1.0.0",

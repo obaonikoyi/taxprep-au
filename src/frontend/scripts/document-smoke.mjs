@@ -1,3 +1,4 @@
+import { verifyTaxPosition } from './tax-position-smoke.mjs';
 import assert from 'node:assert/strict';
 import { verifyPreparation } from './preparation-smoke.mjs';
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -154,6 +155,7 @@ export async function verifyDocuments(context, base, artifacts) {
     await button('Preparation summary').click();
     assert.equal(await page.locator('.income-card').count(), 0);
     assert.equal(await button('Load fictional income example').isDisabled(), false);
+    const taxPosition = await verifyTaxPosition(page, artifacts);
     await button('Documents').click();
     await upload({ name: 'broken.pdf', mimeType: 'application/pdf', buffer: Buffer.from('not really a pdf') });
     await page.getByText('This file does not have a valid PDF signature.', { exact: true }).waitFor();
@@ -162,7 +164,7 @@ export async function verifyDocuments(context, base, artifacts) {
     await page.reload(); await button('Try document intake').click();
     assert.equal(await page.locator('.evidence-card').count(), 0);
     assert.deepEqual(pageErrors, []);
-    const result = { passed: true, elapsedMs: Date.now() - started, evaluation, preparation, modelRequests: 0, modelCostAud: 0, hostingAndDeviceCost: 'not measured', documentUploads: 0, repeatedFile: 'kept once', receiptBankMatch: '45.00 counted once', duplicateReceipt: 'unresolved until exclusion', correctionsRetainOriginal: true, phoneAssessment: { illustrationAud: 18, fixedRateSeparateAud: 0, partialReimbursement: 'unresolved', supplierCredit: 'unresolved', duplicateBlocksAssessment: true, claimReady: false, qualifiedReview: 'pending', exportedRuleVersion: 'employee-phone-2025-26.v1-draft' }, deleted: true, reloadEmpty: true, mobileOverflow: false, pageErrors };
+    const result = { passed: true, elapsedMs: Date.now() - started, evaluation, preparation, taxPosition, modelRequests: 0, modelCostAud: 0, hostingAndDeviceCost: 'not measured', documentUploads: 0, repeatedFile: 'kept once', receiptBankMatch: '45.00 counted once', duplicateReceipt: 'unresolved until exclusion', correctionsRetainOriginal: true, phoneAssessment: { illustrationAud: 18, fixedRateSeparateAud: 0, partialReimbursement: 'unresolved', supplierCredit: 'unresolved', duplicateBlocksAssessment: true, claimReady: false, qualifiedReview: 'pending', exportedRuleVersion: 'employee-phone-2025-26.v1-draft' }, deleted: true, reloadEmpty: true, mobileOverflow: false, pageErrors };
     writeFileSync(artifacts + 'document-evaluation.json', JSON.stringify(result, null, 2));
     return result;
   } catch (error) {
