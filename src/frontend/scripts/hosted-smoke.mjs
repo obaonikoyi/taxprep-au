@@ -1,3 +1,4 @@
+import { verifyStatements } from './statement-smoke.mjs';
 import { verifyDocuments } from './document-smoke.mjs';
 import assert from 'node:assert/strict';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -24,6 +25,7 @@ try {
   assert.equal((await context.request.get(new URL('/api/not-a-route', base).href)).status(), 404);
   const response = await page.goto(base.href);
   assert.equal(response.status(), 200);
+  await button('Expense demo').click();
   await page.getByRole('heading', { name: 'Organise expenses. See what needs checking.' }).waitFor();
   await page.getByText('Try one useful task: a phone expense', { exact: true }).click();
   await page.screenshot({ path: artifacts + 'landing-desktop.png', fullPage: true });
@@ -48,7 +50,7 @@ try {
   assert.ok(report.includes('$18.00'));
   assert.ok(report.includes('Evidence missing'));
   await button('Save progress').click();
-  await page.reload(); await button('Resume saved progress').click();
+  await page.reload(); await button('Expense demo').click(); await button('Resume saved progress').click();
   await page.getByText('$18.00 recorded work portion', { exact: true }).waitFor();
   await page.locator('#guided-demo').screenshot({ path: artifacts + 'summary-desktop.png' });
   await page.setViewportSize({ width: 390, height: 844 });
@@ -60,7 +62,8 @@ try {
   assert.deepEqual(errors, []);
   assert.deepEqual(failedRequests, []);
   const documents = await verifyDocuments(context, base, artifacts);
-  const result = { documents, url: base.href, checkedAt: new Date().toISOString(), health: true, missingApiRoute404: true,
+  const statements = await verifyStatements(context, base, artifacts);
+  const result = { statements, documents, url: base.href, checkedAt: new Date().toISOString(), health: true, missingApiRoute404: true,
     sampleRows: 20, workPortion: 18, reportDownloaded: true, selectedSourcesIncluded: true,
     saveRefreshResume: true, clearProgress: true, mobileOverflow: false, errors, failedRequests };
   writeFileSync(artifacts + 'report.json', JSON.stringify(result, null, 2));

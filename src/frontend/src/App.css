@@ -222,3 +222,9 @@ button:focus-visible, .table-scroll:focus-visible { outline: 3px solid #bd800a; 
 .quick-start summary { cursor: pointer; font-weight: 700; }
 .quick-start li { margin: .75rem 0; line-height: 1.6; }
 .quick-start p { font-size: .9rem; }
+
+main { width: min(1240px, calc(100% - 40px)); }
+.site-header { padding: 23px 0; }
+@media(max-width:760px) { main { width: calc(100% - 28px); } }
+
+.workspace-nav{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:16px 0;border-bottom:1px solid #dce7e2}.workspace-nav button{border:0;background:transparent;color:#6d8075;padding:11px 16px;border-radius:8px;cursor:pointer;font-weight:650;font-size:.83rem}.workspace-nav button[aria-pressed=true]{color:#173e32;background:#e4ede2}.workspace-nav button:hover{background:#eaf1e7}.workspace-nav button:focus-visible{outline:3px solid #a5ccb8}
