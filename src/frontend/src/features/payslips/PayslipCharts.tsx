@@ -1,4 +1,4 @@
-import { useId, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { aud, buckets, type Payslip } from './payslip'
 
 type Series = { label: string; color: string; values: (number | null)[]; dashed?: boolean }
@@ -6,20 +6,29 @@ const dateLabel = (date: string) => new Date(`${date.length === 7 ? date + '-01'
 const axisAmount = (cents: number) => new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', notation: 'compact', maximumFractionDigits: 1 }).format(cents / 100)
 
 function Trend({ title, dates, series }: { title: string; dates: string[]; series: Series[] }) {
+  const chart = useRef<HTMLDivElement>(null)
+  const [width, setWidth] = useState(760)
+  useEffect(() => {
+    if (!chart.current || typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(([entry]) => setWidth(Math.max(260, Math.round(entry.contentRect.width))))
+    observer.observe(chart.current)
+    return () => observer.disconnect()
+  }, [])
+  const right = width - 24
   const id = useId(), highest = Math.max(100, ...series.flatMap(s => s.values.filter(v => v !== null)))
-  const x = (i: number) => dates.length === 1 ? 370 : 70 + i * 620 / (dates.length - 1)
+  const x = (i: number) => dates.length === 1 ? (70 + right) / 2 : 70 + i * (right - 70) / (dates.length - 1)
   const y = (n: number) => 190 - n / highest * 155
-  return <div className="pay-chart">
+  return <div className="pay-chart" ref={chart}>
     <div className="pay-legend">{series.map(s => <span key={s.label}><i style={{ background: s.color }} />{s.label}{s.dashed ? ' (dashed)' : ''}</span>)}</div>
-    <svg viewBox="0 0 760 240" role="img" aria-labelledby={id}>
+    <svg viewBox={`0 0 ${width} 240`} role="img" aria-labelledby={id}>
       <title id={id}>{title}. Exact values are in the table below.</title>
-      {[0, .5, 1].map(fraction => <g key={fraction}><line x1="70" x2="690" y1={y(highest * fraction)} y2={y(highest * fraction)} stroke="#dce6e0" /><text x="57" y={y(highest * fraction) + 4} textAnchor="end" fill="#50685c" fontSize="13">{axisAmount(highest * fraction)}</text></g>)}
+      {[0, .5, 1].map(fraction => <g key={fraction}><line x1="70" x2={right} y1={y(highest * fraction)} y2={y(highest * fraction)} stroke="#dce6e0" /><text x="57" y={y(highest * fraction) + 4} textAnchor="end" fill="#50685c" fontSize="13">{axisAmount(highest * fraction)}</text></g>)}
       {series.map(s => <g key={s.label}>{s.values.map((v, i) => v === null ? null : <g key={i}>
         {i > 0 && s.values[i - 1] !== null && <line x1={x(i - 1)} y1={y(s.values[i - 1]!)} x2={x(i)} y2={y(v)} stroke={s.color} strokeWidth="3" strokeDasharray={s.dashed ? '7 5' : undefined} />}
         <circle cx={x(i)} cy={y(v)} r="4.5" fill={s.color}><title>{dateLabel(dates[i])}: {s.label} {aud(v)}</title></circle>
       </g>)}</g>)}
       <text x={x(0)} y="222" fill="#50685c" fontSize="13" textAnchor={dates.length === 1 ? 'middle' : 'start'}>{dateLabel(dates[0])}</text>
-      {dates.length > 1 && <text x="690" y="222" textAnchor="end" fill="#50685c" fontSize="13">{dateLabel(dates.at(-1)!)}</text>}
+      {dates.length > 1 && <text x={right} y="222" textAnchor="end" fill="#50685c" fontSize="13">{dateLabel(dates.at(-1)!)}</text>}
     </svg>
   </div>
 }

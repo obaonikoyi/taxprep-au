@@ -15,7 +15,7 @@ export default function PayslipDashboard() {
   const [slips, setSlips] = useState<Payslip[]>([]), [selected, setSelected] = useState<string | null>(null)
   const [year, setYear] = useState('all'), [employer, setEmployer] = useState('all'), [grouping, setGrouping] = useState<'month' | 'payday'>('month')
   const [busy, setBusy] = useState(false), [message, setMessage] = useState(''), [error, setError] = useState('')
-  const active = useRef<AbortController | null>(null), stageHeading = useRef<HTMLHeadingElement>(null)
+  const active = useRef<AbortController | null>(null), stageHeading = useRef<HTMLHeadingElement>(null), clearButton = useRef<HTMLButtonElement>(null)
   useEffect(() => () => active.current?.abort(), [])
   const confirmed = selectedPayslips(slips, year, employer)
   const allConfirmed = selectedPayslips(slips, 'all', 'all')
@@ -149,9 +149,9 @@ export default function PayslipDashboard() {
 
     <footer className="pay-footer">
       <p><strong>{slips.length ? 'Download your report before you leave.' : 'No account needed.'}</strong> Your pay history clears when you refresh or move to another tool.</p>
-      {slips.length > 0 && <button className="text-button pay-clear" disabled={busy} onClick={() => setClearRequested(true)}>Clear pay history</button>}
+      {slips.length > 0 && <button ref={clearButton} className="text-button pay-clear" disabled={busy} onClick={() => setClearRequested(true)}>Clear pay history</button>}
     </footer>
-    {clearRequested && <section className="pay-clear-confirm" aria-label="Clear history confirmation"><h3>Clear all payslips?</h3><p>This removes the history in this tab. Download a report from View summary first if you need a copy.</p><div className="pay-actions"><button autoFocus className="secondary-button" onClick={() => setClearRequested(false)}>Keep my history</button><button className="primary-button" onClick={clear}>Yes, clear history</button></div></section>}
+    {clearRequested && <section className="pay-clear-confirm" aria-label="Clear history confirmation"><h3>Clear all payslips?</h3><p>This removes the history in this tab. Download a report from View summary first if you need a copy.</p><div className="pay-actions"><button autoFocus className="secondary-button" onClick={() => { setClearRequested(false); clearButton.current?.focus() }}>Keep my history</button><button className="primary-button" onClick={clear}>Yes, clear history</button></div></section>}
     <details className="statement-help"><summary>What can TaxPrep check?</summary><p>We check that the figures add up and help you understand the pay recorded on your payslips. This does not confirm your award rate, your employer’s tax payments or whether super reached your fund. <a href="https://www.fairwork.gov.au/pay-and-wages/paying-wages/pay-slips" target="_blank" rel="noreferrer">Learn about payslips at Fair Work.</a></p><p>Your files are read in this tab. They are not uploaded or sent to an AI service. Keep your original payslips; the downloaded report does not contain them.</p></details>
   </section>
 }

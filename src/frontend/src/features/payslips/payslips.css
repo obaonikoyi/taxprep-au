@@ -137,3 +137,9 @@
 }
 .pay-start-card h2:focus { outline: none; }
 .pay-empty-chart { padding: 36px 16px; text-align: center; line-height: 1.7; color: #52685e; background: #f4f7f3; border-radius: 10px; }
+/* Shared workspace CSS can load later; keep the pay view's emphasis consistent. */
+.payslip-dashboard .pay-file-secondary { color: #17523f; background: #fff; border: 1px solid #b7cdbf; }
+.payslip-dashboard .pay-metrics > div:first-child { background: #fff; color: #173b35; border-color: #d8e3db; }
+.payslip-dashboard .pay-metrics > div:first-child small { color: #52685e; }
+.payslip-dashboard .pay-metrics > div:nth-child(2) { background: #173f35; color: #fff; border-color: #173f35; }
+.payslip-dashboard .pay-metrics > div:nth-child(2) small { color: #d0e4d7; }
