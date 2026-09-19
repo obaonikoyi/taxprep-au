@@ -54,3 +54,13 @@ No new dependency, backend service, account, storage, document upload, model cal
 ## Remaining professional and product work
 
 Before real-user tax conclusions, obtain qualified review of the phone rules and this calculation (including all rounding and boundary expectations), define the real-data/paid-service operating model, and expand verified deduction coverage. Income-statement extraction remains a useful next engineering stage: turn a bounded document into reviewable income fields without inferring gross salary from bank deposits. This stage does not make TaxPrep a replacement tax agent or a complete myTax guide.
+
+## Publication record
+
+- Feature merged in [PR #29](https://github.com/obaonikoyi/taxprep-au/pull/29), commit `d706398db7957f9ed89cd1ef5919c0d91acd0795`.
+- [Final feature CI](https://github.com/obaonikoyi/taxprep-au/actions/runs/35410263132) passed all three jobs, including **247 frontend tests**, lint/build, backend/API/browser and the production-container journey.
+- Production artifact `10574066578` records the $24 fictional refund balance, changed $296 payable, $17,076 tax/Medicare total, unknown-answer and expense blockers, edit invalidation, upper threshold and offline handover. Desktop/mobile screenshots were inspected; no overflow, page errors, document uploads or external model requests were observed.
+- Railway feature deployment `4425d8fb-5a28-4868-ad37-0e18004aff39`. The publication PR records deployment success and runs the public browser journey through the existing `deployment.json` verification workflow before merge.
+- [Issue #28](https://github.com/obaonikoyi/taxprep-au/issues/28) remains open for qualified source/rule/example and filing/settlement rounding review. No reliable personalised estimate is enabled. Phone review remains open in #21.
+- [Next engineering milestone #30](https://github.com/obaonikoyi/taxprep-au/issues/30): extract reviewable income facts from a bounded fictional statement format.
+- Standalone [demo](https://taxprep-au-production.up.railway.app) only; portfolio website unchanged.
