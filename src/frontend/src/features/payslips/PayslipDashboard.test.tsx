@@ -69,3 +69,42 @@ it('keeps the optional outlook to one employer/year and labels changed-pay withh
   expect(result.textContent).toContain('Not estimated')
   expect(result.textContent).toContain('Partial recorded history')
 })
+
+
+it('collects whole-year tax readiness facts but never unlocks a tax result', () => {
+  render(<PayslipDashboard />)
+  fillManual()
+  fireEvent.click(button('Confirm and continue'))
+  fireEvent.change(screen.getByLabelText('Financial year', { exact: true }), { target: { value: '2026–27' } })
+  fireEvent.change(screen.getByLabelText('Employer', { exact: true }), { target: { value: 'example employer' } })
+  fireEvent.click(button('Start tax readiness'))
+  const supported: Record<string, string> = {
+    resident: 'yes',
+    payCoverage: 'yes',
+    otherIncome: 'no',
+    studyLoan: 'no',
+    declarationsKnown: 'yes',
+    simpleFamily: 'yes',
+    medicareSpecial: 'no',
+    privateHealth: 'no',
+    otherAdjustments: 'no',
+    irregularPay: 'no',
+  }
+  for (const [key, value] of Object.entries(supported)) {
+    fireEvent.change(screen.getByLabelText(`Tax readiness: ${key}`, { exact: true }), { target: { value } })
+  }
+  fireEvent.click(button('Review tax readiness'))
+  let result = screen.getByLabelText('Tax readiness result', { exact: true })
+  expect(result.textContent).toContain('Profile facts collected')
+  expect(result.textContent).toContain('10/10 within current profile')
+  expect(result.textContent).toContain('Tax result remains locked')
+  expect(result.textContent).toContain('No refund, debt or final-tax number')
+
+  fireEvent.change(screen.getByLabelText('Tax readiness: studyLoan', { exact: true }), { target: { value: 'yes' } })
+  expect(screen.queryByLabelText('Tax readiness result', { exact: true })).toBeNull()
+  fireEvent.click(button('Review tax readiness'))
+  result = screen.getByLabelText('Tax readiness result', { exact: true })
+  expect(result.textContent).toContain('Outside current prototype')
+  expect(result.textContent).toContain('study or training support loan')
+  expect(result.textContent).toContain('Tax result remains locked')
+})

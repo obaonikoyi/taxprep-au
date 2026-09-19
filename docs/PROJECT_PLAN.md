@@ -20,7 +20,8 @@ The first useful result should require no account: try fictional payslips or ent
 | 13: statement analysis | Local bank PDF/CSV analysis, categorisation and report | Published; [scope](MILESTONE_13_STATEMENT_ANALYSIS.md) |
 | **14: payslip dashboard** | Confirm pay facts, explore earnings/withholding/super charts, review changes and export | Published: [#35](https://github.com/obaonikoyi/taxprep-au/issues/35), [implementation and publication record](MILESTONE_14_PAYSLIP_DASHBOARD.md) |
 | **15A: pay outlook** | Explore explicit one-employer regular-pay scenarios through 30 June without treating withholding as final tax | Published: [#43](https://github.com/obaonikoyi/taxprep-au/issues/43), [scope and publication record](MILESTONE_15A_PAY_OUTLOOK.md) |
-| **15B: reviewed tax outlook** | Confirm a tax profile, check applicable withholding and model a bounded year-end tax position | Planned under [#36](https://github.com/obaonikoyi/taxprep-au/issues/36); depends on qualified review in #28 |
+| **15B-1: tax readiness** | Collect whole-year profile facts, missing information and unsupported circumstances without producing a tax estimate | In progress: [#46](https://github.com/obaonikoyi/taxprep-au/issues/46), [scope](MILESTONE_15B1_TAX_READINESS.md) |
+| **15B-2: reviewed withholding/tax outlook** | Apply reviewed declaration-aware PAYG schedules and a bounded annual-tax position | Planned under [#36](https://github.com/obaonikoyi/taxprep-au/issues/36); depends on qualified review in #28 |
 | **16: year-end preparation** | Reconcile pay history, annual statements and expense evidence into one handover | Planned: [#37](https://github.com/obaonikoyi/taxprep-au/issues/37) |
 | Later: coverage and integrations | Broader payroll layouts, reviewed tax treatments, supported AI extraction and authorised integrations | Separate scopes after measured user trials and appropriate operating arrangements |
 
@@ -39,7 +40,7 @@ Milestone 14 usability follow-up [#40](https://github.com/obaonikoyi/taxprep-au/
 7. Keep expense evidence organised alongside pay history for tax preparation.
 8. Export an understandable source-linked report, then prepare through myTax or discuss it with an accountant.
 
-Cases 1–5 and the pay-history part of case 8 are the Milestone 14 outcome. Milestone 15A adds bounded pay arithmetic for case 6 without tax conclusions. Reviewed tax forecasts and the integrated year-end workspace remain later work.
+Cases 1–5 and the pay-history part of case 8 are the Milestone 14 outcome. Milestone 15A adds bounded pay arithmetic for case 6 without tax conclusions. Milestone 15B-1 adds whole-year profile readiness while leaving the tax-result gate locked. Reviewed withholding/tax forecasts and the integrated year-end workspace remain later work.
 
 ## Milestone 14 delivery checklist
 

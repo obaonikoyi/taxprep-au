@@ -1,6 +1,7 @@
 import { aud, observations, totals, type Payslip } from './payslip'
 import PayslipCharts from './PayslipCharts'
 import PayOutlook from './PayOutlook'
+import TaxReadiness from './TaxReadiness'
 
 type Props = {
   allSlips: Payslip[]; slips: Payslip[]; years: string[]; employers: [string, string][]; year: string; employer: string; grouping: 'month' | 'payday';
@@ -29,6 +30,7 @@ export default function PayslipSummary({ allSlips, slips, years, employers, year
       <PayslipCharts slips={slips} grouping={grouping} onGrouping={onGrouping} />
       {notes.length > 0 && <details className="statement-help pay-observations"><summary>Pay changes to look at</summary><p>These compare your uploaded payslips. They can help you spot a change, but don’t explain its cause.</p><ul>{notes.map((note, i) => <li key={i}>{note}</li>)}</ul></details>}
       <PayOutlook allSlips={allSlips} slips={slips} year={year} employer={employer} employerName={employers.find(([key]) => key === employer)?.[1] ?? slips[0]?.facts.employer ?? 'Selected employer'} />
+      <TaxReadiness allSlips={allSlips} year={year} employerFilter={employer} />
     </>}
   </>
 }
