@@ -23,6 +23,7 @@ export default function PayOutlook({ allSlips, slips, year, employer, employerNa
 
   const pending = scopedAll.filter(s => !s.confirmed || confirmationIssues(s, allSlips).length)
   const latest = slips.at(-1)
+  const latestGross = latest?.facts.gross ?? '', latestWithheld = latest?.facts.withheld ?? ''
   const scopeKey = `${year}|${employer}|${scopedAll.map(s => `${s.id}:${s.confirmed}:${Object.values(s.facts).join('~')}`).join('|')}`
 
   const [nextPayDate, setNextPayDate] = useState('')
@@ -37,13 +38,13 @@ export default function PayOutlook({ allSlips, slips, year, employer, employerNa
   useEffect(() => {
     setNextPayDate('')
     setFrequency('')
-    setNormalGross(latest?.facts.gross ?? '')
-    setNormalWithheld(latest?.facts.withheld ?? '')
+    setNormalGross(latestGross)
+    setNormalWithheld(latestWithheld)
     setRegularConfirmed(false)
     setHistoryComplete(false)
     setIssues([])
     setResult(null)
-  }, [scopeKey, latest?.facts.gross, latest?.facts.withheld])
+  }, [scopeKey, latestGross, latestWithheld])
 
   function invalidate() {
     setIssues([])
