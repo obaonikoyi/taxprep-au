@@ -6,7 +6,7 @@ TaxPrep helps Australian workers understand their pay, track withholding and rec
 
 **[Try the standalone app](https://taxprep-au-production.up.railway.app)** — no account needed. Choose **Try example payslips** for six fictional PDFs and an immediate pay-history dashboard. The owner's portfolio website has not been changed.
 
-[Product direction](docs/PRODUCT_DIRECTION.md) · [Current milestones and user cases](docs/PROJECT_PLAN.md) · [Milestone 15A pay outlook](docs/MILESTONE_15A_PAY_OUTLOOK.md) · [Milestone 14 input contract](docs/MILESTONE_14_PAYSLIP_DASHBOARD.md) · [Development](docs/DEVELOPMENT.md)
+[Product direction](docs/PRODUCT_DIRECTION.md) · [Current milestones and user cases](docs/PROJECT_PLAN.md) · [Milestone 15A pay outlook](docs/MILESTONE_15A_PAY_OUTLOOK.md) · [Milestone 15B-1 tax readiness](docs/MILESTONE_15B1_TAX_READINESS.md) · [Development](docs/DEVELOPMENT.md)
 
 ## Payslip dashboard
 
@@ -20,7 +20,7 @@ Files are processed in the browser tab with no model requests, uploads or saved 
 
 Published: [Milestone 15A — pay outlook](docs/MILESTONE_15A_PAY_OUTLOOK.md) adds an optional one-employer scenario after the checked pay summary. It asks for the next payday, regular frequency and editable normal pay, then shows entered gross, 20% less and 20% more through 30 June. Future withholding is carried forward only for the unchanged entered-pay pattern; changed-gross rows deliberately say **Not estimated**. This is pay arithmetic, not final tax or a refund estimate.
 
-Next after 15A: the reviewed tax-profile/withholding work in [Milestone 15](https://github.com/obaonikoyi/taxprep-au/issues/36) and [Milestone 16 — year-end preparation](https://github.com/obaonikoyi/taxprep-au/issues/37). Existing tax-rule review remains open in #21 and #28.
+In development: [Milestone 15B-1 — tax readiness](docs/MILESTONE_15B1_TAX_READINESS.md) collects whole-year profile facts, missing information and unsupported circumstances while keeping every tax/refund result locked. The reviewed withholding/annual-tax work remains under [Milestone 15](https://github.com/obaonikoyi/taxprep-au/issues/36) after #28; [Milestone 16 — year-end preparation](https://github.com/obaonikoyi/taxprep-au/issues/37) follows later. Existing tax-rule review remains open in #21 and #28.
 
 ## Statement analysis
 
