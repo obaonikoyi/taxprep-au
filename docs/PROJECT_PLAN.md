@@ -18,7 +18,7 @@ The first useful result should require no account: try fictional payslips or ent
 | 12A: preparation handover | Record annual income, withholding, coverage and questions | Implemented; [scope](MILESTONE_12A_PREPARATION_HANDOVER.md) |
 | 12B: fictional tax position | Demonstrate a restricted annual calculation | Engineering implemented; qualified source/rounding review remains open in [#28](https://github.com/obaonikoyi/taxprep-au/issues/28) |
 | 13: statement analysis | Local bank PDF/CSV analysis, categorisation and report | Published; [scope](MILESTONE_13_STATEMENT_ANALYSIS.md) |
-| **14: payslip dashboard** | Confirm pay facts, explore earnings/withholding/super charts, review changes and export | Current delivery: [#35](https://github.com/obaonikoyi/taxprep-au/issues/35), [implementation contract](MILESTONE_14_PAYSLIP_DASHBOARD.md) |
+| **14: payslip dashboard** | Confirm pay facts, explore earnings/withholding/super charts, review changes and export | Published: [#35](https://github.com/obaonikoyi/taxprep-au/issues/35), [implementation and publication record](MILESTONE_14_PAYSLIP_DASHBOARD.md) |
 | **15: tax outlook** | Confirm a tax profile, check applicable withholding and model year-end scenarios | Planned: [#36](https://github.com/obaonikoyi/taxprep-au/issues/36) |
 | **16: year-end preparation** | Reconcile pay history, annual statements and expense evidence into one handover | Planned: [#37](https://github.com/obaonikoyi/taxprep-au/issues/37) |
 | Later: coverage and integrations | Broader payroll layouts, reviewed tax treatments, supported AI extraction and authorised integrations | Separate scopes after measured user trials and appropriate operating arrangements |
