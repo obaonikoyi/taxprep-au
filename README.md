@@ -1,17 +1,26 @@
 # TaxPrep AU
 
-TaxPrep AU is an Australian tax-preparation assistant that helps individuals organise financial records, review possible work-related deductions, and prepare a clear summary before lodging through myTax or consulting a registered tax agent.
+TaxPrep helps Australian workers understand their pay, track withholding and recorded super, and prepare for tax time with fewer surprises. The longer-term goal remains supported self-preparation or a useful accountant handover.
 
-> **Project status:** Milestone 13 — local bank-statement analysis and a refreshed dashboard. Qualified tax-rule review remains pending.
+> **Current delivery: Milestone 14 — payslip dashboard.** Actual pay history and review are implemented; tax forecasts, broad payroll compatibility and personalised tax conclusions remain later work.
 
-**[Try the standalone demo](https://taxprep-au-production.up.railway.app)** — no account needed. Start with **Try example statement** to explore a fictional statement immediately. This has not been added to the owner's portfolio website.
-> **Important:** TaxPrep AU is an organisational and educational tool. It does not provide tax, legal, or financial advice and does not lodge tax returns.
+**[Try the standalone app](https://taxprep-au-production.up.railway.app)** — no account needed. Choose **Try example payslips** for six fictional PDFs and an immediate pay-history dashboard. The owner's portfolio website has not been changed.
 
-**Product direction, clarified 18 September 2026:** The long-term goal is document-led tax preparation: upload receipts and transactions, resolve gaps, assess supported deductions using applicable-year guidance, and prepare for lodgment or accountant review. The current demo is the foundation. [Product direction and staged roadmap](docs/PRODUCT_DIRECTION.md) supersedes organiser-only descriptions of the future goal below; it does not imply those capabilities already exist.
+[Product direction](docs/PRODUCT_DIRECTION.md) · [Current milestones and user cases](docs/PROJECT_PLAN.md) · [Milestone 14 input contract](docs/MILESTONE_14_PAYSLIP_DASHBOARD.md) · [Development](docs/DEVELOPMENT.md)
+
+## Payslip dashboard
+
+Upload supported labelled summary PDFs or enter figures manually, review their source and confirm the period amounts. See gross and net pay, withholding dollars/percentage and recorded super across employers and financial years. Switch payday/month charts, inspect exact values, check observed changes and export a report with source references and corrections.
+
+The first automatic reader supports the **PAYSLIP SUMMARY v1** layout demonstrated by the example, not arbitrary employer PDFs. Limits: 20 files per batch, 2 MB and one native-text page each, 100 records per session. Other layouts and scans need manual entry. Required missing values are not zero; super can stay unknown. User files need confirmation before charts, edits invalidate it, repeated files/pay identities are blocked and cumulative YTD fields are excluded.
+
+Files are processed in the browser tab with no model requests, uploads or saved pay history. Refreshing or switching workspaces clears the session; download a report first. Example and personal records cannot be mixed. Super means **recorded on the payslip**, not confirmed fund receipt. This release checks arithmetic and data consistency, not award compliance, employer remittances, final tax or refund entitlement. TaxPrep does not lodge returns.
+
+Next: [Milestone 15 — tax outlook](https://github.com/obaonikoyi/taxprep-au/issues/36) and [Milestone 16 — year-end preparation](https://github.com/obaonikoyi/taxprep-au/issues/37). Existing tax-rule review remains open in #21 and #28.
 
 ## Statement analysis
 
-The default workspace reads a supported native-text CommBank PDF or a CSV with `Date,Description,Amount` headings. It shows money received, money out, net movement, monthly totals, suggested categories, possible recurring payments and similar entries. Search the transactions, correct categories, add work-review notes and download an offline report for the selected dates.
+The **Statement analysis** workspace reads a supported native-text CommBank PDF or a CSV with `Date,Description,Amount` headings. It shows money received, money out, net movement, monthly totals, suggested categories, possible recurring payments and similar entries. Search the transactions, correct categories, add work-review notes and download an offline report for the selected dates.
 
 PDF imports must match every running balance and the printed totals. CSV totals have an explicit **balance check unavailable** label. Transfers and repayments remain part of cash movement; deposits are never treated as gross employment income. Category suggestions use transparent keyword rules, not generative AI or tax eligibility decisions.
 
@@ -46,7 +55,7 @@ Preparing an Australian individual tax return can be confusing and time-consumin
 
 Generic spreadsheets can store transactions, but they do not guide the user through the preparation process. TaxPrep AU aims to provide a simpler, structured workflow designed for Australian individual taxpayers.
 
-## V1 Goal
+## Original organiser foundation (historical scope)
 
 Version 1 will help a user turn raw transaction records into an organised tax-preparation summary.
 
@@ -62,7 +71,7 @@ V1 is intended for Australian individual taxpayers who:
 - have bank transaction data and receipts to review; and
 - lodge through myTax or work with a registered tax agent.
 
-## V1 Scope
+## Original V1 scope
 
 ### 1. Tax-year workspace
 
@@ -201,7 +210,7 @@ Select validated CSV spending, choose a category and complete its expense draft.
 
 The standalone deployment packages the website and API together. Follow the on-page **Try one useful task: a phone expense** walkthrough to turn a sample bill into a report. See [Milestone 9](docs/MILESTONE_9_STANDALONE_DEMO.md) for hosting, verification and the readiness decision. Publication is separate from adding the project to Obadiah's portfolio website.
 
-Current: [Milestone 13 — statement analysis](docs/MILESTONE_13_STATEMENT_ANALYSIS.md). The separate document workspace retains [Milestone 12B — fictional tax position](docs/MILESTONE_12B_TAX_POSITION.md), [Milestone 12A — income and preparation handover](docs/MILESTONE_12A_PREPARATION_HANDOVER.md), and the [draft phone assessment](docs/MILESTONE_11_PHONE_ASSESSMENT.md). [Issue #21](https://github.com/obaonikoyi/taxprep-au/issues/21) and [issue #28](https://github.com/obaonikoyi/taxprep-au/issues/28) remain open for qualified review. Statement analysis does not feed bank deposits or flagged spending into the tax calculation.
+Current: [Milestone 14 — payslip dashboard](docs/MILESTONE_14_PAYSLIP_DASHBOARD.md), alongside [Milestone 13 — statement analysis](docs/MILESTONE_13_STATEMENT_ANALYSIS.md). The separate document workspace retains [Milestone 12B — fictional tax position](docs/MILESTONE_12B_TAX_POSITION.md), [Milestone 12A — income and preparation handover](docs/MILESTONE_12A_PREPARATION_HANDOVER.md), and the [draft phone assessment](docs/MILESTONE_11_PHONE_ASSESSMENT.md). [Issue #21](https://github.com/obaonikoyi/taxprep-au/issues/21) and [issue #28](https://github.com/obaonikoyi/taxprep-au/issues/28) remain open for qualified review. Statement analysis does not feed bank deposits or flagged spending into the tax calculation.
 
 - [Milestone 5 issue #7](https://github.com/obaonikoyi/taxprep-au/issues/7)
 - [Milestone 9 standalone demo](docs/MILESTONE_9_STANDALONE_DEMO.md) / [issue #15](https://github.com/obaonikoyi/taxprep-au/issues/15)

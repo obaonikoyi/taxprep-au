@@ -4,11 +4,12 @@ import ApiStatus from './components/ApiStatus'
 import GuidedDemo from './features/demo/GuidedDemo'
 
 const StatementDashboard = lazy(() => import('./features/statements/StatementDashboard'))
+const PayslipDashboard = lazy(() => import('./features/payslips/PayslipDashboard'))
 
 const DocumentWorkspace = lazy(() => import('./features/documents/DocumentWorkspace'))
 
 function App() {
-  const [view, setView] = useState<'statements' | 'documents' | 'expenses'>('statements')
+  const [view, setView] = useState<'payslips' | 'statements' | 'documents' | 'expenses'>('payslips')
   // A React component is a function that returns the page structure it owns.
   // App is currently the top-level component, so it arranges the whole screen.
   return (
@@ -21,8 +22,8 @@ function App() {
         <span className="status">Portfolio prototype</span>
       </header>
 
-      <nav className="workspace-nav" aria-label="TaxPrep workspaces"><button aria-pressed={view==='statements'} onClick={()=>setView('statements')}>Statement analysis</button><button aria-pressed={view==='documents'} onClick={()=>setView('documents')}>Try document intake</button><button aria-pressed={view==='expenses'} onClick={()=>setView('expenses')}>Expense demo</button></nav>
-      {view !== 'statements' && <section className="hero" aria-labelledby="page-title">
+      <nav className="workspace-nav" aria-label="TaxPrep workspaces"><button aria-pressed={view==='payslips'} onClick={()=>setView('payslips')}>Payslip dashboard</button><button aria-pressed={view==='statements'} onClick={()=>setView('statements')}>Statement analysis</button><button aria-pressed={view==='documents'} onClick={()=>setView('documents')}>Try document intake</button><button aria-pressed={view==='expenses'} onClick={()=>setView('expenses')}>Expense demo</button></nav>
+      {(view === 'expenses' || view === 'documents') && <section className="hero" aria-labelledby="page-title">
         <p className="eyebrow">Australian expense preparation demo</p>
         <h1 id="page-title">Organise expenses. See what needs checking.</h1>
         <p className="intro">
@@ -45,7 +46,7 @@ function App() {
         </details>
       </section>}
 
-      {view === 'statements' ? <Suspense fallback={<p role="status">Loading statement analyser…</p>}><StatementDashboard /></Suspense> : view === 'documents' ? <Suspense fallback={<p role="status">Loading document workspace…</p>}><DocumentWorkspace /></Suspense> : <GuidedDemo />}
+      {view === 'payslips' ? <Suspense key="payslips" fallback={<p role="status">Loading payslip dashboard…</p>}><PayslipDashboard /></Suspense> : view === 'statements' ? <Suspense key="statements" fallback={<p role="status">Loading statement analyser…</p>}><StatementDashboard /></Suspense> : view === 'documents' ? <Suspense key="documents" fallback={<p role="status">Loading document workspace…</p>}><DocumentWorkspace /></Suspense> : <GuidedDemo />}
 
       <details className="developer-details">
         <summary>Developer connection check</summary>
