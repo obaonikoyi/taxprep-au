@@ -26,7 +26,7 @@ try {
   assert.equal((await context.request.get(new URL('/api/not-a-route', base).href)).status(), 404);
   const response = await page.goto(base.href);
   assert.equal(response.status(), 200);
-  await button('Expense demo').click();
+  await button('Guided example').click();
   await page.getByRole('heading', { name: 'Organise expenses. See what needs checking.' }).waitFor();
   await page.getByText('Try one useful task: a phone expense', { exact: true }).click();
   await page.screenshot({ path: artifacts + 'landing-desktop.png', fullPage: true });
@@ -51,7 +51,7 @@ try {
   assert.ok(report.includes('$18.00'));
   assert.ok(report.includes('Evidence missing'));
   await button('Save progress').click();
-  await page.reload(); await button('Expense demo').click(); await button('Resume saved progress').click();
+  await page.reload(); await button('Guided example').click(); await button('Resume saved progress').click();
   await page.getByText('$18.00 recorded work portion', { exact: true }).waitFor();
   await page.locator('#guided-demo').screenshot({ path: artifacts + 'summary-desktop.png' });
   await page.setViewportSize({ width: 390, height: 844 });

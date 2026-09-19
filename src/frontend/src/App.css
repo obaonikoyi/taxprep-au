@@ -228,3 +228,18 @@ main { width: min(1240px, calc(100% - 40px)); }
 @media(max-width:760px) { main { width: calc(100% - 28px); } }
 
 .workspace-nav{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:16px 0;border-bottom:1px solid #dce7e2}.workspace-nav button{border:0;background:transparent;color:#6d8075;padding:11px 16px;border-radius:8px;cursor:pointer;font-weight:650;font-size:.83rem}.workspace-nav button[aria-pressed=true]{color:#173e32;background:#e4ede2}.workspace-nav button:hover{background:#eaf1e7}.workspace-nav button:focus-visible{outline:3px solid #a5ccb8}
+
+/* Tool names explain the task before users enter a workspace. */
+.brand small { display: block; margin-top: 4px; color: #5a7065; font-size: .7rem; font-weight: 450; }
+.workspace-nav { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; padding: 16px 0; }
+.workspace-nav button { text-align: left; padding: 13px 16px; min-height: 64px; border: 1px solid transparent; }
+.workspace-nav button strong { display: block; font-size: .88rem; }
+.workspace-nav button small { display: block; margin-top: 6px; color: #50695c; font-size: .72rem; font-weight: 450; }
+.workspace-nav button[aria-pressed=true] { border-color: #c7d8ca; background: #eaf2e9; }
+.compact-hero { padding: 36px 0; }.compact-hero h1 { font-size: clamp(2rem, 4vw, 3rem); line-height: 1.15; }.compact-hero .intro { font-size: 1rem; }
+.developer-details { font-size: .8rem; margin-top: 18px; }
+@media (max-width: 650px) {
+  .workspace-nav { gap: 5px; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 12px 0; }
+  .workspace-nav button { min-height: 64px; padding: 10px 12px; }.workspace-nav button strong { font-size: .81rem; }.workspace-nav button small { font-size: .67rem; }
+  .brand small { font-size: .63rem; }.site-header { padding: 18px 0; }
+}

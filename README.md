@@ -10,6 +10,8 @@ TaxPrep helps Australian workers understand their pay, track withholding and rec
 
 ## Payslip dashboard
 
+Follow **Add payslips → Check figures → View summary**. Own files open for review immediately; each confirmation takes you to the next payslip. Use **Pay / Tax / Super** to choose a chart. **Use my own payslips** clears the fictional example. The mobile review uses selectable cards, and clearing a history asks you to confirm.
+
 Upload supported labelled summary PDFs or enter figures manually, review their source and confirm the period amounts. See gross and net pay, withholding dollars/percentage and recorded super across employers and financial years. Switch payday/month charts, inspect exact values, check observed changes and export a report with source references and corrections.
 
 The first automatic reader supports the **PAYSLIP SUMMARY v1** layout demonstrated by the example, not arbitrary employer PDFs. Limits: 20 files per batch, 2 MB and one native-text page each, 100 records per session. Other layouts and scans need manual entry. Required missing values are not zero; super can stay unknown. User files need confirmation before charts, edits invalidate it, repeated files/pay identities are blocked and cumulative YTD fields are excluded.
@@ -20,7 +22,7 @@ Next: [Milestone 15 — tax outlook](https://github.com/obaonikoyi/taxprep-au/is
 
 ## Statement analysis
 
-The **Statement analysis** workspace reads a supported native-text CommBank PDF or a CSV with `Date,Description,Amount` headings. It shows money received, money out, net movement, monthly totals, suggested categories, possible recurring payments and similar entries. Search the transactions, correct categories, add work-review notes and download an offline report for the selected dates.
+The **Bank spending** workspace reads a supported native-text CommBank PDF or a CSV with `Date,Description,Amount` headings. It shows money received, money out, net movement, monthly totals, suggested categories, possible recurring payments and similar entries. Search the transactions, correct categories, add work-review notes and download an offline report for the selected dates.
 
 PDF imports must match every running balance and the printed totals. CSV totals have an explicit **balance check unavailable** label. Transfers and repayments remain part of cash movement; deposits are never treated as gross employment income. Category suggestions use transparent keyword rules, not generative AI or tax eligibility decisions.
 
@@ -28,7 +30,7 @@ Statement files are processed in the browser tab, with no document upload, model
 
 ## Document intake preview
 
-Choose **Try document intake** in the [standalone demo](https://taxprep-au-production.up.railway.app). Select **2025–26** and the employee example, then **Try sample documents**. Review both extracted records and link them to count a $45 payment once with two sources. Add the missing work details, choose **Assess phone expense**, and complete the remaining conditions. The $45 sample at 40% work use illustrates $18, with tax review explicitly pending. Download the report with evidence, questions and source versions.
+Choose **Tax documents** in the [standalone demo](https://taxprep-au-production.up.railway.app). Select **2025–26** and the employee example, then **Try sample documents**. Review both extracted records and link them to count a $45 payment once with two sources. Add the missing work details, choose **Assess phone expense**, and complete the remaining conditions. The $45 sample at 40% work use illustrates $18, with tax review explicitly pending. Download the report with evidence, questions and source versions.
 
 Milestone 10 adds real browser OCR for bounded fictional CSV/PDF/PNG/JPG inputs, original-source review, duplicate/refund/date flags, corrections and export. Documents stay in the tab; no external AI account is required. Refreshing clears the document session. This prepares evidence, not approved deductions or a full tax return. See [implementation and limits](docs/MILESTONE_10_DOCUMENT_INTAKE.md).
 

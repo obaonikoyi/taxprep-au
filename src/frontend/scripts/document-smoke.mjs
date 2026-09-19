@@ -15,7 +15,7 @@ export async function verifyDocuments(context, base, artifacts) {
   let preparation;
   async function setup() {
     await page.goto(base.href);
-    await button('Try document intake').click();
+    await button('Tax documents').click();
     await page.getByLabel('Financial year', { exact: true }).selectOption('other');
     await page.getByText('This prototype does not cover that year or situation.', { exact: false }).waitFor();
     assert.equal(await button('Start document review').isDisabled(), true);
@@ -161,7 +161,7 @@ export async function verifyDocuments(context, base, artifacts) {
     await page.getByText('This file does not have a valid PDF signature.', { exact: true }).waitFor();
     await button('Retry broken.pdf').click();
     await page.getByText('This file does not have a valid PDF signature.', { exact: true }).waitFor();
-    await page.reload(); await button('Try document intake').click();
+    await page.reload(); await button('Tax documents').click();
     assert.equal(await page.locator('.evidence-card').count(), 0);
     assert.deepEqual(pageErrors, []);
     const result = { passed: true, elapsedMs: Date.now() - started, evaluation, preparation, taxPosition, modelRequests: 0, modelCostAud: 0, hostingAndDeviceCost: 'not measured', documentUploads: 0, repeatedFile: 'kept once', receiptBankMatch: '45.00 counted once', duplicateReceipt: 'unresolved until exclusion', correctionsRetainOriginal: true, phoneAssessment: { illustrationAud: 18, fixedRateSeparateAud: 0, partialReimbursement: 'unresolved', supplierCredit: 'unresolved', duplicateBlocksAssessment: true, claimReady: false, qualifiedReview: 'pending', exportedRuleVersion: 'employee-phone-2025-26.v1-draft' }, deleted: true, reloadEmpty: true, mobileOverflow: false, pageErrors };

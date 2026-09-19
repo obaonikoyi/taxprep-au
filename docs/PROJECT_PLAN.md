@@ -25,6 +25,8 @@ The first useful result should require no account: try fictional payslips or ent
 
 Annual-income statement extraction [#30](https://github.com/obaonikoyi/taxprep-au/issues/30) remains a deferred input format for reconciliation. An annual statement and the payslips it summarises must not be counted as separate income.
 
+Milestone 14 usability follow-up: [#40](https://github.com/obaonikoyi/taxprep-au/issues/40) simplifies navigation and the Add → Check → Summary journey before Milestone 15 begins.
+
 ## Eight user cases
 
 1. Try a fictional history immediately, without creating an account.
