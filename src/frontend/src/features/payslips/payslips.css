@@ -187,3 +187,49 @@
   .pay-outlook { padding: 17px; }
   .pay-outlook-dates ol { columns: 1; }
 }
+
+
+/* Milestone 15B-1: whole-year tax profile readiness, never a tax result. */
+.tax-readiness { margin-top: 30px; padding: 26px; border: 1px solid #d9ded4; border-radius: 16px; background: #fffdf8; }
+.tax-readiness-heading, .tax-readiness-result-heading { display: flex; align-items: start; justify-content: space-between; gap: 20px; }
+.tax-readiness-heading h3, .tax-readiness-result-heading h4 { margin: 0 0 8px; }
+.tax-readiness-heading p:not(.eyebrow), .tax-readiness-result-heading p { margin: 0; max-width: 700px; color: var(--pay-muted); font-size: .86rem; line-height: 1.65; }
+.tax-readiness-badge { flex-shrink: 0; display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border-radius: 999px; background: #e4f2e8; color: #245a3d; font-size: .72rem; font-weight: 700; }
+.tax-readiness-badge.locked { background: #f0ece4; color: #5a4f3b; }
+.tax-readiness-badge.warning { background: #fff0d8; color: #7a531c; }
+.tax-readiness-badge.info { background: #e9eff8; color: #365778; }
+.tax-readiness-scope-note { margin: 18px 0 0; padding: 13px 15px; border-left: 3px solid #8ba9a0; background: #f2f7f5; color: #466158; font-size: .8rem; line-height: 1.6; }
+.tax-readiness-coverage, .tax-readiness-counts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 22px 0 12px; }
+.tax-readiness-coverage > div, .tax-readiness-counts > div { display: grid; gap: 6px; padding: 16px; border: 1px solid #e2e4dd; border-radius: 10px; background: #fff; }
+.tax-readiness-coverage span, .tax-readiness-counts span { color: var(--pay-muted); font-size: .74rem; }
+.tax-readiness-coverage strong, .tax-readiness-counts strong { font-size: 1rem; overflow-wrap: anywhere; }
+.tax-readiness-employers { margin: 0 0 20px; color: var(--pay-muted); font-size: .78rem; line-height: 1.6; }
+.tax-readiness-blocked { margin-top: 20px; padding: 18px; border: 1px solid #ead8b8; border-radius: 10px; background: #fff8eb; }
+.tax-readiness-blocked p { margin: 7px 0 0; color: #6c5a37; font-size: .84rem; line-height: 1.65; }
+.tax-readiness-lock { margin: 22px 0; padding: 16px 18px; border: 1px solid #e3cf9c; border-radius: 10px; background: #fff8e8; }
+.tax-readiness-lock p { margin: 7px 0 0; color: #675637; font-size: .8rem; line-height: 1.65; }
+.tax-readiness-lock.final { margin: 18px 0; }
+.tax-readiness-form { display: grid; gap: 10px; }
+.tax-readiness-form label { display: grid; grid-template-columns: minmax(0, 1fr) minmax(180px, 230px); align-items: center; gap: 20px; padding: 15px 0; border-bottom: 1px solid #e6e7e1; }
+.tax-readiness-form label > span { display: grid; gap: 6px; }
+.tax-readiness-form label strong { font-size: .84rem; line-height: 1.5; }
+.tax-readiness-form label small { color: var(--pay-muted); font-size: .74rem; line-height: 1.55; }
+.tax-readiness-form select { width: 100%; }
+.tax-readiness-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+.tax-readiness-result { margin-top: 26px; padding-top: 24px; border-top: 1px solid #e0e2dc; }
+.tax-readiness-list { margin: 14px 0; padding: 16px 18px; border-radius: 10px; background: #f2f6f3; font-size: .8rem; line-height: 1.6; }
+.tax-readiness-list.warning { background: #fff5e8; color: #664b24; }
+.tax-readiness-list.ready { background: #edf7ef; color: #31593e; }
+.tax-readiness-list ul { margin-bottom: 0; padding-left: 20px; }
+.tax-readiness-list p { margin: 8px 0 0; }
+.tax-readiness-sources { margin-top: 18px; }
+.tax-readiness-sources ul { padding-left: 20px; }
+@media (max-width: 700px) {
+  .tax-readiness { padding: 20px; }
+  .tax-readiness-heading, .tax-readiness-result-heading { flex-direction: column; }
+  .tax-readiness-coverage, .tax-readiness-counts { grid-template-columns: 1fr; }
+  .tax-readiness-form label { grid-template-columns: 1fr; gap: 10px; }
+}
+@media (max-width: 420px) {
+  .tax-readiness { padding: 17px; }
+}
