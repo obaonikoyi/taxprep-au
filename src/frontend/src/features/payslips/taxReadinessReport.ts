@@ -2,6 +2,7 @@ import type { Payslip } from './payslip'
 import {
   answerLabel,
   TAX_READINESS_REVIEW,
+  TAX_READINESS_SOURCE_VERSION,
   TAX_READINESS_VERSION,
   taxReadinessQuestions,
   taxReadinessSources,
@@ -45,7 +46,7 @@ export function taxReadinessReport(
   return `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TaxPrep AU tax readiness</title><style>body{max-width:1000px;margin:40px auto;padding:0 20px;font:16px/1.6 system-ui;color:#173f35}table{width:100%;border-collapse:collapse;margin:16px 0 28px}td,th{padding:8px;border-bottom:1px solid #ddd;text-align:left;vertical-align:top;overflow-wrap:anywhere}.locked{padding:16px;border:1px solid #e3c78d;background:#fff7e6;border-radius:10px}@media print{body{font-size:10px}}@media(max-width:650px){table{font-size:11px}td,th{padding:4px}}</style>
 <h1>TaxPrep AU tax readiness</h1>
 <p><strong>Financial year:</strong> ${escape(coverage.year)}</p>
-<p><strong>Readiness version:</strong> ${escape(TAX_READINESS_VERSION)}</p>
+<p><strong>Readiness version:</strong> ${escape(TAX_READINESS_VERSION)}<br><strong>Terminology reference version:</strong> ${escape(TAX_READINESS_SOURCE_VERSION)}</p>
 <p><strong>Checked pay records:</strong> ${coverage.checkedSlips.length} across ${coverage.employerCount} employer(s).</p>
 <p><strong>Employers:</strong> ${coverage.employerNames.length ? coverage.employerNames.map(escape).join(', ') : 'None recorded'}</p>
 <div class="locked"><strong>Tax result locked</strong><p>${escape(TAX_READINESS_REVIEW)}</p><p>This report does not estimate a refund, debt or final tax. Recorded withholding is not final tax.</p></div>
