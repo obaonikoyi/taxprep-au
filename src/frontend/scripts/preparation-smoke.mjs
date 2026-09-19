@@ -14,6 +14,8 @@ export async function verifyPreparation(page, artifacts) {
   assert.deepEqual(await amounts(), ['Not reviewed', 'Not reviewed', '$18.00']);
   for (let i = 0; i < 3; i++) await workspace.locator('.income-card').nth(i).getByRole('button', { name: 'Confirm income record', exact: true }).click();
   assert.deepEqual(await amounts(), ['$82,150.00', '$17,100.00', '$18.00']);
+  assert.equal(await workspace.locator('.tax-balance').count(), 0);
+  assert.ok((await workspace.locator('.tax-blockers').innerText()).includes('not an approved deduction'));
   const first = workspace.getByRole('article', { name: 'Income record 1', exact: true });
   await first.getByLabel('Gross income (AUD)', { exact: true }).fill('65000');
   assert.deepEqual(await amounts(), ['$18,150.00', '$3,600.00', '$18.00']);

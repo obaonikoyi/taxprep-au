@@ -1,0 +1,32 @@
+ATO source capture — 2026-09-19
+URL: https://www.ato.gov.au/individuals-and-families/income-deductions-offsets-and-records/tax-offsets/low-income-tax-offset
+Selected current guidance and 2025–26 section; unrelated year tables omitted where present.
+
+Low income tax offset
+Check if you are eligible for the low income tax offset (LITO).
+Last updated
+8 June 2026
+Print or Download
+Eligibility for the tax offset
+You may be eligible for the low income tax offset (LITO) if you earn up to $66,667.
+To be eligible, you need to:
+be an
+Australian resident for tax purposes
+pay tax on your taxable income
+have a taxable income below certain income thresholds.
+The amount of LITO you receive will depend on your taxable income. If you earned:
+$37,500 or less, you will get the maximum offset of $700
+between $37,501 and $45,000, you will get $700 minus 5 cents for every $1 above $37,500
+between $45,001 and $66,667, you will get $325 minus 1.5 cents for every $1 above $45,000.
+We will work out your offset and reduce your tax payable by this amount.
+Receiving the tax offset
+You don't need to do anything to claim the LITO except lodge your tax return. We work out the offset after you lodge.
+You can see the tax offset amount on your notice of assessment at
+Less
+non-refundable tax offsets
+.
+This offset reduces the tax you need to pay and can only reduce your tax payable to $0. It is not a separate payment. Any unused amount can't be refunded.
+QC
+105020
+
+© Australian Taxation Office for the Commonwealth of Australia. Reused under the source page copyright notice permitting copying/adaptation. No ATO endorsement.

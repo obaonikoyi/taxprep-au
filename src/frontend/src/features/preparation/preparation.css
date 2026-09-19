@@ -25,3 +25,17 @@
 .preparation-gaps ul { padding-left: 0; list-style: none; }
 .preparation-gaps li { display: grid; grid-template-columns: 85px 1fr; gap: 16px; padding: 15px 0; border-top: 1px solid #ead9b5; line-height: 1.7; font-size: .88rem; overflow-wrap: anywhere; }
 @media(max-width:760px) { .preparation-totals { grid-template-columns: 1fr; } .preparation-step, .preparation-gaps { padding: 18px; } .preparation-gaps li { grid-template-columns: 1fr; gap: 4px; } }
+.tax-balance { padding: 24px; background: #edf5ef; border-left: 4px solid #287151; border-radius: 8px; }
+.tax-balance > span, .tax-balance > strong { display: block; }
+.tax-balance > strong { margin: 10px 0; font-size: 2rem; }
+.tax-balance p { margin-bottom: 0; }
+.tax-table-wrap { overflow-x: auto; margin: 24px 0; }
+.tax-position table { width: 100%; border-collapse: collapse; }
+.tax-position caption { text-align: left; font-weight: 700; margin-bottom: 16px; }
+.tax-position th, .tax-position td { text-align: left; padding: 16px 10px; border-bottom: 1px solid #d3e1d8; vertical-align: top; }
+.tax-position td { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.tax-position small { display: block; font-weight: 400; line-height: 1.6; margin-top: 6px; }
+.tax-position details, .tax-blockers { line-height: 1.7; overflow-wrap: anywhere; }
+.tax-position summary { cursor: pointer; font-weight: 650; }
+.tax-blockers { padding: 20px; margin: 20px 0; background: #fff7e6; border-radius: 8px; }
+.tax-blockers li { margin-top: 8px; }

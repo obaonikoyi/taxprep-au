@@ -118,3 +118,7 @@ The script starts/stops its own API and Vite processes on 5087/5173 (stop your d
 ## Income and combined handover
 
 Milestone 12A adds unit cases for annual-income validation, partial cent totals, duplicate decisions, changes that invalidate review, scope gaps and escaped reports. `preparation-smoke.mjs` is called from the existing actual document browser journey, so both production-container and public-hosted verification test the combined income/evidence export and offline reopening. Data remains tab-only; clearing the document session clears preparation inputs as well.
+
+## Tax-position calculation
+
+Milestone 12B adds `features/tax-position` with integer-cent arithmetic, explicit scope blockers and source bindings. `verify-tax-sources.mjs` runs before tests/builds. `tax-position-smoke.mjs` runs in the production and hosted document journey, including both balance directions, unknown/expense blockers, edit invalidation, thresholds and the offline handover. The result remains fictional; see [rule and rounding contract](MILESTONE_12B_TAX_POSITION.md).
