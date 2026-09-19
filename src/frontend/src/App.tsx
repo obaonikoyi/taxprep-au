@@ -46,7 +46,7 @@ function App() {
         </details>
       </section>}
 
-      {view === 'payslips' ? <Suspense fallback={<p role="status">Loading payslip dashboard…</p>}><PayslipDashboard /></Suspense> : view === 'statements' ? <Suspense fallback={<p role="status">Loading statement analyser…</p>}><StatementDashboard /></Suspense> : view === 'documents' ? <Suspense fallback={<p role="status">Loading document workspace…</p>}><DocumentWorkspace /></Suspense> : <GuidedDemo />}
+      {view === 'payslips' ? <Suspense key="payslips" fallback={<p role="status">Loading payslip dashboard…</p>}><PayslipDashboard /></Suspense> : view === 'statements' ? <Suspense key="statements" fallback={<p role="status">Loading statement analyser…</p>}><StatementDashboard /></Suspense> : view === 'documents' ? <Suspense key="documents" fallback={<p role="status">Loading document workspace…</p>}><DocumentWorkspace /></Suspense> : <GuidedDemo />}
 
       <details className="developer-details">
         <summary>Developer connection check</summary>
