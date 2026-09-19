@@ -32,7 +32,31 @@ export async function verifyPayslips(context, base, artifacts) {
     assert.equal(await page.locator('.pay-chart-data tbody tr').count(), 6);
     await page.getByLabel('Employer', { exact: true }).selectOption('garden example studio');
     assert.deepEqual(await totals(), ['$2,200.00', '$1,960.00', '$240.00', '$120.00']);
+
+    // Optional outlook stays bounded to one employer/year and never scales withholding for changed gross.
+    await page.getByLabel('Financial year', { exact: true }).selectOption('2026–27');
+    await page.getByLabel('Next payday', { exact: true }).fill('2027-06-01');
+    await page.getByLabel('Pay frequency', { exact: true }).selectOption('fortnightly');
+    await page.getByLabel('I expect these future pays to be regular, not a bonus, back pay or adjustment.', { exact: true }).check();
+    await button('Show pay outlook').click();
+    const outlook = page.getByLabel('Pay outlook results', { exact: true });
+    await outlook.waitFor();
+    assert.ok((await outlook.innerText()).includes('20% less gross pay'));
+    assert.ok((await outlook.innerText()).includes('20% more gross pay'));
+    assert.ok((await outlook.innerText()).includes('Not estimated'));
+    assert.ok((await outlook.innerText()).includes('Partial recorded history'));
+    const outlookDownload = page.waitForEvent('download'); await button('Download outlook report').click();
+    await (await outlookDownload).saveAs(artifacts + 'pay-outlook.html');
+    const outlookReport = readFileSync(artifacts + 'pay-outlook.html', 'utf8');
+    assert.ok(outlookReport.includes('pay-outlook-arithmetic-v1'));
+    assert.ok(outlookReport.includes('Partial recorded history'));
+    assert.ok(outlookReport.includes('Not estimated'));
+    await page.screenshot({ path: artifacts + 'pay-outlook-desktop.png', fullPage: true });
+    await page.setViewportSize({ width: 390, height: 844 }); await noOverflow();
+    await page.screenshot({ path: artifacts + 'pay-outlook-mobile.png', fullPage: true });
+    await page.setViewportSize({ width: 1440, height: 1000 });
     await page.getByLabel('Employer', { exact: true }).selectOption('all');
+    await page.getByLabel('Financial year', { exact: true }).selectOption('all');
     await page.getByLabel('Chart grouping', { exact: true }).selectOption('month');
     await page.getByText('View exact chart figures', { exact: true }).click();
     await page.screenshot({ path: artifacts + 'payslip-dashboard-desktop.png', fullPage: true });
@@ -112,7 +136,7 @@ export async function verifyPayslips(context, base, artifacts) {
     assert.deepEqual(await page.evaluate(() => Object.keys(localStorage).filter(k => /payslip/i.test(k))), []);
     assert.deepEqual(errors, []); assert.ok(requests.every(r => r.method === 'GET'));
     assert.ok(requests.every(r => r.url.startsWith(base.origin) || r.url.startsWith('blob:') || r.url.startsWith('data:')));
-    const result = { passed: true, guidedSteps: true, automaticBatchReview: true, noUnconfirmedZeroTotals: true, manualEntry: true, correctionInvalidates: true, duplicateBlocked: true, badBatchAtomic: true, exampleToOwnData: true, chartSwitching: true, yearAndEmployerFilters: true, emptyFilterRecovery: true, offlineExport: true, clearConfirmation: true, clearRefreshAndWorkspaceChange: true, mobileOverflow: false, mobileReviewActionsVisible: true, documentUploads: 0, modelRequests: 0, pageErrors: errors };
+    const result = { passed: true, guidedSteps: true, automaticBatchReview: true, noUnconfirmedZeroTotals: true, manualEntry: true, correctionInvalidates: true, duplicateBlocked: true, badBatchAtomic: true, exampleToOwnData: true, chartSwitching: true, yearAndEmployerFilters: true, emptyFilterRecovery: true, offlineExport: true, payOutlook: true, payOutlookWithholdingNotScaled: true, payOutlookMobile: true, clearConfirmation: true, clearRefreshAndWorkspaceChange: true, mobileOverflow: false, mobileReviewActionsVisible: true, documentUploads: 0, modelRequests: 0, pageErrors: errors };
     writeFileSync(artifacts + 'payslip-evaluation.json', JSON.stringify(result, null, 2)); return result;
   } catch (e) { await page.screenshot({ path: artifacts + 'payslip-failure.png', fullPage: true }); console.error((await page.locator('body').innerText()).slice(-10000)); throw e } finally { await page.close() }
 }
