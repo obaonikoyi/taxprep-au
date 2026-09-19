@@ -55,6 +55,48 @@ export async function verifyPayslips(context, base, artifacts) {
     await page.setViewportSize({ width: 390, height: 844 }); await noOverflow();
     await page.screenshot({ path: artifacts + 'pay-outlook-mobile.png', fullPage: true });
     await page.setViewportSize({ width: 1440, height: 1000 });
+
+    // Tax readiness is whole-year/all-employer profile capture only; the tax result gate always stays locked.
+    assert.ok((await page.locator('.tax-readiness').innerText()).includes('intentionally uses all employers recorded for 2026–27'));
+    assert.deepEqual(await page.locator('.tax-readiness-coverage strong').allTextContents(), ['6', '2', '2026–27']);
+    await button('Start tax readiness').click();
+    for (const [key, value] of Object.entries({
+      resident: 'yes',
+      payCoverage: 'yes',
+      otherIncome: 'no',
+      studyLoan: 'no',
+      declarationsKnown: 'yes',
+      simpleFamily: 'yes',
+      medicareSpecial: 'no',
+      privateHealth: 'no',
+      otherAdjustments: 'no',
+      irregularPay: 'no',
+    })) await page.getByLabel(`Tax readiness: ${key}`, { exact: true }).selectOption(value);
+    await button('Review tax readiness').click();
+    let taxReadiness = page.getByLabel('Tax readiness result', { exact: true });
+    await taxReadiness.waitFor();
+    assert.ok((await taxReadiness.innerText()).includes('Profile facts collected'));
+    assert.ok((await taxReadiness.innerText()).includes('10/10 within current profile'));
+    assert.ok((await taxReadiness.innerText()).includes('Tax result remains locked'));
+    assert.ok((await taxReadiness.innerText()).includes('No refund, debt or final-tax number'));
+    const readinessDownload = page.waitForEvent('download'); await button('Download readiness report').click();
+    await (await readinessDownload).saveAs(artifacts + 'tax-readiness.html');
+    const readinessReport = readFileSync(artifacts + 'tax-readiness.html', 'utf8');
+    assert.ok(readinessReport.includes('tax-readiness-profile-v1'));
+    assert.ok(readinessReport.includes('Tax result locked'));
+    assert.ok(readinessReport.includes('SHA-256'));
+    assert.ok(readinessReport.includes('6 across 2 employer(s)'));
+    await page.getByLabel('Tax readiness: studyLoan', { exact: true }).selectOption('yes');
+    assert.equal(await page.getByLabel('Tax readiness result', { exact: true }).count(), 0);
+    await button('Review tax readiness').click();
+    taxReadiness = page.getByLabel('Tax readiness result', { exact: true });
+    assert.ok((await taxReadiness.innerText()).includes('Outside current prototype'));
+    assert.ok((await taxReadiness.innerText()).includes('Tax result remains locked'));
+    await page.screenshot({ path: artifacts + 'tax-readiness-desktop.png', fullPage: true });
+    await page.setViewportSize({ width: 390, height: 844 }); await noOverflow();
+    await page.screenshot({ path: artifacts + 'tax-readiness-mobile.png', fullPage: true });
+    await page.setViewportSize({ width: 1440, height: 1000 });
+
     await page.getByLabel('Employer', { exact: true }).selectOption('all');
     await page.getByLabel('Financial year', { exact: true }).selectOption('all');
     await page.getByLabel('Chart grouping', { exact: true }).selectOption('month');
@@ -136,7 +178,7 @@ export async function verifyPayslips(context, base, artifacts) {
     assert.deepEqual(await page.evaluate(() => Object.keys(localStorage).filter(k => /payslip/i.test(k))), []);
     assert.deepEqual(errors, []); assert.ok(requests.every(r => r.method === 'GET'));
     assert.ok(requests.every(r => r.url.startsWith(base.origin) || r.url.startsWith('blob:') || r.url.startsWith('data:')));
-    const result = { passed: true, guidedSteps: true, automaticBatchReview: true, noUnconfirmedZeroTotals: true, manualEntry: true, correctionInvalidates: true, duplicateBlocked: true, badBatchAtomic: true, exampleToOwnData: true, chartSwitching: true, yearAndEmployerFilters: true, emptyFilterRecovery: true, offlineExport: true, payOutlook: true, payOutlookWithholdingNotScaled: true, payOutlookMobile: true, clearConfirmation: true, clearRefreshAndWorkspaceChange: true, mobileOverflow: false, mobileReviewActionsVisible: true, documentUploads: 0, modelRequests: 0, pageErrors: errors };
+    const result = { passed: true, guidedSteps: true, automaticBatchReview: true, noUnconfirmedZeroTotals: true, manualEntry: true, correctionInvalidates: true, duplicateBlocked: true, badBatchAtomic: true, exampleToOwnData: true, chartSwitching: true, yearAndEmployerFilters: true, emptyFilterRecovery: true, offlineExport: true, payOutlook: true, payOutlookWithholdingNotScaled: true, payOutlookMobile: true, taxReadiness: true, taxReadinessWholeYear: true, taxReadinessLocked: true, taxReadinessExport: true, taxReadinessMobile: true, clearConfirmation: true, clearRefreshAndWorkspaceChange: true, mobileOverflow: false, mobileReviewActionsVisible: true, documentUploads: 0, modelRequests: 0, pageErrors: errors };
     writeFileSync(artifacts + 'payslip-evaluation.json', JSON.stringify(result, null, 2)); return result;
   } catch (e) { await page.screenshot({ path: artifacts + 'payslip-failure.png', fullPage: true }); console.error((await page.locator('body').innerText()).slice(-10000)); throw e } finally { await page.close() }
 }
