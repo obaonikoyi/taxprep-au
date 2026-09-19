@@ -7,9 +7,10 @@
   "initialDeploymentId": "87ca38d9-c44f-46fa-a3b3-2b5aa23af8fb",
   "initialCommit": "e9e5fac6d469ee117b9796eaf306723401fecf61",
   "portfolioPublished": false,
-  "latestMilestone": 14,
-  "latestFeatureCommit": "3c8c9d4c237c9d85d4dfa7236b4f52328e730b81",
-  "latestFeatureDeploymentId": "60a1d325-8897-4b44-b4a8-7cc488ffe5ab",
-  "latestMilestoneStatus": "Payslip dashboard published with guided Add / Check / Summary steps, clearer pay explanations and mobile review; forecasts remain later work",
-  "qualifiedTaxReview": "pending"
+  "latestMilestone": 15,
+  "latestFeatureCommit": "3fbbe515e29132f5dcc5d713499f312f10b6e056",
+  "latestFeatureDeploymentId": "cd1067bf-d7ef-4e97-a48f-0f34b6de1d96",
+  "latestMilestoneStatus": "Milestone 15A pay outlook published with explicit one-employer scenarios, calendar pay dates and source-linked export; final tax and refund estimates remain out of scope",
+  "qualifiedTaxReview": "pending",
+  "latestMilestonePhase": "15A"
 }
