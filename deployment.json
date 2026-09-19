@@ -7,10 +7,9 @@
   "initialDeploymentId": "87ca38d9-c44f-46fa-a3b3-2b5aa23af8fb",
   "initialCommit": "e9e5fac6d469ee117b9796eaf306723401fecf61",
   "portfolioPublished": false,
-  "latestMilestone": 12,
-  "latestFeatureCommit": "d706398db7957f9ed89cd1ef5919c0d91acd0795",
-  "latestFeatureDeploymentId": "4425d8fb-5a28-4868-ad37-0e18004aff39",
-  "latestMilestoneStatus": "12B fictional employee calculation implemented; qualified tax-rule and rounding review pending",
-  "qualifiedTaxReview": "pending",
-  "latestMilestonePart": "B"
+  "latestMilestone": 13,
+  "latestFeatureCommit": "ed4e5dbfe0dd2309014b57c694c5a40af4925e83",
+  "latestFeatureDeploymentId": "f092eade-d1ca-4b74-934b-61f781b5f338",
+  "latestMilestoneStatus": "Local statement analysis and refreshed dashboard implemented; tax conclusions remain separately gated",
+  "qualifiedTaxReview": "pending"
 }

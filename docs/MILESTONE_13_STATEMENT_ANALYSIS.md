@@ -51,3 +51,12 @@ The older **Expense demo** and **Try document intake** workspaces retain their e
 ## Next work
 
 Extract reviewable gross-income/withholding fields from a bounded income statement (#30), then link supporting evidence to selected statement transactions. Broader bank formats and AI-assisted explanations can follow with explicit accuracy and data-handling contracts. This release is a useful statement analyser, not a complete tax-return service.
+
+## Publication record
+
+- Feature merged in [PR #33](https://github.com/obaonikoyi/taxprep-au/pull/33), commit `ed4e5dbfe0dd2309014b57c694c5a40af4925e83`.
+- [Feature CI](https://github.com/obaonikoyi/taxprep-au/actions/runs/35414464489) passed Frontend, Backend and Production container: 273 frontend tests, lint/build, API and existing browser regressions, plus the statement journey.
+- Production artifact `10575855858` confirms reconciled synthetic PDF totals, category corrections with unchanged source amounts, pagination/filtering/date selection, invalid-import preservation, zero activity, CSV, clear/refresh and offline export. Desktop/mobile screenshots inspected; no page overflow, page errors, statement uploads or model requests.
+- Railway feature deployment `f092eade-d1ca-4b74-934b-61f781b5f338`. The publication PR updates `deployment.json` to run the actual public visitor journey before merge.
+- [Standalone app](https://taxprep-au-production.up.railway.app) only. Portfolio site unchanged; private statements and their extracted records are not published.
+- #32 tracks this milestone. #30 remains the next separate income-extraction stage; qualified tax review remains open in #21 and #28.
