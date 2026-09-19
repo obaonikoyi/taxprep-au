@@ -1,6 +1,6 @@
 # Milestone 15A — pay outlook and earnings scenarios
 
-Status: feature implementation in progress for [issue #43](https://github.com/obaonikoyi/taxprep-au/issues/43). This is the first bounded part of Milestone 15. It does **not** add a personalised tax calculation.
+Status: published for [issue #43](https://github.com/obaonikoyi/taxprep-au/issues/43). This is the first bounded part of Milestone 15. It does **not** add a personalised tax calculation.
 
 ## User outcome
 
@@ -86,4 +86,6 @@ Automated coverage includes:
 - desktop/mobile screenshots and overflow checks; and
 - existing request monitoring to confirm no document upload or model call is introduced.
 
-The standalone publication and live evidence are recorded separately after feature CI passes. The portfolio website remains unchanged.
+Feature [PR #44](https://github.com/obaonikoyi/taxprep-au/pull/44) merged as `3fbbe515e29132f5dcc5d713499f312f10b6e056`. Final feature CI run `35421668220` passed frontend lint/tests/build, backend/API plus browser smoke, and the production-container browser journey.
+
+Railway production deployment `cd1067bf-d7ef-4e97-a48f-0f34b6de1d96` serves that exact merge commit at the existing standalone URL. The publication PR updates `deployment.json` and must pass **Verify hosted demo** against the public Railway deployment before merge; final hosted evidence is recorded in issue #43. The portfolio website remains unchanged.
