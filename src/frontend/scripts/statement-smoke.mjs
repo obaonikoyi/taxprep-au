@@ -1,0 +1,49 @@
+import assert from 'node:assert/strict';
+import {readFileSync,writeFileSync} from 'node:fs';
+export async function verifyStatements(context,base,artifacts){
+ const page=await context.newPage(),errors=[],requests=[];
+ page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>requests.push({url:r.url(),method:r.method()}));
+ const button=name=>page.getByRole('button',{name,exact:true});
+ const totals=()=>page.locator('.statement-metrics strong').allTextContents();
+ const upload=async(name)=>{const f=JSON.parse(readFileSync(new URL(`../../../sample-data/statements/${name}.json`,import.meta.url),'utf8'));await page.getByLabel('Choose bank statement',{exact:true}).setInputFiles({name:name+'.pdf',mimeType:'application/pdf',buffer:Buffer.from(f.pdfBase64,'base64')});await page.getByRole('status').filter({hasText:/transactions read|^$/}).first().waitFor();};
+ try{
+  await page.goto(base.href);await page.getByRole('heading',{name:'Your statements, made clear.',exact:true}).waitFor();
+  await page.screenshot({path:artifacts+'statement-landing-desktop.png',fullPage:true});
+  await button('Try example statement').click();await page.getByRole('status').filter({hasText:'33 transactions read.'}).waitFor();
+  assert.deepEqual(await totals(),['$12,649.00','$5,016.75','$7,632.25','33']);
+  assert.ok((await page.locator('.statement-period').innerText()).includes('Statement balances match'));
+  assert.ok((await page.locator('.statement-insights').innerText()).includes('Example Software Plan'));
+  assert.equal(await page.locator('.statement-transactions tbody tr').count(),20);
+  await button('Next').click();assert.equal(await page.locator('.statement-transactions tbody tr').count(),13);await button('Previous').click();
+  await page.getByLabel('Filter category',{exact:true}).selectOption('Transfers');assert.equal(await page.locator('.statement-transactions tbody tr').count(),3);
+  await page.getByLabel('Filter category',{exact:true}).selectOption('all');
+  await page.getByLabel('Search transactions',{exact:true}).fill('Harbour Repairs');
+  assert.equal(await page.locator('.statement-transactions tbody tr').count(),2);
+  await button('Review transaction 1').click();await page.getByLabel('Transaction category',{exact:true}).selectOption('Transport');
+  await page.getByLabel('Work relevance',{exact:true}).selectOption('check');
+  await page.getByLabel('Review note',{exact:true}).fill('Find the bill. <script>alert(1)</script>');await button('Apply review').click();
+  assert.ok((await page.locator('.statement-metrics').innerText()).includes('1 flagged'));
+  assert.deepEqual(await totals(),['$12,649.00','$5,016.75','$7,632.25','33']);
+  await page.getByLabel('Search transactions',{exact:true}).fill('');
+  await page.getByLabel('From date',{exact:true}).fill('2025-08-01');
+  assert.deepEqual(await totals(),['$8,449.00','$3,409.50','$5,039.50','23']);
+  await page.getByLabel('From date',{exact:true}).fill('2025-07-01');
+  await page.locator('.statement-metrics').screenshot({path:artifacts+'statement-totals-desktop.png'});
+  await page.locator('.statement-charts').screenshot({path:artifacts+'statement-charts-desktop.png'});
+  await page.setViewportSize({width:390,height:844});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+  await page.screenshot({path:artifacts+'statement-dashboard-mobile.png',fullPage:true});
+  const downloading=page.waitForEvent('download');await button('Download statement report').click();const download=await downloading;await download.saveAs(artifacts+'statement-analysis.html');
+  const html=readFileSync(artifacts+'statement-analysis.html','utf8');for(const value of ['$12,649.00','$5,016.75','Harbour Repairs','Flagged for work review','statement-analysis.v1','&lt;script&gt;'])assert.ok(html.includes(value),value);assert.ok(!html.includes('<script>'));
+  const offline=await context.newPage(),external=[];offline.on('request',r=>{if(/^https?:/.test(r.url()))external.push(r.url())});await offline.goto('file://'+artifacts+'statement-analysis.html');await offline.getByRole('heading',{name:'TaxPrep AU statement analysis',exact:true}).waitFor();assert.deepEqual(external,[]);await offline.close();
+  await upload('mismatch');await page.getByRole('alert').filter({hasText:'Statement check failed'}).waitFor();assert.deepEqual(await totals(),['$12,649.00','$5,016.75','$7,632.25','33']);
+  await upload('empty');await page.getByRole('status').filter({hasText:'0 transactions read.'}).waitFor();assert.deepEqual(await totals(),['$0.00','$0.00','$0.00','0']);
+  await page.getByLabel('Choose bank statement',{exact:true}).setInputFiles({name:'example.csv',mimeType:'text/csv',buffer:Buffer.from('Date,Description,Amount\n2025-07-01,Example market,-15.50\n2025-07-02,Transfer received,100')});await page.getByRole('status').filter({hasText:'2 transactions read.'}).waitFor();assert.deepEqual(await totals(),['$100.00','$15.50','$84.50','2']);
+  assert.ok((await page.locator('.statement-period').innerText()).includes('balance check unavailable'));
+  await button('Clear statement').click();assert.equal(await page.locator('.statement-metrics').count(),0);
+  await button('Try example statement').click();await page.getByRole('status').filter({hasText:'33 transactions read.'}).waitFor();
+  await page.reload();await page.getByRole('heading',{name:'Your statements, made clear.',exact:true}).waitFor();assert.equal(await page.locator('.statement-metrics').count(),0);
+  assert.deepEqual(await page.evaluate(()=>Object.keys(localStorage).filter(k=>/statement/i.test(k))),[]);
+  assert.deepEqual(errors,[]);assert.ok(requests.every(r=>r.method==='GET'));assert.ok(requests.every(r=>r.url.startsWith(base.origin)||r.url.startsWith('blob:')||r.url.startsWith('data:')));
+  const result={passed:true,syntheticOnly:true,rows:33,creditsAud:12649,debitsAud:5016.75,netAud:7632.25,balancesMatch:true,correctionsPreserveAmounts:true,dateFilter:true,mismatchPreservesSession:true,emptyStatement:true,csv:true,clearAndRefresh:true,offlineExport:true,mobileOverflow:false,documentUploads:0,modelRequests:0,pageErrors:errors};writeFileSync(artifacts+'statement-evaluation.json',JSON.stringify(result,null,2));return result;
+ }catch(e){await page.screenshot({path:artifacts+'statement-failure.png',fullPage:true});console.error((await page.locator('body').innerText()).slice(-11000));throw e}finally{await page.close()}
+}

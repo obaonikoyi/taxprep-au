@@ -122,3 +122,7 @@ Milestone 12A adds unit cases for annual-income validation, partial cent totals,
 ## Tax-position calculation
 
 Milestone 12B adds `features/tax-position` with integer-cent arithmetic, explicit scope blockers and source bindings. `verify-tax-sources.mjs` runs before tests/builds. `tax-position-smoke.mjs` runs in the production and hosted document journey, including both balance directions, unknown/expense blockers, edit invalidation, thresholds and the offline handover. The result remains fictional; see [rule and rounding contract](MILESTONE_12B_TAX_POSITION.md).
+
+## Statement analysis
+
+The default page is now **Statement analysis**; choose **Expense demo** for the older API workflow or **Try document intake** for OCR and preparation. The statement workspace runs entirely in the browser. `statement-smoke.mjs` is included in `test:hosted` for production and public verification. `statementParser.test.ts` extracts real PDF text from wholly fictional fixtures before checking the parser and analysis. Fixture generation uses `python sample-data/statements/generate.py` with ReportLab from the repository root; normal builds use the committed JSON fixtures and need no Python. Never add private statements or their extracted text to the fixtures, logs or CI. See [Milestone 13](MILESTONE_13_STATEMENT_ANALYSIS.md).

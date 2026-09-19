@@ -3,10 +3,12 @@ import './App.css'
 import ApiStatus from './components/ApiStatus'
 import GuidedDemo from './features/demo/GuidedDemo'
 
+const StatementDashboard = lazy(() => import('./features/statements/StatementDashboard'))
+
 const DocumentWorkspace = lazy(() => import('./features/documents/DocumentWorkspace'))
 
 function App() {
-  const [documents, setDocuments] = useState(false)
+  const [view, setView] = useState<'statements' | 'documents' | 'expenses'>('statements')
   // A React component is a function that returns the page structure it owns.
   // App is currently the top-level component, so it arranges the whole screen.
   return (
@@ -16,10 +18,11 @@ function App() {
           <span className="brand-mark" aria-hidden="true">T</span>
           <span>TaxPrep AU</span>
         </a>
-        <span className="status">Guided demo</span>
+        <span className="status">Portfolio prototype</span>
       </header>
 
-      <section className="hero" aria-labelledby="page-title">
+      <nav className="workspace-nav" aria-label="TaxPrep workspaces"><button aria-pressed={view==='statements'} onClick={()=>setView('statements')}>Statement analysis</button><button aria-pressed={view==='documents'} onClick={()=>setView('documents')}>Try document intake</button><button aria-pressed={view==='expenses'} onClick={()=>setView('expenses')}>Expense demo</button></nav>
+      {view !== 'statements' && <section className="hero" aria-labelledby="page-title">
         <p className="eyebrow">Australian expense preparation demo</p>
         <h1 id="page-title">Organise expenses. See what needs checking.</h1>
         <p className="intro">
@@ -40,10 +43,9 @@ function App() {
           </ol>
           <p>The $18 is an organising calculation, not an approved tax deduction.</p>
         </details>
-        <div className="workspace-switch"><button className="primary-button" onClick={() => setDocuments(value => !value)}>{documents ? 'Return to expense demo' : 'Try document intake'}</button></div>
-      </section>
+      </section>}
 
-      {documents ? <Suspense fallback={<p role="status">Loading document workspace…</p>}><DocumentWorkspace /></Suspense> : <GuidedDemo />}
+      {view === 'statements' ? <Suspense fallback={<p role="status">Loading statement analyser…</p>}><StatementDashboard /></Suspense> : view === 'documents' ? <Suspense fallback={<p role="status">Loading document workspace…</p>}><DocumentWorkspace /></Suspense> : <GuidedDemo />}
 
       <details className="developer-details">
         <summary>Developer connection check</summary>

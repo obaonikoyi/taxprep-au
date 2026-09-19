@@ -24,7 +24,7 @@ async function ready(url){for(let i=0;i<80;i++){try{if((await fetch(url)).ok)ret
   browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
   const page=await browser.newPage({viewport:{width:1440,height:1000}});
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.goto('http://127.0.0.1:5173');
+  await page.goto('http://127.0.0.1:5173'); await page.getByRole('button', { name: 'Expense demo', exact: true }).click();
   const expenseReport = await verifyExpenses(page, artifacts, {
     stopApi: async () => { const exited = new Promise(resolve => api.once('exit', resolve)); api.kill('SIGTERM'); await exited; },
     startApi: async () => { api = startApi(); await ready('http://127.0.0.1:5087/api/health'); },
