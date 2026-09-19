@@ -8,8 +8,8 @@
   "initialCommit": "e9e5fac6d469ee117b9796eaf306723401fecf61",
   "portfolioPublished": false,
   "latestMilestone": 14,
-  "latestFeatureCommit": "b6bee9459adcbd051eec5c8440b56a789773978a",
-  "latestFeatureDeploymentId": "3ac1ad23-fe68-4b80-adaf-50b074b8d750",
-  "latestMilestoneStatus": "Payslip dashboard published with reviewed pay facts, actual-history charts and offline export; forecasts and broad payroll compatibility remain later work",
+  "latestFeatureCommit": "3c8c9d4c237c9d85d4dfa7236b4f52328e730b81",
+  "latestFeatureDeploymentId": "60a1d325-8897-4b44-b4a8-7cc488ffe5ab",
+  "latestMilestoneStatus": "Payslip dashboard published with guided Add / Check / Summary steps, clearer pay explanations and mobile review; forecasts remain later work",
   "qualifiedTaxReview": "pending"
 }

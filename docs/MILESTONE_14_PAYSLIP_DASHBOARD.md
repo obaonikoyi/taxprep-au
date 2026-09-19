@@ -79,3 +79,10 @@ The sample generator uses ReportLab and embedded DejaVu fonts; committed JSON PD
 - The publication PR updates `deployment.json` to run **Verify hosted demo** against that URL. The live run, downloadable evidence and final milestone closure are recorded in [issue #35](https://github.com/obaonikoyi/taxprep-au/issues/35). Merge the publication record and close the issue only after that live journey passes.
 
 The owner's portfolio website is unchanged. Qualified tax review remains pending in #21/#28; this milestone does not add personal forecasts, broad payroll support or a tax-lodgment service.
+
+### Usability publication
+
+- Feature [PR #41](https://github.com/obaonikoyi/taxprep-au/pull/41), commit `3c8c9d4c237c9d85d4dfa7236b4f52328e730b81`, implements the guided interface requested before Milestone 15.
+- [Build 35419335992](https://github.com/obaonikoyi/taxprep-au/actions/runs/35419335992): all frontend, backend/API and production-container checks passed, including 297 tests. Artifact `10577245714` contains the revised browser journey and inspected desktop/mobile screenshots.
+- Railway UI deployment: `60a1d325-8897-4b44-b4a8-7cc488ffe5ab`. The deployment record triggers the public browser journey; live evidence and closure are recorded in [issue #40](https://github.com/obaonikoyi/taxprep-au/issues/40).
+- Screenshot review identified small mobile axis labels and shared-CSS interference with card emphasis. Responsive SVG coordinates and scoped styles resolved these before release. The take-home figure is highlighted; PDF upload remains visibly secondary to manual entry while layout support is limited.
