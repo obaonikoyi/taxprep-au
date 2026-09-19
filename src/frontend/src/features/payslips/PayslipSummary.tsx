@@ -1,11 +1,12 @@
 import { aud, observations, totals, type Payslip } from './payslip'
 import PayslipCharts from './PayslipCharts'
+import PayOutlook from './PayOutlook'
 
 type Props = {
-  slips: Payslip[]; years: string[]; employers: [string, string][]; year: string; employer: string; grouping: 'month' | 'payday';
+  allSlips: Payslip[]; slips: Payslip[]; years: string[]; employers: [string, string][]; year: string; employer: string; grouping: 'month' | 'payday';
   onYear: (value: string) => void; onEmployer: (value: string) => void; onGrouping: (value: 'month' | 'payday') => void; onResetFilters: () => void;
 }
-export default function PayslipSummary({ slips, years, employers, year, employer, grouping, onYear, onEmployer, onGrouping, onResetFilters }: Props) {
+export default function PayslipSummary({ allSlips, slips, years, employers, year, employer, grouping, onYear, onEmployer, onGrouping, onResetFilters }: Props) {
   const t = totals(slips), notes = observations(slips)
   return <>
     <div className="pay-filter-row"><strong>{slips.length} checked payslip{slips.length === 1 ? '' : 's'} in this view</strong><div className="pay-filters">
@@ -27,6 +28,7 @@ export default function PayslipSummary({ slips, years, employers, year, employer
       </div><p>Super is shown separately. Tax taken out is withholding; your final tax is worked out at tax time.</p></section>
       <PayslipCharts slips={slips} grouping={grouping} onGrouping={onGrouping} />
       {notes.length > 0 && <details className="statement-help pay-observations"><summary>Pay changes to look at</summary><p>These compare your uploaded payslips. They can help you spot a change, but don’t explain its cause.</p><ul>{notes.map((note, i) => <li key={i}>{note}</li>)}</ul></details>}
+      <PayOutlook allSlips={allSlips} slips={slips} year={year} employer={employer} employerName={employers.find(([key]) => key === employer)?.[1] ?? slips[0]?.facts.employer ?? 'Selected employer'} />
     </>}
   </>
 }
