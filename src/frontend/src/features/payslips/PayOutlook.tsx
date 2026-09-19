@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { aud, confirmationIssues, employerKey, financialYear, type Payslip } from './payslip'
+import { aud, confirmationIssues, employerKey, financialYear, totals, type Payslip } from './payslip'
 import { calculatePayOutlook, frequencyLabel, outlookIssues, payFrequencies, type PayFrequency, type PayOutlookResult } from './payOutlook'
 import { downloadPayOutlookReport, payOutlookReport } from './payOutlookReport'
 
@@ -75,7 +75,7 @@ export default function PayOutlook({ allSlips, slips, year, employer, employerNa
     </section>
   }
 
-  const recordedGross = slips.reduce((sum, slip) => sum + Number(slip.facts.gross.replaceAll(',', '')) * 100, 0)
+  const recorded = totals(slips)
 
   return <section className="pay-outlook" aria-labelledby="pay-outlook-heading">
     <div className="pay-outlook-heading">
@@ -85,7 +85,7 @@ export default function PayOutlook({ allSlips, slips, year, employer, employerNa
 
     <div className="pay-outlook-recorded" aria-label="Recorded pay used for outlook">
       <div><span>Checked payslips</span><strong>{slips.length}</strong></div>
-      <div><span>Recorded gross so far</span><strong>{Number.isFinite(recordedGross) ? aud(recordedGross) : 'Unavailable'}</strong></div>
+      <div><span>Recorded gross so far</span><strong>{aud(recorded.gross)}</strong></div>
       <div><span>Latest checked payday</span><strong>{latest?.facts.payDate}</strong></div>
     </div>
 
