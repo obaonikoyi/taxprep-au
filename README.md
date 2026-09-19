@@ -2,7 +2,7 @@
 
 TaxPrep helps Australian workers understand their pay, track withholding and recorded super, and prepare for tax time with fewer surprises. The longer-term goal remains supported self-preparation or a useful accountant handover.
 
-> **Current delivery: Milestone 14 — payslip dashboard.** Actual pay history and review are implemented; tax forecasts, broad payroll compatibility and personalised tax conclusions remain later work.
+> **Published: Milestone 14 — payslip dashboard.** Actual pay history and review are implemented; tax forecasts, broad payroll compatibility and personalised tax conclusions remain later work.
 
 **[Try the standalone app](https://taxprep-au-production.up.railway.app)** — no account needed. Choose **Try example payslips** for six fictional PDFs and an immediate pay-history dashboard. The owner's portfolio website has not been changed.
 

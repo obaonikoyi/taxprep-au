@@ -7,9 +7,9 @@
   "initialDeploymentId": "87ca38d9-c44f-46fa-a3b3-2b5aa23af8fb",
   "initialCommit": "e9e5fac6d469ee117b9796eaf306723401fecf61",
   "portfolioPublished": false,
-  "latestMilestone": 13,
-  "latestFeatureCommit": "ed4e5dbfe0dd2309014b57c694c5a40af4925e83",
-  "latestFeatureDeploymentId": "f092eade-d1ca-4b74-934b-61f781b5f338",
-  "latestMilestoneStatus": "Local statement analysis and refreshed dashboard implemented; tax conclusions remain separately gated",
+  "latestMilestone": 14,
+  "latestFeatureCommit": "b6bee9459adcbd051eec5c8440b56a789773978a",
+  "latestFeatureDeploymentId": "3ac1ad23-fe68-4b80-adaf-50b074b8d750",
+  "latestMilestoneStatus": "Payslip dashboard published with reviewed pay facts, actual-history charts and offline export; forecasts and broad payroll compatibility remain later work",
   "qualifiedTaxReview": "pending"
 }

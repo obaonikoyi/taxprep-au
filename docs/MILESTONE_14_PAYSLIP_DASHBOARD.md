@@ -61,4 +61,11 @@ The sample generator uses ReportLab and embedded DejaVu fonts; committed JSON PD
 
 ## Publication record
 
-Implementation and verification results are recorded in the feature/publication PRs. Do not mark publication complete before CI and the live visitor journey succeed.
+- Feature [PR #38](https://github.com/obaonikoyi/taxprep-au/pull/38), merged as `b6bee9459adcbd051eec5c8440b56a789773978a`.
+- [Build run 35417827172](https://github.com/obaonikoyi/taxprep-au/actions/runs/35417827172): all frontend, backend/API and production-container jobs passed. Frontend: 296 tests across 19 files, lint and production build. Production browser artifact: `10576168210` (`production-verification`).
+- The complete browser journey passed: six real sample PDFs, own-file confirmation, correction invalidation, duplicates, atomic failed batches, manual entry, employer/year/chart filters, scoped offline reports, clear/refresh/workspace changes, mobile layout and no external document/model requests. Desktop and mobile screenshots were inspected.
+- Browser testing found two real integration problems: accessible labels changed after edits, and a rapid switch between lazy-loaded workspaces could preserve local history. Stable labels and distinct Suspense keys fixed them before publication.
+- Railway feature deployment `3ac1ad23-fe68-4b80-adaf-50b074b8d750` reached `SUCCESS` on 19 September 2026. Standalone URL: [TaxPrep AU](https://taxprep-au-production.up.railway.app).
+- The publication PR updates `deployment.json` to run **Verify hosted demo** against that URL. The live run, downloadable evidence and final milestone closure are recorded in [issue #35](https://github.com/obaonikoyi/taxprep-au/issues/35). Merge the publication record and close the issue only after that live journey passes.
+
+The owner's portfolio website is unchanged. Qualified tax review remains pending in #21/#28; this milestone does not add personal forecasts, broad payroll support or a tax-lodgment service.
