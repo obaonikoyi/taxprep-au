@@ -91,3 +91,7 @@ A storage event from another tab updates the saved-copy notice without replacing
 Use [the development guide](DEVELOPMENT.md). Frontend tests cover interactions and API contracts. Backend tests use `WebApplicationFactory` to send real HTTP requests through the application in memory. The browser smoke script runs the real API and Vite together, checking the guided expense journey and CSV preview at desktop/mobile widths.
 
 The calculation scope is in [Milestone 5](MILESTONE_5_EXPENSE_REVIEW.md). The export contract and browser checks are in [Milestone 6](MILESTONE_6_PREPARATION_REPORT.md).
+
+## Milestone 14: explain every payday
+
+Follow `payslipReader.ts` from PDF bytes through text lines to candidate fields. Read `payslip.ts` to see why money uses integer cents, repeated YTD values are ignored, missing super is different from zero, and corrections invalidate confirmation. `selectedPayslips` is the shared inclusion rule for dashboard and export. The charts group payment dates without treating weekly and monthly pay as identical periods. `payslipReport.ts` escapes text and retains original/corrected values. The browser test verifies these connections using actual PDF input instead of mocking the reader.

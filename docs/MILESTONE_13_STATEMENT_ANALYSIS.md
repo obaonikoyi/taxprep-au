@@ -50,7 +50,7 @@ The older **Expense demo** and **Try document intake** workspaces retain their e
 
 ## Next work
 
-Extract reviewable gross-income/withholding fields from a bounded income statement (#30), then link supporting evidence to selected statement transactions. Broader bank formats and AI-assisted explanations can follow with explicit accuracy and data-handling contracts. This release is a useful statement analyser, not a complete tax-return service.
+Roadmap updated 19 September: [Milestone 14 payslip dashboard](MILESTONE_14_PAYSLIP_DASHBOARD.md) / #35 is next. Annual statement extraction #30 remains a separate deferred reconciliation input, followed by combined year-end preparation #37. Broader bank formats and AI-assisted explanations can follow with explicit accuracy and data-handling contracts. This release is a useful statement analyser, not a complete tax-return service.
 
 ## Publication record
 
@@ -59,4 +59,4 @@ Extract reviewable gross-income/withholding fields from a bounded income stateme
 - Production artifact `10575855858` confirms reconciled synthetic PDF totals, category corrections with unchanged source amounts, pagination/filtering/date selection, invalid-import preservation, zero activity, CSV, clear/refresh and offline export. Desktop/mobile screenshots inspected; no page overflow, page errors, statement uploads or model requests.
 - Railway feature deployment `f092eade-d1ca-4b74-934b-61f781b5f338`. The publication PR updates `deployment.json` to run the actual public visitor journey before merge.
 - [Standalone app](https://taxprep-au-production.up.railway.app) only. Portfolio site unchanged; private statements and their extracted records are not published.
-- #32 tracks this milestone. #30 remains the next separate income-extraction stage; qualified tax review remains open in #21 and #28.
+- #32 tracks this milestone. #30 remains a deferred annual-income extraction stage; qualified tax review remains open in #21 and #28.

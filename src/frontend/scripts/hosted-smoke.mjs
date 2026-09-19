@@ -1,4 +1,5 @@
 import { verifyStatements } from './statement-smoke.mjs';
+import { verifyPayslips } from './payslip-smoke.mjs';
 import { verifyDocuments } from './document-smoke.mjs';
 import assert from 'node:assert/strict';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -63,7 +64,8 @@ try {
   assert.deepEqual(failedRequests, []);
   const documents = await verifyDocuments(context, base, artifacts);
   const statements = await verifyStatements(context, base, artifacts);
-  const result = { statements, documents, url: base.href, checkedAt: new Date().toISOString(), health: true, missingApiRoute404: true,
+  const payslips = await verifyPayslips(context, base, artifacts);
+  const result = { payslips, statements, documents, url: base.href, checkedAt: new Date().toISOString(), health: true, missingApiRoute404: true,
     sampleRows: 20, workPortion: 18, reportDownloaded: true, selectedSourcesIncluded: true,
     saveRefreshResume: true, clearProgress: true, mobileOverflow: false, errors, failedRequests };
   writeFileSync(artifacts + 'report.json', JSON.stringify(result, null, 2));
