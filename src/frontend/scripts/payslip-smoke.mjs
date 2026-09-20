@@ -245,6 +245,40 @@ export async function verifyPayslips(context, base, artifacts) {
     await page.getByLabel('Year-end prep: ruleReview', { exact: true }).selectOption('partial');
     await page.getByLabel('Year-end prep: expenseNote', { exact: true }).fill('Phone rule review remains separate and pending.');
 
+    // Milestone 16C-3: explicit encrypted local backup. No automatic persistence or upload.
+    const backupPassphrase = 'fictional-local-backup-passphrase';
+    await page.getByLabel('Year-end backup passphrase', { exact: true }).fill(backupPassphrase);
+    await page.getByLabel('Confirm year-end backup passphrase', { exact: true }).fill(backupPassphrase);
+    const backupDownloadEvent = page.waitForEvent('download');
+    await button('Download encrypted preparation backup').click();
+    const backupDownload = await backupDownloadEvent;
+    const backupPath = artifacts + 'year-end-encrypted-backup.json';
+    await backupDownload.saveAs(backupPath);
+    const backupText = readFileSync(backupPath, 'utf8');
+    assert.ok(backupText.includes('taxprep-year-end-preparation-backup-v1'));
+    for (const privateText of ['Phone rule review remains separate and pending.', 'Harbour Example Services', 'Two deposits made up the checked net pay.']) assert.ok(!backupText.includes(privateText), privateText);
+    assert.ok((await prepHub.innerText()).includes('TaxPrep cannot recover the passphrase'));
+
+    // Change the live preparation state after backup so restore has something meaningful to recover.
+    await page.getByLabel('Year-end prep: expenseNote', { exact: true }).fill('Changed after local backup.');
+    await page.getByLabel('Year-end prep: flaggedWorkAmount', { exact: true }).fill('1.00');
+
+    await page.getByLabel('Import encrypted preparation backup', { exact: true }).setInputFiles(backupPath);
+    await page.getByLabel('Restore year-end backup passphrase', { exact: true }).fill('this passphrase is definitely wrong');
+    await button('Decrypt and check backup').click();
+    await page.getByRole('alert').filter({ hasText: 'could not be decrypted' }).waitFor();
+    assert.equal(await page.getByLabel('Year-end prep: expenseNote', { exact: true }).inputValue(), 'Changed after local backup.');
+
+    await page.getByLabel('Restore year-end backup passphrase', { exact: true }).fill(backupPassphrase);
+    await button('Decrypt and check backup').click();
+    await page.getByRole('region', { name: 'Review decrypted preparation backup' }).waitFor();
+    assert.equal(await page.getByLabel('Year-end prep: expenseNote', { exact: true }).inputValue(), 'Changed after local backup.');
+    assert.equal(await page.getByLabel('Year-end prep: flaggedWorkAmount', { exact: true }).inputValue(), '1.00');
+    await button('Restore preparation answers').click();
+    assert.equal(await page.getByLabel('Year-end prep: expenseNote', { exact: true }).inputValue(), 'Phone rule review remains separate and pending.');
+    assert.equal(await page.getByLabel('Year-end prep: flaggedWorkAmount', { exact: true }).inputValue(), '145.50');
+    assert.ok((await page.getByLabel('Applied year-end handoffs', { exact: true }).innerText()).includes('Bank spending summary'));
+
     const prepCoverage = page.getByLabel('Year-end preparation coverage', { exact: true });
     assert.ok((await prepCoverage.innerText()).includes('2/2'));
     const prepQuestions = page.getByLabel('Year-end preparation questions', { exact: true });
@@ -356,7 +390,7 @@ export async function verifyPayslips(context, base, artifacts) {
     assert.deepEqual(await page.evaluate(() => Object.keys(localStorage).filter(k => /payslip/i.test(k))), []);
     assert.deepEqual(errors, []); assert.ok(requests.every(r => r.method === 'GET'));
     assert.ok(requests.every(r => r.url.startsWith(base.origin) || r.url.startsWith('blob:') || r.url.startsWith('data:')));
-    const result = { passed: true, guidedSteps: true, automaticBatchReview: true, noUnconfirmedZeroTotals: true, manualEntry: true, correctionInvalidates: true, duplicateBlocked: true, badBatchAtomic: true, exampleToOwnData: true, chartSwitching: true, yearAndEmployerFilters: true, emptyFilterRecovery: true, offlineExport: true, payOutlook: true, payOutlookWithholdingNotScaled: true, payOutlookMobile: true, taxReadiness: true, taxReadinessWholeYear: true, taxReadinessLocked: true, taxReadinessExport: true, taxReadinessMobile: true, yearEndReconciliation: true, yearEndNoDoubleCount: true, annualStatementPdfExtraction: true, annualStatementReviewGate: true, annualStatementDuplicateBlocked: true, annualStatementProvenance: true, yearEndProvisionalExcluded: true, yearEndExport: true, yearEndMobile: true, yearEndPreparationHub: true, yearEndBankChecksNetOnly: true, yearEndExpenseCoverage: true, portableWorkspaceHandoff: true, handoffYearMismatchBlocked: true, handoffExplicitApply: true, handoffDuplicateBlocked: true, handoffNoDoubleCount: true, yearEndPreparationExport: true, yearEndPreparationMobile: true, clearConfirmation: true, clearRefreshAndWorkspaceChange: true, mobileOverflow: false, mobileReviewActionsVisible: true, documentUploads: 0, modelRequests: 0, pageErrors: errors };
+    const result = { passed: true, guidedSteps: true, automaticBatchReview: true, noUnconfirmedZeroTotals: true, manualEntry: true, correctionInvalidates: true, duplicateBlocked: true, badBatchAtomic: true, exampleToOwnData: true, chartSwitching: true, yearAndEmployerFilters: true, emptyFilterRecovery: true, offlineExport: true, payOutlook: true, payOutlookWithholdingNotScaled: true, payOutlookMobile: true, taxReadiness: true, taxReadinessWholeYear: true, taxReadinessLocked: true, taxReadinessExport: true, taxReadinessMobile: true, yearEndReconciliation: true, yearEndNoDoubleCount: true, annualStatementPdfExtraction: true, annualStatementReviewGate: true, annualStatementDuplicateBlocked: true, annualStatementProvenance: true, yearEndProvisionalExcluded: true, yearEndExport: true, yearEndMobile: true, yearEndPreparationHub: true, yearEndBankChecksNetOnly: true, yearEndExpenseCoverage: true, portableWorkspaceHandoff: true, handoffYearMismatchBlocked: true, handoffExplicitApply: true, handoffDuplicateBlocked: true, handoffNoDoubleCount: true, yearEndPreparationExport: true, yearEndPreparationMobile: true, encryptedPreparationBackup: true, encryptedBackupWrongPassphraseBlocked: true, encryptedBackupExplicitRestore: true, clearConfirmation: true, clearRefreshAndWorkspaceChange: true, mobileOverflow: false, mobileReviewActionsVisible: true, documentUploads: 0, modelRequests: 0, pageErrors: errors };
     writeFileSync(artifacts + 'payslip-evaluation.json', JSON.stringify(result, null, 2)); return result;
   } catch (e) { await page.screenshot({ path: artifacts + 'payslip-failure.png', fullPage: true }); console.error((await page.locator('body').innerText()).slice(-10000)); throw e } finally { await page.close() }
 }
