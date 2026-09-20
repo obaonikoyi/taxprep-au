@@ -14,6 +14,7 @@ import { downloadYearEndPreparationReport, yearEndPreparationReport } from './ye
 import type { YearEndReconciliation } from './yearEndReconciliation'
 import {
   coveragePatchFromHandoff,
+  handoffConflicts,
   handoffLabel,
   handoffSummaryLines,
   readYearEndHandoff,
@@ -55,8 +56,9 @@ export default function YearEndPreparationHub({ reconciliation }: Props) {
     setHandoffMessage('Checking year-end handoff…')
     try {
       const next = await readYearEndHandoff(file, reconciliation.year)
-      if (handoffs.some(item => item.handoffId === next.handoffId) || handoffCandidate?.handoffId === next.handoffId) {
-        throw new Error('This year-end handoff has already been imported.')
+      const existing = handoffCandidate ? [...handoffs, handoffCandidate] : handoffs
+      if (handoffConflicts(existing, next)) {
+        throw new Error('This handoff duplicates a source already represented by the same workspace type.')
       }
       setHandoffCandidate(next)
       setHandoffMessage('Handoff checked. Review the summary before applying any coverage fields.')
