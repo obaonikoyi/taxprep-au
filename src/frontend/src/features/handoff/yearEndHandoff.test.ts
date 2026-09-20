@@ -79,6 +79,12 @@ describe('portable year-end handoff', () => {
     await expect(readYearEndHandoff(file, '2026–27')).rejects.toThrow('not the selected 2026–27')
   })
 
+  it('rejects malformed JSON with a bounded user-facing error', async () => {
+    const file = new File(['{not valid json'], 'handoff.json', { type: 'application/json' })
+    Object.defineProperty(file, 'text', { value: async () => '{not valid json' })
+    await expect(readYearEndHandoff(file, '2026–27')).rejects.toThrow('not valid JSON')
+  })
+
   it('detects duplicate identities and same-workspace source reuse', () => {
     const original = statement()
     expect(handoffConflicts([original], original)).toBe(true)
