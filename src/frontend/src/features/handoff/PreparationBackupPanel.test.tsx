@@ -7,20 +7,16 @@ import { reconcileYearEndPay, type AnnualPaySource } from '../payslips/yearEndRe
 import PreparationBackupPanel from './PreparationBackupPanel'
 import type { PreparationBackupPayload } from './preparationBackup'
 
-const readEncryptedPreparationBackup = vi.fn()
-const decryptPreparationBackup = vi.fn()
-const createPreparationBackup = vi.fn()
-const downloadPreparationBackup = vi.fn()
+const mocks = vi.hoisted(() => ({
+  readEncryptedPreparationBackup: vi.fn(),
+  decryptPreparationBackup: vi.fn(),
+  createPreparationBackup: vi.fn(),
+  downloadPreparationBackup: vi.fn(),
+}))
 
 vi.mock('./preparationBackup', async importOriginal => {
   const actual = await importOriginal<typeof import('./preparationBackup')>()
-  return {
-    ...actual,
-    readEncryptedPreparationBackup,
-    decryptPreparationBackup,
-    createPreparationBackup,
-    downloadPreparationBackup,
-  }
+  return { ...actual, ...mocks }
 })
 
 afterEach(() => cleanup())
@@ -66,8 +62,8 @@ it('keeps decrypted backup as a candidate until explicit restore', async () => {
     answers,
     handoffs: [],
   }
-  readEncryptedPreparationBackup.mockResolvedValue({ version: 'taxprep-year-end-preparation-backup-v1' })
-  decryptPreparationBackup.mockResolvedValue(payload)
+  mocks.readEncryptedPreparationBackup.mockResolvedValue({ version: 'taxprep-year-end-preparation-backup-v1' })
+  mocks.decryptPreparationBackup.mockResolvedValue(payload)
   const onRestore = vi.fn()
 
   render(<PreparationBackupPanel reconciliation={reconciliation()} answers={blankYearEndPreparationAnswers()} handoffs={[]} onRestore={onRestore} />)
@@ -94,5 +90,5 @@ it('does not create a backup when confirmation passphrase differs', async () => 
   fireEvent.click(screen.getByRole('button', { name: 'Download encrypted preparation backup' }))
 
   expect((await screen.findByRole('alert')).textContent).toContain('do not match')
-  expect(createPreparationBackup).not.toHaveBeenCalled()
+  expect(mocks.createPreparationBackup).not.toHaveBeenCalled()
 })
