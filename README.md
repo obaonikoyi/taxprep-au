@@ -2,7 +2,7 @@
 
 TaxPrep helps Australian workers understand their pay, track withholding and recorded super, and prepare for tax time with fewer surprises. The longer-term goal remains supported self-preparation or a useful accountant handover.
 
-> **Published: Milestone 16C-2 — portable cross-workspace handoff.** Bank spending and Tax documents can now export privacy-bounded, year-scoped JSON summaries that the year-end hub validates and explicitly applies. Raw transactions/OCR text and rule approvals remain excluded. Tax/refund results remain locked pending qualified review.
+> **Published: Milestone 16C-3 — encrypted local preparation backup.** The year-end hub can now explicitly download and restore a user-controlled encrypted preparation backup using browser-only WebCrypto, while keeping the default session-only and excluding raw financial documents. Tax/refund results remain locked pending qualified review.
 
 **[Try the standalone app](https://taxprep-au-production.up.railway.app)** — no account needed. Choose **Try example payslips** for six fictional PDFs and an immediate pay-history dashboard. The owner's portfolio website has not been changed.
 
@@ -30,7 +30,7 @@ Published: [Milestone 16C-1 — unified year-end preparation](docs/MILESTONE_16C
 
 Published: [Milestone 16C-2 — portable cross-workspace handoff](docs/MILESTONE_16C2_PORTABLE_HANDOFF.md) lets Bank spending and Tax documents export small year-scoped JSON summaries containing coverage metrics and source hashes only. The year-end hub validates the file and requires explicit application; raw transactions/OCR text are not transferred, employer matching is not inferred, and rule-review coverage remains untouched.
 
-In development: [Milestone 16C-3 — encrypted local preparation backup](docs/MILESTONE_16C3_ENCRYPTED_LOCAL_BACKUP.md) adds user-controlled WebCrypto backup/restore for preparation answers and applied summary handoffs only. It does not add cloud storage, browser persistence, raw financial files or passphrase recovery, and restore is blocked unless the current financial year and reconciliation fingerprint match.
+Published: [Milestone 16C-3 — encrypted local preparation backup](docs/MILESTONE_16C3_ENCRYPTED_LOCAL_BACKUP.md) adds user-controlled WebCrypto backup/restore for preparation answers and applied summary handoffs only. It does not add cloud storage, browser persistence, raw financial files or passphrase recovery, and restore is blocked unless the current financial year and reconciliation fingerprint match.
 
 The reviewed withholding/annual-tax work remains under [Milestone 15](https://github.com/obaonikoyi/taxprep-au/issues/36) after #28. Existing tax-rule review remains open in #21 and #28.
 
