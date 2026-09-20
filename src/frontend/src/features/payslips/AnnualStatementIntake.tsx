@@ -8,7 +8,7 @@ import {
   type AnnualStatementFacts,
 } from './annualStatement'
 import { readAnnualStatement } from './annualStatementReader'
-import type { AnnualPaySource } from './yearEndReconciliation'
+import { MAX_ANNUAL_PAY_SOURCES, type AnnualPaySource } from './yearEndReconciliation'
 
 type Props = {
   year: string
@@ -79,6 +79,10 @@ export default function AnnualStatementIntake({ year, employers, sources, onAdd 
 
   function confirm() {
     if (!candidate || !checked || annualStatementIssues(candidate, year).length) return
+    if (sources.length >= MAX_ANNUAL_PAY_SOURCES) {
+      setError('This session supports up to 30 annual employment sources. Remove one before adding another.')
+      return
+    }
     onAdd(candidateToAnnualPaySource(candidate, linkedEmployer))
     setCandidate(null)
     setLinkedEmployer('')
