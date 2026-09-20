@@ -171,6 +171,63 @@ export async function verifyPayslips(context, base, artifacts) {
     await page.screenshot({ path: artifacts + 'year-end-reconciliation-mobile.png', fullPage: true });
     await page.setViewportSize({ width: 1440, height: 1000 });
 
+    // Milestone 16C-1 keeps one session-only preparation handover without deriving income from bank deposits.
+    await button('Start year-end preparation hub').click();
+    const prepHub = page.locator('.year-end-preparation-hub');
+    assert.ok((await prepHub.innerText()).includes('Bank deposits are a completeness check, not income evidence.'));
+
+    for (const employer of ['Harbour Example Services', 'Garden Example Studio']) {
+      const card = page.getByLabel(`Bank check for ${employer}`, { exact: true });
+      const summary = await card.locator('.year-end-bank-title p').innerText();
+      const match = summary.match(/checked net pay \$([0-9,]+\.\d{2})/);
+      assert.ok(match);
+      const net = match[1].replaceAll(',', '');
+      await page.getByLabel(`Bank check: ${employer} deposit total (AUD)`, { exact: true }).fill(net);
+      if (employer === 'Harbour Example Services') {
+        await page.getByLabel(`Bank check: ${employer} status`, { exact: true }).selectOption('matched');
+      } else {
+        await page.getByLabel(`Bank check: ${employer} status`, { exact: true }).selectOption('split-timing');
+        await page.getByLabel(`Bank check: ${employer} note`, { exact: true }).fill('Two deposits made up the checked net pay.');
+      }
+    }
+
+    await page.getByLabel('Year-end prep: bankSpending', { exact: true }).selectOption('complete');
+    await page.getByLabel('Year-end prep: receiptEvidence', { exact: true }).selectOption('partial');
+    await page.getByLabel('Year-end prep: workPurpose', { exact: true }).selectOption('complete');
+    await page.getByLabel('Year-end prep: ruleReview', { exact: true }).selectOption('partial');
+    await page.getByLabel('Year-end prep: reviewedTransactions', { exact: true }).fill('18');
+    await page.getByLabel('Year-end prep: workReviewTransactions', { exact: true }).fill('3');
+    await page.getByLabel('Year-end prep: receiptCount', { exact: true }).fill('2');
+    await page.getByLabel('Year-end prep: workPurposeCount', { exact: true }).fill('3');
+    await page.getByLabel('Year-end prep: flaggedWorkAmount', { exact: true }).fill('145.50');
+    await page.getByLabel('Year-end prep: expenseNote', { exact: true }).fill('Phone rule review remains separate and pending.');
+
+    const prepCoverage = page.getByLabel('Year-end preparation coverage', { exact: true });
+    assert.ok((await prepCoverage.innerText()).includes('2/2'));
+    const prepQuestions = page.getByLabel('Year-end preparation questions', { exact: true });
+    assert.ok((await prepQuestions.innerText()).includes('split or timing difference'));
+    assert.ok((await prepQuestions.innerText()).includes('Receipt/evidence review'));
+    assert.ok((await prepHub.innerText()).includes('This is not an approved deduction.'));
+
+    const prepDownload = page.waitForEvent('download'); await button('Download complete preparation handover').click();
+    await (await prepDownload).saveAs(artifacts + 'year-end-preparation-handover.html');
+    const prepReport = readFileSync(artifacts + 'year-end-preparation-handover.html', 'utf8');
+    assert.ok(prepReport.includes('year-end-preparation-v1'));
+    assert.ok(prepReport.includes('year-end-pay-reconciliation-v2'));
+    assert.ok(prepReport.includes('Bank deposits are used only as a completeness/review check'));
+    assert.ok(prepReport.includes('Candidate work-review amount is not a deduction'));
+    assert.ok(prepReport.includes('Harbour corrected reference'));
+    assert.ok(prepReport.includes('Garden payment summary'));
+    assert.ok(prepReport.includes('Two deposits made up the checked net pay.'));
+    assert.ok(prepReport.includes('Phone rule review remains separate and pending.'));
+    assert.ok(prepReport.includes('Session only'));
+    assert.ok(prepReport.includes('Tax/refund/final-tax results remain locked'));
+
+    await page.screenshot({ path: artifacts + 'year-end-preparation-desktop.png', fullPage: true });
+    await page.setViewportSize({ width: 390, height: 844 }); await noOverflow();
+    await page.screenshot({ path: artifacts + 'year-end-preparation-mobile.png', fullPage: true });
+    await page.setViewportSize({ width: 1440, height: 1000 });
+
     await page.getByLabel('Employer', { exact: true }).selectOption('all');
     await page.getByLabel('Financial year', { exact: true }).selectOption('all');
     await page.getByLabel('Chart grouping', { exact: true }).selectOption('month');
@@ -252,7 +309,7 @@ export async function verifyPayslips(context, base, artifacts) {
     assert.deepEqual(await page.evaluate(() => Object.keys(localStorage).filter(k => /payslip/i.test(k))), []);
     assert.deepEqual(errors, []); assert.ok(requests.every(r => r.method === 'GET'));
     assert.ok(requests.every(r => r.url.startsWith(base.origin) || r.url.startsWith('blob:') || r.url.startsWith('data:')));
-    const result = { passed: true, guidedSteps: true, automaticBatchReview: true, noUnconfirmedZeroTotals: true, manualEntry: true, correctionInvalidates: true, duplicateBlocked: true, badBatchAtomic: true, exampleToOwnData: true, chartSwitching: true, yearAndEmployerFilters: true, emptyFilterRecovery: true, offlineExport: true, payOutlook: true, payOutlookWithholdingNotScaled: true, payOutlookMobile: true, taxReadiness: true, taxReadinessWholeYear: true, taxReadinessLocked: true, taxReadinessExport: true, taxReadinessMobile: true, yearEndReconciliation: true, yearEndNoDoubleCount: true, annualStatementPdfExtraction: true, annualStatementReviewGate: true, annualStatementDuplicateBlocked: true, annualStatementProvenance: true, yearEndProvisionalExcluded: true, yearEndExport: true, yearEndMobile: true, clearConfirmation: true, clearRefreshAndWorkspaceChange: true, mobileOverflow: false, mobileReviewActionsVisible: true, documentUploads: 0, modelRequests: 0, pageErrors: errors };
+    const result = { passed: true, guidedSteps: true, automaticBatchReview: true, noUnconfirmedZeroTotals: true, manualEntry: true, correctionInvalidates: true, duplicateBlocked: true, badBatchAtomic: true, exampleToOwnData: true, chartSwitching: true, yearAndEmployerFilters: true, emptyFilterRecovery: true, offlineExport: true, payOutlook: true, payOutlookWithholdingNotScaled: true, payOutlookMobile: true, taxReadiness: true, taxReadinessWholeYear: true, taxReadinessLocked: true, taxReadinessExport: true, taxReadinessMobile: true, yearEndReconciliation: true, yearEndNoDoubleCount: true, annualStatementPdfExtraction: true, annualStatementReviewGate: true, annualStatementDuplicateBlocked: true, annualStatementProvenance: true, yearEndProvisionalExcluded: true, yearEndExport: true, yearEndMobile: true, yearEndPreparationHub: true, yearEndBankChecksNetOnly: true, yearEndExpenseCoverage: true, yearEndPreparationExport: true, yearEndPreparationMobile: true, clearConfirmation: true, clearRefreshAndWorkspaceChange: true, mobileOverflow: false, mobileReviewActionsVisible: true, documentUploads: 0, modelRequests: 0, pageErrors: errors };
     writeFileSync(artifacts + 'payslip-evaluation.json', JSON.stringify(result, null, 2)); return result;
   } catch (e) { await page.screenshot({ path: artifacts + 'payslip-failure.png', fullPage: true }); console.error((await page.locator('body').innerText()).slice(-10000)); throw e } finally { await page.close() }
 }

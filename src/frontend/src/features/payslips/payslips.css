@@ -321,3 +321,45 @@
 .annual-source-provenance { min-width: 0; max-width: 100%; overflow: hidden; }
 .annual-source-provenance :is(summary, p, th, td) { overflow-wrap: anywhere; word-break: break-word; }
 .annual-source-provenance table { table-layout: fixed; }
+
+
+/* Milestone 16C-1: unified year-end preparation hub. */
+.year-end-preparation-hub { margin: 28px 0 0; padding: 22px; border: 1px solid #d7e2da; border-radius: 14px; background: #fbfdfb; }
+.year-end-prep-heading, .year-end-prep-section-heading, .year-end-bank-title, .year-end-prep-export { display: flex; justify-content: space-between; gap: 18px; align-items: flex-start; }
+.year-end-prep-heading h4, .year-end-prep-section-heading h5, .year-end-bank-title h6, .year-end-prep-export h5 { margin: 0 0 7px; }
+.year-end-prep-heading p:not(.eyebrow), .year-end-prep-section-heading p, .year-end-bank-title p, .year-end-prep-export p { margin: 0; color: var(--pay-muted); font-size: .8rem; line-height: 1.6; }
+.year-end-prep-boundary { margin: 18px 0; padding: 15px 16px; border-radius: 10px; border: 1px solid #dfd4b7; background: #fff9eb; }
+.year-end-prep-boundary p { margin: 6px 0 0; font-size: .8rem; line-height: 1.6; }
+.year-end-prep-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+.year-end-prep-metrics > div { padding: 14px; border: 1px solid #dde7df; border-radius: 10px; background: #fff; display: grid; gap: 5px; }
+.year-end-prep-metrics span { font-size: .74rem; color: var(--pay-muted); }
+.year-end-prep-metrics strong { font-size: 1.25rem; }
+.year-end-prep-metrics small { font-size: .68rem; color: var(--pay-muted); line-height: 1.4; }
+.year-end-prep-section { margin-top: 22px; padding: 18px; border: 1px solid #dfe7e1; border-radius: 12px; background: #fff; }
+.year-end-prep-section-heading > span { flex-shrink: 0; border-radius: 999px; padding: 5px 9px; background: #eef5f0; font-size: .7rem; color: #486354; }
+.year-end-prep-help { color: var(--pay-muted); font-size: .78rem; line-height: 1.6; }
+.year-end-bank-list { display: grid; gap: 14px; margin-top: 14px; }
+.year-end-bank-card { border: 1px solid #e1e7e2; border-radius: 10px; padding: 16px; background: #fbfcfb; min-width: 0; }
+.year-end-bank-title > span { font-size: .72rem; color: #496355; text-align: right; }
+.year-end-bank-form, .year-end-expense-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 14px; }
+.year-end-bank-form label, .year-end-expense-form label { display: grid; gap: 6px; font-size: .78rem; font-weight: 650; min-width: 0; }
+.year-end-bank-form input, .year-end-bank-form select, .year-end-bank-form textarea, .year-end-expense-form input, .year-end-expense-form select, .year-end-expense-form textarea { width: 100%; }
+.year-end-bank-note, .year-end-expense-note { grid-column: 1 / -1; }
+.year-end-expense-form small { color: #81592c; font-weight: 400; font-size: .7rem; }
+.year-end-bank-result { display: flex; justify-content: space-between; gap: 12px; margin-top: 13px; padding-top: 12px; border-top: 1px solid #e2e8e3; font-size: .76rem; }
+.year-end-bank-result span { color: var(--pay-muted); }
+.year-end-expense-statuses { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 16px; margin-top: 14px; font-size: .75rem; color: var(--pay-muted); }
+.year-end-prep-questions ul { padding-left: 20px; font-size: .78rem; line-height: 1.6; }
+.year-end-prep-export { margin-top: 22px; padding: 18px; border-radius: 12px; background: #f4f8f5; border: 1px solid #d9e4dc; align-items: center; }
+.year-end-prep-save-boundary { margin-top: 18px; }
+@media (max-width: 900px) {
+  .year-end-prep-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 700px) {
+  .year-end-preparation-hub { padding: 17px; }
+  .year-end-prep-heading, .year-end-prep-section-heading, .year-end-bank-title, .year-end-prep-export { flex-direction: column; }
+  .year-end-prep-metrics, .year-end-bank-form, .year-end-expense-form, .year-end-expense-statuses { grid-template-columns: 1fr; }
+  .year-end-prep-section { padding: 14px; }
+  .year-end-bank-title > span { text-align: left; overflow-wrap: anywhere; }
+  .year-end-prep-export .primary-button { width: 100%; }
+}
