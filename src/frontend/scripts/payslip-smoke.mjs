@@ -155,7 +155,7 @@ export async function verifyPayslips(context, base, artifacts) {
     const reconciliationDownload = page.waitForEvent('download'); await button('Download year-end pay handover').click();
     await (await reconciliationDownload).saveAs(artifacts + 'year-end-pay-handover.html');
     const reconciliationReport = readFileSync(artifacts + 'year-end-pay-handover.html', 'utf8');
-    assert.ok(reconciliationReport.includes('year-end-pay-reconciliation-v1'));
+    assert.ok(reconciliationReport.includes('year-end-pay-reconciliation-v2'));
     assert.ok(reconciliationReport.includes('do not add them together'));
     assert.ok(reconciliationReport.includes('Harbour corrected reference'));\n    assert.ok(reconciliationReport.includes('Harbour payroll A'));\n    assert.ok(reconciliationReport.includes('Imported annual-statement provenance'));\n    assert.ok(reconciliationReport.includes('annual-income-statement-v1'));\n    assert.ok(reconciliationReport.includes('ANNUAL INCOME STATEMENT v1'));
     assert.ok(reconciliationReport.includes('Garden payment summary'));
