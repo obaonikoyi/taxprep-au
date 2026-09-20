@@ -1,27 +1,32 @@
-import { blankFacts, dateValue, labels, fields, PAYSLIP_VERSION, type Payslip } from './payslip'
-export type TextToken = { text: string; x: number; y: number }
-export function textLines(tokens: TextToken[]): string[] {
+import { PAYSLIP_VERSION, type Payslip } from './payslip'
+import { detectFormat, FORMATS, type TextRow, type TextToken } from './payslipFormats'
+export type { TextRow, TextToken } from './payslipFormats'
+
+/** Group tokens into visual rows, keeping each row's tokens for column work. */
+export function textRows(tokens: TextToken[]): TextRow[] {
   const rows: { y: number; tokens: TextToken[] }[] = []
   for (const token of [...tokens].sort((a, b) => b.y - a.y || a.x - b.x)) {
     const row = rows.find(r => Math.abs(r.y - token.y) < 2)
     if (row) row.tokens.push(token); else rows.push({ y: token.y, tokens: [token] })
   }
-  return rows.map(r => r.tokens.sort((a, b) => a.x - b.x).map(t => t.text).join(' ').trim()).filter(Boolean)
+  return rows
+    .map(r => { const tokens = r.tokens.sort((a, b) => a.x - b.x); return { text: tokens.map(t => t.text).join(' ').trim(), tokens } })
+    .filter(r => r.text)
 }
-export function parsePayslip(lines: string[], hash: string, name: string, sample = false): Payslip {
-  if (!lines.some(s => s === 'PAYSLIP SUMMARY v1')) throw new Error('This PDF layout is not supported yet. Use the labelled summary example or enter the figures manually.')
+export function textLines(tokens: TextToken[]): string[] {
+  return textRows(tokens).map(r => r.text)
+}
+
+const unsupported = () => new Error(`This PDF layout is not supported yet. The reader currently understands ${FORMATS.map(f => f.marker).join(' and ')}. Enter the figures manually for any other layout.`)
+
+export function parsePayslip(lines: string[], hash: string, name: string, sample = false, rows?: TextRow[]): Payslip {
+  const format = detectFormat(lines)
+  if (!format) throw unsupported()
   if (lines.join('\n').length > 20_000) throw new Error('This payslip contains too much text.')
-  const facts = blankFacts()
-  for (const key of fields) {
-    const prefix = labels[key] + ':'
-    const values = lines.filter(s => s.startsWith(prefix)).map(s => s.slice(prefix.length).trim())
-    if (values.length > 1) throw new Error(`More than one ${labels[key].toLowerCase()} value was found. Use one payslip per file.`)
-    facts[key] = values[0] ?? ''
-    if (facts[key].length > 120) throw new Error(`The ${labels[key].toLowerCase()} field is too long.`)
-    if (key === 'periodStart' || key === 'periodEnd' || key === 'payDate') facts[key] = dateValue(facts[key]) ?? facts[key]
-  }
-  // Exact field labels select current-period values; cumulative YTD fields never enter totals.
-  return { id: hash, hash, name, text: lines.join('\n'), facts, original: { ...facts }, confirmed: false, sample }
+  // Every format reads current-period values only; cumulative YTD figures are
+  // never extracted, so they can never be summed across payslips.
+  const facts = format.parse({ lines, rows: rows ?? lines.map(text => ({ text, tokens: [] })) })
+  return { id: hash, hash, name, text: lines.join('\n'), facts, original: { ...facts }, confirmed: false, sample, format: format.id }
 }
 export async function readPayslip(file: File, signal: AbortSignal, sample = false): Promise<Payslip> {
   if (!/\.pdf$/i.test(file.name) || !file.size || file.size > 2_000_000 || file.name.length > 180) throw new Error('Choose a PDF of 1 byte–2 MB with a file name of at most 180 characters.')
@@ -39,8 +44,11 @@ export async function readPayslip(file: File, signal: AbortSignal, sample = fals
     if (pdf.numPages !== 1) throw new Error('Use one single-page payslip per PDF. Combined files are not supported yet.')
     const page = await pdf.getPage(1), content = await page.getTextContent(); check()
     if (content.items.length > 4000) throw new Error('This payslip contains too much text.')
-    const tokens = content.items.flatMap(i => 'str' in i && i.str.trim() ? [{ text: i.str, x: i.transform[4], y: i.transform[5] }] : [])
-    const result = parsePayslip(textLines(tokens), hash, file.name, sample)
+    // Width matters: amounts in a table are right-aligned, so a token's centre
+    // identifies its column far more reliably than its left edge.
+    const tokens = content.items.flatMap(i => 'str' in i && i.str.trim() ? [{ text: i.str, x: i.transform[4], y: i.transform[5], width: i.width }] : [])
+    const rows = textRows(tokens)
+    const result = parsePayslip(rows.map(r => r.text), hash, file.name, sample, rows)
     page.cleanup(); return result
   } finally { signal.removeEventListener('abort', abort); await task.destroy() }
 }

@@ -9,7 +9,9 @@ export async function verifyPayslips(context, base, artifacts) {
   const reviewCount = () => page.locator('.pay-history li').count();
   const noOverflow = async () => assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   const examples = JSON.parse(readFileSync(new URL('../../../sample-data/payslips/examples.json', import.meta.url), 'utf8'));
+  const advices = JSON.parse(readFileSync(new URL('../../../sample-data/payslips/advice-examples.json', import.meta.url), 'utf8'));
   const file = (index, name) => ({ name: name || examples[index].name, mimeType: 'application/pdf', buffer: Buffer.from(examples[index].pdfBase64, 'base64') });
+  const advice = index => ({ name: advices[index].name, mimeType: 'application/pdf', buffer: Buffer.from(advices[index].pdfBase64, 'base64') });
   try {
     await page.goto(base.href);
     await page.getByRole('heading', { name: 'Understand your payslip.', exact: true }).waitFor();
@@ -382,6 +384,28 @@ export async function verifyPayslips(context, base, artifacts) {
     assert.deepEqual(await totals(), ['$3,900.00', '$3,260.00', '$600.00', '$468.00']);
     await button('Clear pay history').click(); await button('Yes, clear history').click();
     assert.equal(await page.locator('.pay-metrics').count(), 0);
+
+    // The second documented layout is tabular: every amount row carries a
+    // current-period figure beside a cumulative year-to-date figure. Only the
+    // current column may ever be read, so the fixtures carry large unrelated
+    // YTD values that would be obvious in the totals if a column were confused.
+    await page.getByLabel('Choose payslip PDFs', { exact: true }).setInputFiles([advice(0), advice(1)]);
+    await page.getByRole('heading', { name: 'Check your figures' }).waitFor();
+    assert.ok((await page.locator('.pay-source-name').first().innerText()).includes('PAY ADVICE v2'));
+    assert.equal(await page.getByLabel('Gross pay (AUD)', { exact: true }).inputValue(), '1,640.00');
+    assert.equal(await page.getByLabel('Tax withheld (AUD)', { exact: true }).inputValue(), '212.00');
+    assert.equal(await page.getByLabel('Net pay (AUD)', { exact: true }).inputValue(), '1,393.00');
+    await button('Confirm and continue').click(); await button('Confirm and continue').click();
+    await page.getByRole('heading', { name: 'Your pay at a glance' }).waitFor();
+    assert.deepEqual(await totals(), ['$3,485.50', '$2,935.50', '$480.00', '$400.83']);
+    const adviceReport = page.waitForEvent('download'); await button('Download pay report').click();
+    await (await adviceReport).saveAs(artifacts + 'pay-advice-v2.html');
+    const adviceHtml = readFileSync(artifacts + 'pay-advice-v2.html', 'utf8');
+    assert.ok(adviceHtml.includes('pay-advice-v2'));
+    assert.ok(!adviceHtml.includes('48,912.00'));
+    await button('Clear pay history').click(); await button('Yes, clear history').click();
+    assert.equal(await page.locator('.pay-metrics').count(), 0);
+
     await button('Try example payslips').click(); await page.getByRole('status').filter({ hasText: 'Six fictional payslips loaded.' }).waitFor();
     await button('Bank spending').click(); await button('My pay').click(); assert.equal(await page.locator('.pay-metrics').count(), 0);
     await button('Try example payslips').click(); await page.getByRole('status').filter({ hasText: 'Six fictional payslips loaded.' }).waitFor();
@@ -390,7 +414,7 @@ export async function verifyPayslips(context, base, artifacts) {
     assert.deepEqual(await page.evaluate(() => Object.keys(localStorage).filter(k => /payslip/i.test(k))), []);
     assert.deepEqual(errors, []); assert.ok(requests.every(r => r.method === 'GET'));
     assert.ok(requests.every(r => r.url.startsWith(base.origin) || r.url.startsWith('blob:') || r.url.startsWith('data:')));
-    const result = { passed: true, guidedSteps: true, automaticBatchReview: true, noUnconfirmedZeroTotals: true, manualEntry: true, correctionInvalidates: true, duplicateBlocked: true, badBatchAtomic: true, exampleToOwnData: true, chartSwitching: true, yearAndEmployerFilters: true, emptyFilterRecovery: true, offlineExport: true, payOutlook: true, payOutlookWithholdingNotScaled: true, payOutlookMobile: true, taxReadiness: true, taxReadinessWholeYear: true, taxReadinessLocked: true, taxReadinessExport: true, taxReadinessMobile: true, yearEndReconciliation: true, yearEndNoDoubleCount: true, annualStatementPdfExtraction: true, annualStatementReviewGate: true, annualStatementDuplicateBlocked: true, annualStatementProvenance: true, yearEndProvisionalExcluded: true, yearEndExport: true, yearEndMobile: true, yearEndPreparationHub: true, yearEndBankChecksNetOnly: true, yearEndExpenseCoverage: true, portableWorkspaceHandoff: true, handoffYearMismatchBlocked: true, handoffExplicitApply: true, handoffDuplicateBlocked: true, handoffNoDoubleCount: true, yearEndPreparationExport: true, yearEndPreparationMobile: true, encryptedPreparationBackup: true, encryptedBackupWrongPassphraseBlocked: true, encryptedBackupExplicitRestore: true, clearConfirmation: true, clearRefreshAndWorkspaceChange: true, mobileOverflow: false, mobileReviewActionsVisible: true, documentUploads: 0, modelRequests: 0, pageErrors: errors };
+    const result = { passed: true, guidedSteps: true, automaticBatchReview: true, noUnconfirmedZeroTotals: true, manualEntry: true, correctionInvalidates: true, duplicateBlocked: true, badBatchAtomic: true, exampleToOwnData: true, chartSwitching: true, yearAndEmployerFilters: true, emptyFilterRecovery: true, offlineExport: true, payOutlook: true, payOutlookWithholdingNotScaled: true, payOutlookMobile: true, taxReadiness: true, taxReadinessWholeYear: true, taxReadinessLocked: true, taxReadinessExport: true, taxReadinessMobile: true, yearEndReconciliation: true, yearEndNoDoubleCount: true, annualStatementPdfExtraction: true, annualStatementReviewGate: true, annualStatementDuplicateBlocked: true, annualStatementProvenance: true, yearEndProvisionalExcluded: true, yearEndExport: true, yearEndMobile: true, yearEndPreparationHub: true, yearEndBankChecksNetOnly: true, yearEndExpenseCoverage: true, portableWorkspaceHandoff: true, handoffYearMismatchBlocked: true, handoffExplicitApply: true, handoffDuplicateBlocked: true, handoffNoDoubleCount: true, yearEndPreparationExport: true, yearEndPreparationMobile: true, encryptedPreparationBackup: true, encryptedBackupWrongPassphraseBlocked: true, encryptedBackupExplicitRestore: true, payAdviceV2Layout: true, payAdviceV2CurrentPeriodOnly: true, payAdviceV2ReportRecordsLayout: true, clearConfirmation: true, clearRefreshAndWorkspaceChange: true, mobileOverflow: false, mobileReviewActionsVisible: true, documentUploads: 0, modelRequests: 0, pageErrors: errors };
     writeFileSync(artifacts + 'payslip-evaluation.json', JSON.stringify(result, null, 2)); return result;
   } catch (e) { await page.screenshot({ path: artifacts + 'payslip-failure.png', fullPage: true }); console.error((await page.locator('body').innerText()).slice(-10000)); throw e } finally { await page.close() }
 }

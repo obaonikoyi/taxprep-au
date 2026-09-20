@@ -6,6 +6,8 @@ export type PayFacts = Record<PayField, string>
 export type Payslip = {
   id: string; name: string; hash: string | null; text: string; original: PayFacts;
   facts: PayFacts; confirmed: boolean; sample: boolean;
+  /** Which documented layout read this file. Absent for manual entry. */
+  format?: string;
 }
 export const labels: Record<PayField, string> = {
   employer: 'Employer', periodStart: 'Period start', periodEnd: 'Period end', payDate: 'Pay date',
