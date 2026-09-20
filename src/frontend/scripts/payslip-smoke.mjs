@@ -100,14 +100,36 @@ export async function verifyPayslips(context, base, artifacts) {
     // Year-end reconciliation compares annual employment sources with pay history without double counting.
     assert.ok((await page.locator('.year-end-reconciliation').innerText()).includes('intentionally uses all checked employers recorded for 2026–27'));
     await button('Start year-end reconciliation').click();
-    await button('Add annual employment source').click();
-    await page.getByLabel('Annual source 1: employer or payer', { exact: true }).fill('Harbour Example Services');
-    await page.getByLabel('Annual source 1: source reference', { exact: true }).fill('Harbour income statement');
-    await page.getByLabel('Annual source 1: source type', { exact: true }).selectOption('income-statement');
-    await page.getByLabel('Annual source 1: final status', { exact: true }).selectOption('final');
-    await page.getByLabel('Annual source 1: gross income (AUD)', { exact: true }).fill('8250.00');
-    await page.getByLabel('Annual source 1: tax withheld (AUD)', { exact: true }).fill('1315.00');
-    await page.getByLabel('Annual source 1: linked employer', { exact: true }).selectOption('harbour example services');
+
+    // The fictional annual statement goes through the real local PDF reader and explicit review gate.
+    await button('Try fictional annual statement').click();
+    const annualReview = page.getByRole('region', { name: 'Review extracted annual statement' });
+    await annualReview.waitFor();
+    assert.equal(await page.locator('.year-end-source-card').count(), 0);
+    assert.equal(await page.getByLabel('Extracted annual statement employer', { exact: true }).inputValue(), 'Harbour Example Services');
+    assert.equal(await page.getByLabel('Extracted annual statement financial year', { exact: true }).inputValue(), '2026–27');
+    assert.equal(await page.getByLabel('Extracted annual statement date', { exact: true }).inputValue(), '2027-07-14');
+    assert.equal(await page.getByLabel('Extracted annual statement reference', { exact: true }).inputValue(), 'Harbour payroll A');
+    assert.equal(await page.getByLabel('Extracted annual statement status', { exact: true }).inputValue(), 'final');
+    assert.equal(await page.getByLabel('Extracted annual statement gross income (AUD)', { exact: true }).inputValue(), '8250.00');
+    assert.equal(await page.getByLabel('Extracted annual statement tax withheld (AUD)', { exact: true }).inputValue(), '1315.00');
+    assert.equal(await page.getByLabel('Extracted annual statement linked employer', { exact: true }).inputValue(), 'harbour example services');
+    assert.equal(await button('Confirm and add annual source').isDisabled(), true);
+    await page.getByLabel('I checked these extracted values against the annual source.', { exact: true }).check();
+    await button('Confirm and add annual source').click();
+    assert.equal(await page.locator('.year-end-source-card').count(), 1);
+    assert.ok((await page.locator('.annual-source-provenance').innerText()).includes('SHA-256'));
+
+    // Editing an imported source invalidates its review and removes it from final reconciliation until reconfirmed.
+    await page.getByLabel('Annual source 1: source reference', { exact: true }).fill('Harbour corrected reference');
+    assert.ok((await page.getByLabel('Year-end pay reconciliation result', { exact: true }).innerText()).includes('Pay history has no final annual source'));
+    await button('Reconfirm imported source 1').click();
+    assert.ok((await page.getByLabel('Year-end pay reconciliation result', { exact: true }).innerText()).includes('Matches checked pay history'));
+
+    // Exact repeated file bytes are not allowed to create a second annual source.
+    await button('Try fictional annual statement').click();
+    await page.getByRole('alert').filter({ hasText: 'already been added' }).waitFor();
+    assert.equal(await page.locator('.year-end-source-card').count(), 1);
 
     await button('Add annual employment source').click();
     await page.getByLabel('Annual source 2: employer or payer', { exact: true }).fill('Garden Example Studio');
@@ -135,7 +157,7 @@ export async function verifyPayslips(context, base, artifacts) {
     const reconciliationReport = readFileSync(artifacts + 'year-end-pay-handover.html', 'utf8');
     assert.ok(reconciliationReport.includes('year-end-pay-reconciliation-v1'));
     assert.ok(reconciliationReport.includes('do not add them together'));
-    assert.ok(reconciliationReport.includes('Harbour income statement'));
+    assert.ok(reconciliationReport.includes('Harbour corrected reference'));\n    assert.ok(reconciliationReport.includes('Harbour payroll A'));\n    assert.ok(reconciliationReport.includes('Imported annual-statement provenance'));\n    assert.ok(reconciliationReport.includes('annual-income-statement-v1'));\n    assert.ok(reconciliationReport.includes('ANNUAL INCOME STATEMENT v1'));
     assert.ok(reconciliationReport.includes('Garden payment summary'));
     assert.ok(reconciliationReport.includes('Tax/refund results remain locked'));
     assert.ok(reconciliationReport.includes('User annual-source coverage statement:</strong> Yes'));
@@ -225,7 +247,7 @@ export async function verifyPayslips(context, base, artifacts) {
     assert.deepEqual(await page.evaluate(() => Object.keys(localStorage).filter(k => /payslip/i.test(k))), []);
     assert.deepEqual(errors, []); assert.ok(requests.every(r => r.method === 'GET'));
     assert.ok(requests.every(r => r.url.startsWith(base.origin) || r.url.startsWith('blob:') || r.url.startsWith('data:')));
-    const result = { passed: true, guidedSteps: true, automaticBatchReview: true, noUnconfirmedZeroTotals: true, manualEntry: true, correctionInvalidates: true, duplicateBlocked: true, badBatchAtomic: true, exampleToOwnData: true, chartSwitching: true, yearAndEmployerFilters: true, emptyFilterRecovery: true, offlineExport: true, payOutlook: true, payOutlookWithholdingNotScaled: true, payOutlookMobile: true, taxReadiness: true, taxReadinessWholeYear: true, taxReadinessLocked: true, taxReadinessExport: true, taxReadinessMobile: true, yearEndReconciliation: true, yearEndNoDoubleCount: true, yearEndProvisionalExcluded: true, yearEndExport: true, yearEndMobile: true, clearConfirmation: true, clearRefreshAndWorkspaceChange: true, mobileOverflow: false, mobileReviewActionsVisible: true, documentUploads: 0, modelRequests: 0, pageErrors: errors };
+    const result = { passed: true, guidedSteps: true, automaticBatchReview: true, noUnconfirmedZeroTotals: true, manualEntry: true, correctionInvalidates: true, duplicateBlocked: true, badBatchAtomic: true, exampleToOwnData: true, chartSwitching: true, yearAndEmployerFilters: true, emptyFilterRecovery: true, offlineExport: true, payOutlook: true, payOutlookWithholdingNotScaled: true, payOutlookMobile: true, taxReadiness: true, taxReadinessWholeYear: true, taxReadinessLocked: true, taxReadinessExport: true, taxReadinessMobile: true, yearEndReconciliation: true, yearEndNoDoubleCount: true, annualStatementPdfExtraction: true, annualStatementReviewGate: true, annualStatementDuplicateBlocked: true, annualStatementProvenance: true, yearEndProvisionalExcluded: true, yearEndExport: true, yearEndMobile: true, clearConfirmation: true, clearRefreshAndWorkspaceChange: true, mobileOverflow: false, mobileReviewActionsVisible: true, documentUploads: 0, modelRequests: 0, pageErrors: errors };
     writeFileSync(artifacts + 'payslip-evaluation.json', JSON.stringify(result, null, 2)); return result;
   } catch (e) { await page.screenshot({ path: artifacts + 'payslip-failure.png', fullPage: true }); console.error((await page.locator('body').innerText()).slice(-10000)); throw e } finally { await page.close() }
 }
