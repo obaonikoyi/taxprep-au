@@ -11,6 +11,7 @@ import {
   type AnnualStatementCandidate,
 } from './annualStatement'
 import { reconcileYearEndPay, type AnnualPaySource } from './yearEndReconciliation'
+import { yearEndReconciliationReport } from './yearEndReconciliationReport'
 import type { Payslip } from './payslip'
 
 let parsed: AnnualStatementCandidate
@@ -127,4 +128,29 @@ describe('imported source review gates', () => {
     expect(duplicateResult.sourceRows.every(row => row.duplicate)).toBe(true)
     expect(duplicateResult.questions.join(' ')).toContain('Possible duplicate annual source')
   })
+})
+
+
+it('exports imported source provenance and escapes hostile extracted text', () => {
+  const hostile = {
+    ...parsed,
+    name: 'hostile.pdf',
+    hash: 'hostile-hash',
+    text: 'ANNUAL INCOME STATEMENT v1\nEmployer: <script>bad()</script>',
+    facts: { ...parsed.facts, payer: '<img src=x onerror=bad()>' },
+    original: { ...parsed.original, payer: '<script>bad()</script>' },
+  }
+  const source = candidateToAnnualPaySource(hostile, '')
+  const result = reconcileYearEndPay([pay('p1', '8250.00', '1315.00')], '2026–27', [source], 'yes')
+  const html = yearEndReconciliationReport(result)
+
+  expect(html).toContain('year-end-pay-reconciliation-v2')
+  expect(html).toContain('annual-income-statement-v1')
+  expect(html).toContain('Imported annual-statement provenance')
+  expect(html).toContain('hostile.pdf')
+  expect(html).toContain('SHA-256 hostile-hash')
+  expect(html).toContain('&lt;img')
+  expect(html).toContain('&lt;script&gt;')
+  expect(html).not.toContain('<img src=x')
+  expect(html).not.toContain('<script>bad()</script>')
 })
