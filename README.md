@@ -2,11 +2,11 @@
 
 TaxPrep helps Australian workers understand their pay, track withholding and recorded super, and prepare for tax time with fewer surprises. The longer-term goal remains supported self-preparation or a useful accountant handover.
 
-> **Published: Milestone 16A — year-end pay reconciliation.** Checked payslips can now be compared with manually entered final/provisional annual employment sources without counting both views as separate income. Tax/refund results remain locked pending qualified review.
+> **Current: Milestone 16B — annual income-statement extraction.** A supported fictional annual income statement can now be read locally into a review candidate before it is explicitly confirmed into year-end reconciliation. Tax/refund results remain locked pending qualified review.
 
 **[Try the standalone app](https://taxprep-au-production.up.railway.app)** — no account needed. Choose **Try example payslips** for six fictional PDFs and an immediate pay-history dashboard. The owner's portfolio website has not been changed.
 
-[Product direction](docs/PRODUCT_DIRECTION.md) · [Current milestones and user cases](docs/PROJECT_PLAN.md) · [Milestone 15A pay outlook](docs/MILESTONE_15A_PAY_OUTLOOK.md) · [Milestone 15B-1 tax readiness](docs/MILESTONE_15B1_TAX_READINESS.md) · [Milestone 16A year-end reconciliation](docs/MILESTONE_16A_INCOME_RECONCILIATION.md) · [Development](docs/DEVELOPMENT.md)
+[Product direction](docs/PRODUCT_DIRECTION.md) · [Current milestones and user cases](docs/PROJECT_PLAN.md) · [Milestone 15A pay outlook](docs/MILESTONE_15A_PAY_OUTLOOK.md) · [Milestone 15B-1 tax readiness](docs/MILESTONE_15B1_TAX_READINESS.md) · [Milestone 16A year-end reconciliation](docs/MILESTONE_16A_INCOME_RECONCILIATION.md) · [Milestone 16B annual statement extraction](docs/MILESTONE_16B_ANNUAL_STATEMENT_EXTRACTION.md) · [Development](docs/DEVELOPMENT.md)
 
 ## Payslip dashboard
 
@@ -22,7 +22,9 @@ Published: [Milestone 15A — pay outlook](docs/MILESTONE_15A_PAY_OUTLOOK.md) ad
 
 Published: [Milestone 15B-1 — tax readiness](docs/MILESTONE_15B1_TAX_READINESS.md) collects whole-year profile facts, missing information and unsupported circumstances while keeping every tax/refund result locked.
 
-Published: [Milestone 16A — year-end pay reconciliation](docs/MILESTONE_16A_INCOME_RECONCILIATION.md) compares checked payslip history with manually entered income statements/payment summaries. Final annual sources and payslips are shown as two views of the same employment income, never added together. Provisional sources stay visible but are excluded from final annual totals; mismatches remain review questions. Annual-statement document extraction remains deferred in #30.
+Published: [Milestone 16A — year-end pay reconciliation](docs/MILESTONE_16A_INCOME_RECONCILIATION.md) compares checked payslip history with manually entered income statements/payment summaries. Final annual sources and payslips are shown as two views of the same employment income, never added together. Provisional sources stay visible but are excluded from final annual totals; mismatches remain review questions.
+
+In development: [Milestone 16B — annual income-statement extraction](docs/MILESTONE_16B_ANNUAL_STATEMENT_EXTRACTION.md) adds a local reader for the documented fictional `ANNUAL INCOME STATEMENT v1` format. Extracted data remains a candidate until the user reviews and explicitly confirms it; original/corrected provenance is retained in the year-end handover. Unsupported layouts keep manual entry.
 
 The reviewed withholding/annual-tax work remains under [Milestone 15](https://github.com/obaonikoyi/taxprep-au/issues/36) after #28. Existing tax-rule review remains open in #21 and #28.
 
