@@ -114,7 +114,7 @@ it('reviews and explicitly applies same-year handoffs without auto-completing ru
   expect((screen.getByLabelText('Year-end prep: ruleReview') as HTMLSelectElement).value).toBe('')
 
   fireEvent.change(screen.getByLabelText('Import year-end handoff'), { target: { files: [statementFile] } })
-  expect((await screen.findByRole('alert')).textContent).toContain('already been imported')
+  expect((await screen.findByRole('alert')).textContent).toContain('duplicates a source already represented')
 
   const wrongYear = { ...evidence, handoffId: 'evidence:wrong-year', financialYear: '2025–26' }
   const wrongFile = new File([JSON.stringify(wrongYear)], 'wrong-year.json', { type: 'application/json' })
