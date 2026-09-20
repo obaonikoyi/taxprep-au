@@ -5,8 +5,15 @@
  * metric row, no duplicated page heading, and no horizontal scroll on a
  * phone. Needs no backend — the workspaces it touches all run locally.
  *
- * Run with `npm run test:ui`. Set CHROMIUM_PATH to use a preinstalled
- * browser instead of Playwright's own download.
+ * Run it with `npm run test:ui`, not by calling this file directly: it
+ * launches Vite itself and so never triggers `predev`, and the payslip
+ * reader needs the browser PDF worker that `prepare-document-assets` copies
+ * into the gitignored public/document-engine/. Without it pdf.js silently
+ * falls back to a fake worker and the example never finishes loading. The
+ * `pretest:ui` script covers that.
+ *
+ * Set CHROMIUM_PATH to use a preinstalled browser instead of Playwright's
+ * own download.
  */
 import { chromium } from 'playwright';
 import { spawn } from 'node:child_process';

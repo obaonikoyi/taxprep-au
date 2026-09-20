@@ -13,6 +13,7 @@
     "test:ui": "node scripts/ui-smoke.mjs",
     "test:hosted": "node scripts/hosted-smoke.mjs",
     "predev": "node scripts/prepare-document-assets.mjs",
+    "pretest:ui": "node scripts/prepare-document-assets.mjs",
     "prebuild": "node scripts/verify-assessment-sources.mjs && node scripts/verify-tax-sources.mjs && node scripts/prepare-document-assets.mjs",
     "pretest": "node scripts/verify-assessment-sources.mjs && node scripts/verify-tax-sources.mjs"
   },
