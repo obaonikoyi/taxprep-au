@@ -1,7 +1,14 @@
 import { confirmationIssues, employerKey, financialYear, money, totals, type Payslip } from './payslip'
 
 export const YEAR_END_RECONCILIATION_VERSION = 'year-end-pay-reconciliation-v1'
+export const ANNUAL_SOURCE_GUIDANCE_VERSION = 'ato-annual-employment-sources.2026-09-20'
 export const MAX_ANNUAL_PAY_SOURCES = 30
+
+export const annualSourceGuidance = [
+  { id: 'income-statement-status', title: 'ATO — Accessing your income statement', url: 'https://www.ato.gov.au/api/public/content/0-880e199f-24f7-4808-8de9-4f96e7e5571b' },
+  { id: 'multiple-statements', title: 'ATO — Multiple income statements from one employer', url: 'https://www.ato.gov.au/api/public/content/0-9e8a6a9e-7a55-456b-8bd4-ff06ea9a2694' },
+  { id: 'stp-finalisation', title: 'ATO — Finalising Single Touch Payroll data', url: 'https://www.ato.gov.au/api/public/content/0-2f417730-27cf-4825-8b51-ee53bfe00358' },
+] as const
 
 export type AnnualSourceType = '' | 'income-statement' | 'payment-summary'
 export type AnnualFinalStatus = '' | 'final' | 'not-final' | 'unsure'
