@@ -5,6 +5,7 @@ import {
   coveragePatchFromHandoff,
   financialYearForRange,
   handoffSummaryLines,
+  handoffConflicts,
   parseYearEndHandoffValue,
   readYearEndHandoff,
   type EvidenceYearEndHandoff,
@@ -76,6 +77,13 @@ describe('portable year-end handoff', () => {
   it('rejects the wrong financial year during file import', async () => {
     const file = new File([JSON.stringify({ ...statement(), financialYear: '2025–26', scope: { from: '2025-07-01', to: '2026-06-30' } })], 'handoff.json', { type: 'application/json' })
     await expect(readYearEndHandoff(file, '2026–27')).rejects.toThrow('not the selected 2026–27')
+  })
+
+  it('detects duplicate identities and same-workspace source reuse', () => {
+    const original = statement()
+    expect(handoffConflicts([original], original)).toBe(true)
+    expect(handoffConflicts([original], { ...statement(), handoffId: 'statement:other-scope', scope: { from: '2026-09-01', to: '2026-09-30' } })).toBe(true)
+    expect(handoffConflicts([original], evidence())).toBe(false)
   })
 
   it('maps statement coverage without treating review amounts as deductions', () => {
