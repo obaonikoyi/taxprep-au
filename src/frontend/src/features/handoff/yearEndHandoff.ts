@@ -165,7 +165,13 @@ export function parseYearEndHandoffValue(input: unknown): YearEndHandoff {
 export async function readYearEndHandoff(file: File, selectedYear: string) {
   if (!/\.json$/i.test(file.name)) throw new Error('Choose a TaxPrep year-end handoff JSON file.')
   if (!file.size || file.size > MAX_YEAR_END_HANDOFF_BYTES) throw new Error('Use a year-end handoff file from 1 byte to 64 KB.')
-  const parsed = parseYearEndHandoffValue(JSON.parse(await file.text()))
+  let value: unknown
+  try {
+    value = JSON.parse(await file.text())
+  } catch {
+    throw new Error('This year-end handoff is not valid JSON.')
+  }
+  const parsed = parseYearEndHandoffValue(value)
   const expected = normaliseFinancialYear(selectedYear)
   if (parsed.financialYear !== expected) throw new Error(`This handoff is for ${parsed.financialYear}, not the selected ${expected} financial year.`)
   return parsed
@@ -173,6 +179,12 @@ export async function readYearEndHandoff(file: File, selectedYear: string) {
 
 export function handoffLabel(handoff: YearEndHandoff) {
   return handoff.kind === 'statement-analysis' ? 'Bank spending summary' : 'Tax document evidence summary'
+}
+
+export function handoffConflicts(existing: YearEndHandoff[], next: YearEndHandoff) {
+  if (existing.some(item => item.handoffId === next.handoffId)) return true
+  const nextHashes = new Set(next.sourceHashes)
+  return existing.some(item => item.kind === next.kind && item.sourceHashes.some(hash => nextHashes.has(hash)))
 }
 
 export function coveragePatchFromHandoff(handoff: YearEndHandoff): CoveragePatch {
