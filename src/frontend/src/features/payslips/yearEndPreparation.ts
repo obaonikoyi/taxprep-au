@@ -1,5 +1,6 @@
 import { employerKey, money } from './payslip'
 import type { YearEndReconciliation } from './yearEndReconciliation'
+import type { YearEndHandoff } from '../handoff/yearEndHandoff'
 
 export const YEAR_END_PREPARATION_VERSION = 'year-end-preparation-v1'
 
@@ -57,6 +58,7 @@ export type YearEndPreparationResult = {
   reconciliation: YearEndReconciliation
   bankRows: BankDepositRow[]
   expenses: ExpenseCoverageResult
+  handoffs: YearEndHandoff[]
   incomeOpenQuestions: number
   bankReviewed: number
   bankEmployers: number
@@ -126,6 +128,7 @@ function expenseCountIssue(label: string, raw: string) {
 export function buildYearEndPreparation(
   reconciliation: YearEndReconciliation,
   answers: YearEndPreparationAnswers,
+  handoffs: YearEndHandoff[] = [],
 ): YearEndPreparationResult {
   const bankRows: BankDepositRow[] = reconciliation.employerNames.map(([key, name]) => {
     const slips = reconciliation.checkedSlips.filter(slip => employerKey(slip.facts.employer) === key)
@@ -214,6 +217,7 @@ export function buildYearEndPreparation(
     reconciliation,
     bankRows,
     expenses,
+    handoffs: [...handoffs],
     incomeOpenQuestions: reconciliation.questions.length,
     bankReviewed: bankRows.filter(row => row.status && row.status !== 'not-checked').length,
     bankEmployers: bankRows.length,
