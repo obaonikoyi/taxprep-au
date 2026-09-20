@@ -33,7 +33,7 @@ export function yearEndReconciliationReport(result: YearEndReconciliation) {
     .filter(({ source }) => source.origin === 'document')
     .map(({ source }) => `<section>
 <h3>${escape(source.payer || source.documentName || 'Imported annual source')}</h3>
-<p>${escape(source.documentName)} · page ${source.documentPage ?? 1} · SHA-256 ${escape(source.documentHash)}</p>
+<p>${escape(source.documentName)} · page ${source.documentPage ?? 1} · SHA-256 ${escape(source.documentHash)}${source.parserVersion ? ' · parser ' + escape(source.parserVersion) : ''}</p>
 ${source.originalExtraction ? `<table><thead><tr><th>Field</th><th>Original extraction</th><th>Current value</th></tr></thead><tbody>
 <tr><th>Employer</th><td>${escape(source.originalExtraction.payer || 'Blank')}</td><td>${escape(source.payer || 'Blank')}</td></tr>
 <tr><th>Source reference</th><td>${escape(source.originalExtraction.reference || 'Blank')}</td><td>${escape(source.reference || 'Blank')}</td></tr>
