@@ -54,14 +54,14 @@ function pay(id: string, gross: string, withheld: string): Payslip {
     hash: 'hash-' + id,
     text: '',
     original: { employer: 'Harbour Example Services', periodStart: '2026-07-01', periodEnd: '2026-07-14', payDate: '2026-07-16', gross, withheld, deductions: '0', net: String(Number(gross) - Number(withheld)), super: '' },
-    facts: { employer: 'Harbour Example Services', periodStart: '2026-07-01', periodEnd: '2026-07-14', payDate: '2026-07-16', gross, witheld, deductions: '0', net: String(Number(gross) - Number(withheld)), super: '' },
+    facts: { employer: 'Harbour Example Services', periodStart: '2026-07-01', periodEnd: '2026-07-14', payDate: '2026-07-16', gross, withheld, deductions: '0', net: String(Number(gross) - Number(withheld)), super: '' },
     confirmed: true,
     sample: false,
   }
 }
 
 describe('annual income statement parsing', () => {
-  it('extracts the real fictional PDn fixture into a review candidate', () => {
+  it('extracts the real fictional PDF fixture into a review candidate', () => {
     expect(parsed.facts).toEqual({
       payer: 'Harbour Example Services',
       financialYear: '2026–27',
