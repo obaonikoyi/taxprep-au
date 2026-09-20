@@ -131,7 +131,7 @@ export function candidateToAnnualPaySource(candidate: AnnualStatementCandidate, 
     payer: candidate.facts.payer.trim(),
     reference: candidate.facts.reference.trim(),
     gross: candidate.facts.gross,
-    withheld: candidate.facts.witheld,
+    withheld: candidate.facts.withheld,
     sourceType: 'income-statement',
     finalStatus: candidate.facts.finalStatus,
     linkedEmployer,
@@ -144,7 +144,7 @@ export function candidateToAnnualPaySource(candidate: AnnualStatementCandidate, 
       payer: candidate.original.payer,
       reference: candidate.original.reference,
       gross: candidate.original.gross,
-      witheld: candidate.original.withheld,
+      withheld: candidate.original.withheld,
       finalStatus: candidate.original.finalStatus,
       financialYear: candidate.original.financialYear,
       statementDate: candidate.original.statementDate,
@@ -157,5 +157,5 @@ export function candidateToAnnualPaySource(candidate: AnnualStatementCandidate, 
 
 export function suggestedEmployerLink(candidate: AnnualStatementCandidate, employers: [string, string][]) {
   const candidateKey = employerKey(candidate.facts.payer)
-  return employers.find(([key]) => key === candidateKey)?.[0] ?? '
+  return employers.find(([key]) => key === candidateKey)?.[0] ?? ''
 }
