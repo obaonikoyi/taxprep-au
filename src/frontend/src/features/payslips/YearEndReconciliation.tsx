@@ -16,6 +16,7 @@ import {
 } from './yearEndReconciliation'
 import { downloadYearEndReconciliationReport, yearEndReconciliationReport } from './yearEndReconciliationReport'
 import AnnualStatementIntake from './AnnualStatementIntake'
+import YearEndPreparationHub from './YearEndPreparationHub'
 
 type Props = {
   allSlips: Payslip[]
@@ -142,7 +143,9 @@ export default function YearEndReconciliation({ allSlips, year, employerFilter }
         <button className="secondary-button" onClick={() => downloadYearEndReconciliationReport(yearEndReconciliationReport(result))}>Download year-end pay handover</button>
       </div>
 
-      <details className="statement-help year-end-sources"><summary>Why Tax ready and why can one employer have multiple sources?</summary><p>ATO wording references only · version {ANNUAL_SOURCE_GUIDANCE_VERSION}. These links support source-status wording and multiple-statement handling; they do not unlock TaxPrep tax calculations.</p><ul>{annualSourceGuidance.map(source => <li key={source.id}><a href={source.url} target="_blank" rel="noreferrer">{source.title}</a></li>)}</ul></details>
+      <YearEndPreparationHub key={scopeKey} reconciliation={result} />
+
+            <details className="statement-help year-end-sources"><summary>Why Tax ready and why can one employer have multiple sources?</summary><p>ATO wording references only · version {ANNUAL_SOURCE_GUIDANCE_VERSION}. These links support source-status wording and multiple-statement handling; they do not unlock TaxPrep tax calculations.</p><ul>{annualSourceGuidance.map(source => <li key={source.id}><a href={source.url} target="_blank" rel="noreferrer">{source.title}</a></li>)}</ul></details>
     </>}
   </section>
 }
