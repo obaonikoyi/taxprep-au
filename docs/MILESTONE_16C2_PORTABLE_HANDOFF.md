@@ -1,6 +1,6 @@
 # Milestone 16C-2 — portable cross-workspace year-end handoff
 
-Status: implementation in progress for [issue #57](https://github.com/obaonikoyi/taxprep-au/issues/57), under parent [#37](https://github.com/obaonikoyi/taxprep-au/issues/37).
+Status: published for [issue #57](https://github.com/obaonikoyi/taxprep-au/issues/57), under parent [#37](https://github.com/obaonikoyi/taxprep-au/issues/37).
 
 ## User outcome
 
@@ -147,4 +147,6 @@ Automated checks cover:
 - 390px mobile layout; and
 - existing no-upload/no-model-request request monitoring.
 
-Feature CI, Railway publication and hosted-browser evidence are recorded here after the PR passes.
+Feature [PR #58](https://github.com/obaonikoyi/taxprep-au/pull/58) merged as `0df42a381517f7dbc23cb2ea2367c2f4f599e933`. Feature CI run `35505779972` passed frontend lint/tests/build, backend/API plus browser smoke, and the production-container browser journey.
+
+Railway feature deployment `e3e8e9b5-c9de-4935-87fd-95678b6001e4` reached **SUCCESS** for that exact merge commit at the existing standalone URL. This publication record triggers the dedicated public hosted-browser workflow; final live evidence is recorded in issue #57. Parent #37 remains open for safe save/resume and user validation. The portfolio website remains unchanged.
