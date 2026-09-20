@@ -157,7 +157,11 @@ export async function verifyPayslips(context, base, artifacts) {
     const reconciliationReport = readFileSync(artifacts + 'year-end-pay-handover.html', 'utf8');
     assert.ok(reconciliationReport.includes('year-end-pay-reconciliation-v2'));
     assert.ok(reconciliationReport.includes('do not add them together'));
-    assert.ok(reconciliationReport.includes('Harbour corrected reference'));\n    assert.ok(reconciliationReport.includes('Harbour payroll A'));\n    assert.ok(reconciliationReport.includes('Imported annual-statement provenance'));\n    assert.ok(reconciliationReport.includes('annual-income-statement-v1'));\n    assert.ok(reconciliationReport.includes('ANNUAL INCOME STATEMENT v1'));
+    assert.ok(reconciliationReport.includes('Harbour corrected reference'));
+    assert.ok(reconciliationReport.includes('Harbour payroll A'));
+    assert.ok(reconciliationReport.includes('Imported annual-statement provenance'));
+    assert.ok(reconciliationReport.includes('annual-income-statement-v1'));
+    assert.ok(reconciliationReport.includes('ANNUAL INCOME STATEMENT v1'));
     assert.ok(reconciliationReport.includes('Garden payment summary'));
     assert.ok(reconciliationReport.includes('Tax/refund results remain locked'));
     assert.ok(reconciliationReport.includes('User annual-source coverage statement:</strong> Yes'));
