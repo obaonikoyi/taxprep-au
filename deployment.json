@@ -8,9 +8,9 @@
   "initialCommit": "e9e5fac6d469ee117b9796eaf306723401fecf61",
   "portfolioPublished": false,
   "latestMilestone": 16,
-  "latestFeatureCommit": "ffe05eb13bd815780386d937b089044dcc21dfb5",
-  "latestFeatureDeploymentId": "831d9075-2be5-4c43-abd0-f626e66ab201",
-  "latestMilestoneStatus": "Milestone 16A year-end employment reconciliation published with manual annual-source entry, final/provisional handling, no double counting and source-linked handover; tax/refund results remain locked pending qualified review",
+  "latestFeatureCommit": "5b72ac6d763d7e7b57cb716743c259602188432c",
+  "latestFeatureDeploymentId": "ee0431c2-782c-4a79-abbc-c11fd4e41763",
+  "latestMilestoneStatus": "Milestone 16B annual income-statement extraction published with local PDF/image reading, explicit source review, provenance and duplicate protection feeding year-end reconciliation; tax/refund results remain locked pending qualified review",
   "qualifiedTaxReview": "pending",
-  "latestMilestonePhase": "16A"
+  "latestMilestonePhase": "16B"
 }
