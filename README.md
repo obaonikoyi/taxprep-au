@@ -6,7 +6,7 @@ TaxPrep helps Australian workers understand their pay, track withholding and rec
 
 **[Try the standalone app](https://taxprep-au-production.up.railway.app)** — no account needed. Choose **Try example payslips** for six fictional PDFs and an immediate pay-history dashboard. The owner's portfolio website has not been changed.
 
-[Product direction](docs/PRODUCT_DIRECTION.md) · [Current milestones and user cases](docs/PROJECT_PLAN.md) · [Milestone 15A pay outlook](docs/MILESTONE_15A_PAY_OUTLOOK.md) · [Milestone 15B-1 tax readiness](docs/MILESTONE_15B1_TAX_READINESS.md) · [Milestone 16A year-end reconciliation](docs/MILESTONE_16A_INCOME_RECONCILIATION.md) · [Milestone 16B annual statement extraction](docs/MILESTONE_16B_ANNUAL_STATEMENT_EXTRACTION.md) · [Milestone 16C-1 year-end preparation](docs/MILESTONE_16C1_YEAR_END_PREPARATION.md) · [Milestone 16C-2 portable handoff](docs/MILESTONE_16C2_PORTABLE_HANDOFF.md) · [Development](docs/DEVELOPMENT.md)
+[Product direction](docs/PRODUCT_DIRECTION.md) · [Current milestones and user cases](docs/PROJECT_PLAN.md) · [Milestone 15A pay outlook](docs/MILESTONE_15A_PAY_OUTLOOK.md) · [Milestone 15B-1 tax readiness](docs/MILESTONE_15B1_TAX_READINESS.md) · [Milestone 16A year-end reconciliation](docs/MILESTONE_16A_INCOME_RECONCILIATION.md) · [Milestone 16B annual statement extraction](docs/MILESTONE_16B_ANNUAL_STATEMENT_EXTRACTION.md) · [Milestone 16C-1 year-end preparation](docs/MILESTONE_16C1_YEAR_END_PREPARATION.md) · [Milestone 16C-2 portable handoff](docs/MILESTONE_16C2_PORTABLE_HANDOFF.md) · [Milestone 16C-3 encrypted local backup](docs/MILESTONE_16C3_ENCRYPTED_LOCAL_BACKUP.md) · [Development](docs/DEVELOPMENT.md)
 
 ## Payslip dashboard
 
@@ -29,6 +29,8 @@ Published: [Milestone 16B — annual income-statement extraction](docs/MILESTONE
 Published: [Milestone 16C-1 — unified year-end preparation](docs/MILESTONE_16C1_YEAR_END_PREPARATION.md) adds optional net-pay/bank-deposit completeness checks and expense/evidence coverage to one session-only handover. Bank deposits do not establish taxable income, amounts flagged for work review are not deductions, and save/resume remains blocked on the [storage/retention design gate](docs/YEAR_END_SAVE_RESUME_DESIGN.md).
 
 Published: [Milestone 16C-2 — portable cross-workspace handoff](docs/MILESTONE_16C2_PORTABLE_HANDOFF.md) lets Bank spending and Tax documents export small year-scoped JSON summaries containing coverage metrics and source hashes only. The year-end hub validates the file and requires explicit application; raw transactions/OCR text are not transferred, employer matching is not inferred, and rule-review coverage remains untouched.
+
+In development: [Milestone 16C-3 — encrypted local preparation backup](docs/MILESTONE_16C3_ENCRYPTED_LOCAL_BACKUP.md) adds user-controlled WebCrypto backup/restore for preparation answers and applied summary handoffs only. It does not add cloud storage, browser persistence, raw financial files or passphrase recovery, and restore is blocked unless the current financial year and reconciliation fingerprint match.
 
 The reviewed withholding/annual-tax work remains under [Milestone 15](https://github.com/obaonikoyi/taxprep-au/issues/36) after #28. Existing tax-rule review remains open in #21 and #28.
 

@@ -47,3 +47,29 @@ Before cloud save/resume exists, TaxPrep may use an explicit downloaded/imported
 - applying imported coverage requires a separate confirmation action.
 
 This portable summary does not change the storage, retention, deletion or account decisions required before real save/resume can be implemented.
+
+
+## Milestone 16C-3 decision — user-controlled encrypted local backup
+
+The first save/resume implementation may be an explicit **encrypted file download/import** for the year-end preparation layer only.
+
+This does not authorise TaxPrep cloud persistence or hidden browser persistence.
+
+Allowed:
+
+- preparation answers and applied privacy-bounded handoff summaries;
+- deterministic fingerprint of the matching reconciliation;
+- WebCrypto PBKDF2-SHA-256 + AES-GCM;
+- user-supplied passphrase that is never stored or transmitted;
+- explicit download, explicit import, explicit decrypt and explicit restore.
+
+Not allowed in this milestone:
+
+- raw financial documents or OCR text in the backup;
+- raw transactions/descriptions in the backup;
+- localStorage/sessionStorage/IndexedDB workspace persistence;
+- TaxPrep API/database/object-storage persistence;
+- passphrase recovery service;
+- restore onto a different financial year or reconciliation fingerprint.
+
+This user-controlled encrypted file does not resolve the remaining design requirements for future account-based storage, retention/deletion, server-side key management, backup deletion delay or account recovery.

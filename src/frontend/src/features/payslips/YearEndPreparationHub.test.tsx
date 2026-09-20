@@ -54,7 +54,7 @@ it('keeps the preparation hub session-only and exposes the bank/expense review f
   expect(screen.getByLabelText('Year-end preparation coverage').textContent).toContain('1/1')
   expect(screen.getByLabelText('Year-end preparation questions').textContent).toContain('Receipt/evidence review')
   expect(screen.getByText('This is not an approved deduction.')).toBeDefined()
-  expect(screen.getByText('This milestone intentionally keeps the preparation hub in the current browser session and does not turn the fictional demo storage into a document vault.')).toBeDefined()
+  expect(screen.getByText('TaxPrep still has no automatic browser or cloud save for this workspace. Refreshing or leaving the workflow clears the in-app preparation state.')).toBeDefined()
 
   fireEvent.click(screen.getByRole('button', { name: 'Download complete preparation handover' }))
   expect(HTMLAnchorElement.prototype.click).toHaveBeenCalled()

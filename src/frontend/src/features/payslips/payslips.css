@@ -381,3 +381,25 @@
  .year-end-handoff-actions>* { width:100%; }
  .year-end-handoff-candidate { padding:14px; }
 }
+
+
+/* Milestone 16C-3: explicit encrypted local preparation backup/restore. */
+.year-end-backup-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; margin-top:16px; }
+.year-end-backup-card { min-width:0; padding:16px; border:1px solid #dbe5de; border-radius:10px; background:#f8fbf9; display:grid; gap:12px; }
+.year-end-backup-card h6 { margin:0; }
+.year-end-backup-card label { display:grid; gap:7px; min-width:0; font-size:.8rem; font-weight:650; }
+.year-end-backup-card input { width:100%; }
+.year-end-backup-card small { color:var(--pay-muted); font-size:.72rem; font-weight:400; line-height:1.5; }
+.year-end-backup-file { position:relative; overflow:hidden; cursor:pointer; }
+.year-end-backup-file input { position:absolute; inset:0; opacity:0; cursor:pointer; }
+.year-end-backup-selected { margin:0; font-size:.76rem; overflow-wrap:anywhere; word-break:break-word; }
+.year-end-backup-candidate { padding:14px; border:1px solid #ccdcd0; border-radius:9px; background:white; min-width:0; }
+.year-end-backup-candidate ul { padding-left:20px; font-size:.78rem; line-height:1.6; }
+.year-end-backup-candidate p { font-size:.78rem; line-height:1.6; }
+@media(max-width:700px){
+  .year-end-backup-grid { grid-template-columns:1fr; }
+  .year-end-backup-card { padding:14px; }
+  .year-end-backup-card .secondary-button,
+  .year-end-backup-card .primary-button,
+  .year-end-backup-file { width:100%; }
+}
