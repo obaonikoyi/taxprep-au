@@ -132,7 +132,7 @@ it('reconciles a final annual employment source without adding it to payslip inc
   expect(result.textContent).toContain('$100.00')
   expect(result.textContent).toContain('$10.00')
   expect(result.textContent).toContain('Tax result remains locked')
-  expect(result.textContent).toContain('does not prove your return is complete')
+  expect(screen.getByText('This is your coverage statement only. It is not proof that the tax return is complete.')).toBeDefined()
 
   fireEvent.change(screen.getByLabelText('Annual source 1: gross income (AUD)', { exact: true }), { target: { value: '120.00' } })
   result = screen.getByLabelText('Year-end pay reconciliation result', { exact: true })
