@@ -1,6 +1,6 @@
 # Milestone 16C-1 — unified year-end preparation hub
 
-Status: implementation in progress for [issue #54](https://github.com/obaonikoyi/taxprep-au/issues/54), as the first engineering slice under [#37](https://github.com/obaonikoyi/taxprep-au/issues/37).
+Status: published for [issue #54](https://github.com/obaonikoyi/taxprep-au/issues/54), as the first engineering slice under [#37](https://github.com/obaonikoyi/taxprep-au/issues/37).
 
 ## User outcome
 
@@ -46,4 +46,6 @@ Future save/resume work is blocked on [the explicit storage/retention design](YE
 - Chromium covers reconciliation → bank checks → expense/evidence coverage → combined export → 390px mobile.
 - Existing no-upload/no-model-request monitoring remains in force.
 
-Feature CI, Railway publication and hosted-browser evidence will be recorded here after the PR passes.
+Feature [PR #55](https://github.com/obaonikoyi/taxprep-au/pull/55) merged as `36287428246c6a5f7cb9c0be654d34fce1229df8`. Feature CI run `35504813444` passed frontend lint/tests/build, backend/API plus browser smoke, and the production-container browser journey.
+
+Railway feature deployment `6a0cf3c8-9d65-4363-87bc-0160c55c0f65` reached **SUCCESS** for that exact merge commit at the existing standalone URL. This publication record triggers the dedicated public hosted-browser workflow; final live evidence is recorded in issue #54. The parent #37 remains open for safe save/resume implementation and user validation. The portfolio website remains unchanged.
