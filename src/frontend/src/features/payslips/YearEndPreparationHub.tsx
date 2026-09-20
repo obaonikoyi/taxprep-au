@@ -20,6 +20,8 @@ import {
   readYearEndHandoff,
   type YearEndHandoff,
 } from '../handoff/yearEndHandoff'
+import PreparationBackupPanel from '../handoff/PreparationBackupPanel'
+import type { PreparationBackupPayload } from '../handoff/preparationBackup'
 
 type Props = {
   reconciliation: YearEndReconciliation
@@ -81,6 +83,14 @@ export default function YearEndPreparationHub({ reconciliation }: Props) {
     setHandoffCandidate(null)
   }
 
+  function restorePreparation(payload: PreparationBackupPayload) {
+    setAnswers(payload.answers)
+    setHandoffs(payload.handoffs)
+    setHandoffCandidate(null)
+    setHandoffError('')
+    setHandoffMessage(payload.handoffs.length ? 'Restored applied workspace summaries from encrypted local backup.' : '')
+  }
+
   function coverageSelect(label: string, key: keyof Pick<YearEndPreparationAnswers['expenses'], 'bankSpending' | 'receiptEvidence' | 'workPurpose' | 'ruleReview'>) {
     return <label>{label}
       <select aria-label={`Year-end prep: ${key}`} value={answers.expenses[key]} onChange={event => patchExpense({ [key]: event.target.value as CoverageStatus })}>
@@ -100,7 +110,7 @@ export default function YearEndPreparationHub({ reconciliation }: Props) {
         <h4 id="year-end-preparation-heading">Bring the year-end checks into one handover</h4>
         <p>Keep the reconciled employment sources above, then record optional bank-deposit checks and expense/evidence coverage for {reconciliation.year}. This does not create a tax result.</p>
       </div>
-      <span className="year-end-badge locked">Session only</span>
+      <span className="year-end-badge locked">Session by default</span>
     </div>
 
     <div className="year-end-prep-boundary">
@@ -234,6 +244,8 @@ export default function YearEndPreparationHub({ reconciliation }: Props) {
         </div>
       </section>
 
+      <PreparationBackupPanel reconciliation={reconciliation} answers={answers} handoffs={handoffs} onRestore={restorePreparation} />
+
       <section className="year-end-prep-section year-end-prep-questions" aria-label="Year-end preparation questions">
         <div className="year-end-prep-section-heading"><div><p className="eyebrow">One review list</p><h5>Open questions and unsupported sections</h5></div><span>{result.questions.length}</span></div>
         {result.questions.length ? <ul>{result.questions.map((question, index) => <li key={`${index}-${question}`}>{question}</li>)}</ul> : <p>No open questions are recorded in this preparation pass. This is not proof that the return is complete or correct.</p>}
@@ -245,9 +257,10 @@ export default function YearEndPreparationHub({ reconciliation }: Props) {
       </div>
 
       <details className="statement-help year-end-prep-save-boundary">
-        <summary>Why TaxPrep does not save this workspace yet</summary>
-        <p>Pay histories, bank checks and receipt/evidence summaries are sensitive financial data. Before adding save/resume, TaxPrep needs an explicit design for storage location, encryption, retention period, user-initiated deletion, account recovery and separation of original files from derived facts.</p>
-        <p>This milestone intentionally keeps the preparation hub in the current browser session and does not turn the fictional demo storage into a document vault.</p>
+        <summary>What is saved and what is not?</summary>
+        <p>TaxPrep still has no automatic browser or cloud save for this workspace. Refreshing or leaving the workflow clears the in-app preparation state.</p>
+        <p>The optional encrypted backup is a file you explicitly download and keep yourself. It contains preparation answers and applied summary handoffs, protected by your passphrase, but not raw financial documents or transactions. TaxPrep does not store the file or passphrase and cannot recover a forgotten passphrase.</p>
+        <p>Future account-based save/resume still needs separate storage, retention, deletion, backup and recovery decisions before implementation.</p>
       </details>
     </>}
   </section>
