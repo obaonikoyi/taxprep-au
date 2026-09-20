@@ -3,6 +3,7 @@ import { aud, type Payslip } from './payslip'
 import {
   annualFinalStatusLabel,
   annualSourceGuidance,
+  annualSourceIssues,
   annualSourceTypeLabel,
   ANNUAL_SOURCE_GUIDANCE_VERSION,
   blankAnnualPaySource,
@@ -14,6 +15,7 @@ import {
   type CoverageAnswer,
 } from './yearEndReconciliation'
 import { downloadYearEndReconciliationReport, yearEndReconciliationReport } from './yearEndReconciliationReport'
+import AnnualStatementIntake from './AnnualStatementIntake'
 
 type Props = {
   allSlips: Payslip[]
@@ -45,7 +47,16 @@ export default function YearEndReconciliation({ allSlips, year, employerFilter }
   }
 
   function patchSource(id: string, patch: Partial<AnnualPaySource>) {
-    setSources(current => current.map(source => source.id === id ? { ...source, ...patch } : source))
+    setSources(current => current.map(source => source.id === id ? {
+      ...source,
+      ...patch,
+      ...(source.origin === 'document' ? { reviewed: false } : {}),
+    } : source))
+    setCoverageAnswer('')
+  }
+
+  function addImportedSource(source: AnnualPaySource) {
+    setSources(current => [...current, source])
     setCoverageAnswer('')
   }
 
@@ -91,7 +102,9 @@ export default function YearEndReconciliation({ allSlips, year, employerFilter }
     <p className="year-end-employers">Recorded employers: {coverage.employerNames.map(([, name]) => name).join(', ')}.</p>
 
     {!open ? <button className="secondary-button" onClick={() => setOpen(true)}>Start year-end reconciliation</button> : <>
-      <div className="year-end-guidance"><strong>Manual entry first.</strong><p>Enter figures from the annual source itself. Do not enter a TFN. One employer can have more than one income statement, so link each source individually.</p></div>
+      <AnnualStatementIntake key={scopeKey} year={year} employers={coverage.employerNames} sources={sources} onAdd={addImportedSource} />
+
+      <div className="year-end-guidance"><strong>Manual entry remains available.</strong><p>If the annual statement layout is not supported, enter figures from the source itself. Do not enter a TFN. One employer can have more than one income statement, so link each source individually.</p></div>
 
       <div className="year-end-actions"><button className="secondary-button" disabled={sources.length >= MAX_ANNUAL_PAY_SOURCES} onClick={addSource}>Add annual employment source</button><span>{sources.length}/{MAX_ANNUAL_PAY_SOURCES}</span></div>
 
@@ -111,6 +124,8 @@ export default function YearEndReconciliation({ allSlips, year, employerFilter }
           </div>
           <div className={`year-end-source-status ${finalIncluded ? 'final' : provisional ? 'provisional' : 'needs-review'}`}><strong>{finalIncluded ? 'Final source included in annual totals' : provisional ? `${annualFinalStatusLabel(source.finalStatus, source.sourceType)} · excluded from final totals` : 'Needs review before reconciliation'}</strong><span>{source.sourceType ? annualSourceTypeLabel(source.sourceType) : 'Source type not selected'}</span></div>
           {issues.length > 0 && <ul className="year-end-issues">{issues.map(issue => <li key={issue}>{issue}</li>)}</ul>}
+          {source.origin === 'document' && source.reviewed === false && <button className="secondary-button" disabled={annualSourceIssues({ ...source, reviewed: true }).length > 0} onClick={() => setSources(current => current.map(row => row.id === source.id ? { ...row, reviewed: true } : row))}>Reconfirm imported source {index + 1}</button>}
+          {source.origin === 'document' && <details className="statement-help annual-source-provenance"><summary>Imported source provenance</summary><p>{source.documentName} · page {source.documentPage ?? 1} · SHA-256 {source.documentHash}</p>{source.originalExtraction && <table><tbody><tr><th>Field</th><th>Original extraction</th><th>Current value</th></tr><tr><th>Employer</th><td>{source.originalExtraction.payer || 'Blank'}</td><td>{source.payer || 'Blank'}</td></tr><tr><th>Reference</th><td>{source.originalExtraction.reference || 'Blank'}</td><td>{source.reference || 'Blank'}</td></tr><tr><th>Gross</th><td>{source.originalExtraction.gross || 'Blank'}</td><td>{source.gross || 'Blank'}</td></tr><tr><th>Withheld</th><td>{source.originalExtraction.withheld || 'Blank'}</td><td>{source.withheld || 'Blank'}</td></tr><tr><th>Financial year</th><td>{source.originalExtraction.financialYear || 'Blank'}</td><td>{year}</td></tr><tr><th>Statement date</th><td>{source.originalExtraction.statementDate || 'Blank'}</td><td>{source.originalExtraction.statementDate || 'Blank'}</td></tr></tbody></table>}<details><summary>Extracted source text</summary><pre>{source.originalText}</pre></details></details>}
         </article>)}
       </div>
 

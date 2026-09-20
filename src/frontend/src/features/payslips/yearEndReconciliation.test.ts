@@ -114,7 +114,7 @@ describe('year-end employment reconciliation', () => {
     const result = reconcileYearEndPay(pay, '2026–27', [hostile], 'unsure')
     expect(result.questions.join(' ')).toContain('unsure whether every annual employment source')
     const html = yearEndReconciliationReport(result)
-    expect(html).toContain('year-end-pay-reconciliation-v1')
+    expect(html).toContain('year-end-pay-reconciliation-v2')
     expect(html).toContain('ato-annual-employment-sources.2026-09-20')
     expect(html).toContain('do not add them together')
     expect(html).toContain('SHA-256 hash-p1')

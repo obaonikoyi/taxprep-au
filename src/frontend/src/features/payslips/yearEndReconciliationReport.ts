@@ -25,8 +25,26 @@ export function yearEndReconciliationReport(result: YearEndReconciliation) {
 <td>${escape(source.linkedEmployer ? result.employerNames.find(([key]) => key === source.linkedEmployer)?.[1] ?? source.linkedEmployer : 'Not linked')}</td>
 <td>${escape(source.gross || 'Not supplied')}</td>
 <td>${escape(source.withheld || 'Not supplied')}</td>
+<td>${escape(source.origin === 'document' ? 'Imported document' : 'Manual entry')}</td>
 <td>${finalIncluded ? 'Included as final' : provisional ? 'Provisional — excluded from final totals' : `Excluded — ${escape(issues.join(' ') || 'needs review')}`}</td>
 </tr>`).join('')
+
+  const provenance = result.sourceRows
+    .filter(({ source }) => source.origin === 'document')
+    .map(({ source }) => `<section>
+<h3>${escape(source.payer || source.documentName || 'Imported annual source')}</h3>
+<p>${escape(source.documentName)} · page ${source.documentPage ?? 1} · SHA-256 ${escape(source.documentHash)}${source.parserVersion ? ' · parser ' + escape(source.parserVersion) : ''}</p>
+${source.originalExtraction ? `<table><thead><tr><th>Field</th><th>Original extraction</th><th>Current value</th></tr></thead><tbody>
+<tr><th>Employer</th><td>${escape(source.originalExtraction.payer || 'Blank')}</td><td>${escape(source.payer || 'Blank')}</td></tr>
+<tr><th>Source reference</th><td>${escape(source.originalExtraction.reference || 'Blank')}</td><td>${escape(source.reference || 'Blank')}</td></tr>
+<tr><th>Gross income</th><td>${escape(source.originalExtraction.gross || 'Blank')}</td><td>${escape(source.gross || 'Blank')}</td></tr>
+<tr><th>Tax withheld</th><td>${escape(source.originalExtraction.withheld || 'Blank')}</td><td>${escape(source.withheld || 'Blank')}</td></tr>
+<tr><th>Financial year</th><td>${escape(source.originalExtraction.financialYear || 'Blank')}</td><td>${escape(result.year)}</td></tr>
+<tr><th>Statement date</th><td>${escape(source.originalExtraction.statementDate || 'Blank')}</td><td>${escape(source.originalExtraction.statementDate || 'Blank')}</td></tr>
+</tbody></table>` : ''}
+${source.unresolvedCoverage?.length ? `<p><strong>Unresolved annual fields:</strong> ${source.unresolvedCoverage.map(escape).join('; ')}</p>` : ''}
+<details><summary>Extracted source text</summary><pre>${escape(source.originalText || '')}</pre></details>
+</section>`).join('')
 
   const reconciliationRows = result.rows.map(row => `<tr>
 <th>${escape(row.label)}</th>
@@ -48,7 +66,7 @@ export function yearEndReconciliationReport(result: YearEndReconciliation) {
   const questions = result.questions.length ? result.questions.map(question => `<li>${escape(question)}</li>`).join('') : '<li>No reconciliation questions remain from the recorded sources. This is not proof that the tax return is complete.</li>'
   const guidance = annualSourceGuidance.map(source => `<li><a href="${escape(source.url)}">${escape(source.title)}</a></li>`).join('')
 
-  return `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TaxPrep AU year-end pay handover</title><style>body{max-width:1100px;margin:40px auto;padding:0 20px;font:16px/1.6 system-ui;color:#173f35}table{width:100%;border-collapse:collapse;margin:16px 0 30px}td,th{padding:8px;border-bottom:1px solid #ddd;text-align:left;vertical-align:top;overflow-wrap:anywhere}.notice{padding:16px;border:1px solid #dccb9d;background:#fff8e9;border-radius:10px}.question{padding:16px;border:1px solid #e1d8c3;background:#fffdf8;border-radius:10px}@media print{body{font-size:9px}}@media(max-width:700px){table{font-size:10px}td,th{padding:4px}}</style>
+  return `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TaxPrep AU year-end pay handover</title><style>body{max-width:1100px;margin:40px auto;padding:0 20px;font:16px/1.6 system-ui;color:#173f35}table{width:100%;border-collapse:collapse;margin:16px 0 30px}td,th{padding:8px;border-bottom:1px solid #ddd;text-align:left;vertical-align:top;overflow-wrap:anywhere}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f5f7f5;padding:12px;border-radius:8px}.notice{padding:16px;border:1px solid #dccb9d;background:#fff8e9;border-radius:10px}.question{padding:16px;border:1px solid #e1d8c3;background:#fffdf8;border-radius:10px}@media print{body{font-size:9px}}@media(max-width:700px){table{font-size:10px}td,th{padding:4px}}</style>
 <h1>TaxPrep AU year-end pay handover</h1>
 <p><strong>Financial year:</strong> ${escape(result.year)}<br><strong>Reconciliation version:</strong> ${escape(result.version)}<br><strong>ATO terminology reference version:</strong> ${escape(ANNUAL_SOURCE_GUIDANCE_VERSION)}</p>
 <div class="notice"><strong>Two views of the same employment income — do not add them together.</strong><p>Checked payslips show period-by-period pay history. Final annual income statements/payment summaries show annual employment totals. TaxPrep compares them; it does not add both sets as separate income.</p><p>Tax/refund results remain locked. A mismatch is a review question, not a decision about which source is legally correct.</p></div>
@@ -56,9 +74,10 @@ export function yearEndReconciliationReport(result: YearEndReconciliation) {
 <h2>Employer reconciliation</h2>
 <table><thead><tr><th>Employer / source</th><th>Payslips</th><th>Payslip gross</th><th>Payslip withholding</th><th>Final annual sources</th><th>Final annual gross</th><th>Final annual withholding</th><th>Gross difference</th><th>Withholding difference</th><th>Status</th></tr></thead><tbody>${reconciliationRows}</tbody></table>
 <h2>Annual employment sources</h2>
-<table><thead><tr><th>Payer</th><th>Type</th><th>Reference</th><th>Final status</th><th>Linked pay-history employer</th><th>Gross</th><th>Withheld</th><th>Use in reconciliation</th></tr></thead><tbody>${sourceRows || '<tr><td colspan="8">No annual sources entered.</td></tr>'}</tbody></table>
+<table><thead><tr><th>Payer</th><th>Type</th><th>Reference</th><th>Final status</th><th>Linked pay-history employer</th><th>Gross</th><th>Withheld</th><th>Origin</th><th>Use in reconciliation</th></tr></thead><tbody>${sourceRows || '<tr><td colspan="9">No annual sources entered.</td></tr>'}</tbody></table>
+${provenance ? `<h2>Imported annual-statement provenance</h2>${provenance}` : ''}
 <h2>Checked payslip sources</h2>
-<table><thead><tr><th>Pay date</th><th>Employer</th><th>Source</th><th>Reference</th><th>Gross</th><th>Withheld</th></tr></thead><tbody>${paySources || '<tr><td colspan="6">No checked payslips in this financial year.</td></tr>'}</tbody></table>
+<table><thead><tr><th>Pay date</th><th>Employer</th><th>Source</th><th>Reference</th><th>Gross</th><th>Withheld</th></thead><tbody>${paySources || '<tr><td colspan="6">No checked payslips in this financial year.</td></tr>'}</tbody></table>
 <div class="question"><h2>Questions to review</h2><ul>${questions}</ul></div>
 <h2>ATO terminology references</h2><p>These references support status wording such as Tax ready/finalised and the fact that one employer can have multiple income statements. They do not unlock a tax calculation.</p><ul>${guidance}</ul>
 <p>Raw payslip or annual-statement files are not embedded. Keep originals separately. No TFN is requested in this workflow.</p>

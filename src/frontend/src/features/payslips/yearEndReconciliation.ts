@@ -1,6 +1,6 @@
 import { confirmationIssues, employerKey, financialYear, money, totals, type Payslip } from './payslip'
 
-export const YEAR_END_RECONCILIATION_VERSION = 'year-end-pay-reconciliation-v1'
+export const YEAR_END_RECONCILIATION_VERSION = 'year-end-pay-reconciliation-v2'
 export const ANNUAL_SOURCE_GUIDANCE_VERSION = 'ato-annual-employment-sources.2026-09-20'
 export const MAX_ANNUAL_PAY_SOURCES = 30
 
@@ -23,6 +23,23 @@ export type AnnualPaySource = {
   sourceType: AnnualSourceType
   finalStatus: AnnualFinalStatus
   linkedEmployer: string
+  origin?: 'manual' | 'document'
+  reviewed?: boolean
+  documentName?: string
+  documentHash?: string
+  documentPage?: number
+  originalExtraction?: {
+    payer: string
+    reference: string
+    gross: string
+    withheld: string
+    finalStatus: AnnualFinalStatus
+    financialYear: string
+    statementDate: string
+  }
+  originalText?: string
+  parserVersion?: string
+  unresolvedCoverage?: string[]
 }
 
 export type ReconciliationState =
@@ -72,6 +89,8 @@ export function blankAnnualPaySource(id: string): AnnualPaySource {
     sourceType: '',
     finalStatus: '',
     linkedEmployer: '',
+    origin: 'manual',
+    reviewed: true,
   }
 }
 
@@ -95,13 +114,17 @@ export function annualSourceIdentity(source: AnnualPaySource) {
 }
 
 export function duplicateAnnualSourceIds(sources: AnnualPaySource[]) {
-  const groups = new Map<string, string[]>()
+  const identities = new Map<string, string[]>()
+  const hashes = new Map<string, string[]>()
   for (const source of sources) {
     const identity = annualSourceIdentity(source)
-    if (!identity) continue
-    groups.set(identity, [...(groups.get(identity) ?? []), source.id])
+    if (identity) identities.set(identity, [...(identities.get(identity) ?? []), source.id])
+    if (source.documentHash) hashes.set(source.documentHash, [...(hashes.get(source.documentHash) ?? []), source.id])
   }
-  return new Set([...groups.values()].filter(ids => ids.length > 1).flat())
+  return new Set([
+    ...[...identities.values()].filter(ids => ids.length > 1).flat(),
+    ...[...hashes.values()].filter(ids => ids.length > 1).flat(),
+  ])
 }
 
 export function annualSourceIssues(source: AnnualPaySource): string[] {
@@ -114,6 +137,8 @@ export function annualSourceIssues(source: AnnualPaySource): string[] {
   if (withheld === null) issues.push('Enter tax withheld in AUD, including 0 when the source confirms zero.')
   if (gross !== null && withheld !== null && withheld > gross) issues.push('Tax withheld cannot be greater than gross income for this source.')
   if (!source.finalStatus) issues.push('Choose whether the annual source is final, not final or unsure.')
+  if (source.origin === 'document' && source.reviewed === false) issues.push('Reconfirm this imported source after editing the extracted values.')
+  for (const note of source.unresolvedCoverage ?? []) issues.push(`Unsupported annual-statement field needs separate review: ${note}`)
   return issues
 }
 
