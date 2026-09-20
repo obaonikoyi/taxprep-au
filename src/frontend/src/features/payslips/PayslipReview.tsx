@@ -1,4 +1,5 @@
 import { labels, confirmationIssues, type Payslip, type PayFacts, type PayField } from './payslip'
+import { formatLabel } from './payslipFormats'
 
 const groups: { title: string; fields: PayField[] }[] = [
   { title: 'Employer and dates', fields: ['employer', 'periodStart', 'periodEnd', 'payDate'] },
@@ -11,7 +12,7 @@ const help: Record<PayField, string> = {
 export default function PayslipReview({ slip, all, onChange, onConfirm, onClose, onRemove }: { slip: Payslip; all: Payslip[]; onChange: (facts: PayFacts) => void; onConfirm: () => void; onClose: () => void; onRemove: () => void }) {
   const issues = confirmationIssues(slip, all)
   return <section className="statement-panel pay-review" aria-label="Review payslip">
-    <div className="panel-heading"><div><p className="eyebrow">{slip.hash ? 'Read from your PDF' : 'Enter from your payslip'}</p><h3>{slip.facts.employer || 'New payslip'}</h3><p className="pay-source-name">{slip.name}</p></div><button className="text-button" onClick={onClose}>Close review</button></div>
+    <div className="panel-heading"><div><p className="eyebrow">{slip.hash ? 'Read from your PDF' : 'Enter from your payslip'}</p><h3>{slip.facts.employer || 'New payslip'}</h3><p className="pay-source-name">{slip.name}{formatLabel(slip.format) ? <> · read as <strong>{formatLabel(slip.format)}</strong></> : null}</p></div><button className="text-button" onClick={onClose}>Close review</button></div>
     <p className="pay-review-tip">Use the amounts for <strong>this pay period</strong>, not the year-to-date (YTD) totals.</p>
     {slip.hash && <details className="statement-help pay-source"><summary>Compare with text from your PDF</summary><pre>{slip.text}</pre><details><summary>File reference</summary><p>Page 1 · SHA-256 {slip.hash}</p></details></details>}
     <form onSubmit={event => { event.preventDefault(); if (!issues.length) onConfirm() }}>
