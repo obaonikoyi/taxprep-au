@@ -9,6 +9,7 @@ import {
 export function buildStatementYearEndHandoff(statement: Statement, reviews: Reviews, from: string, to: string): StatementYearEndHandoff {
   const financialYear = financialYearForRange(from, to)
   if (!financialYear) throw new Error('Choose a statement date range contained within one Australian financial year before exporting a handoff.')
+  if (from < statement.from || to > statement.to) throw new Error('Choose a handoff date range within the imported statement period.')
   const rows = statement.rows.filter(row => row.date >= from && row.date <= to)
   const analysis = analyse(rows, reviews)
   const reviewedTransactions = rows.filter(row => !!reviews[row.id]).length
