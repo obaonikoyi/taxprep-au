@@ -118,6 +118,7 @@ export async function verifyPayslips(context, base, artifacts) {
     await page.getByLabel('I checked these extracted values against the annual source.', { exact: true }).check();
     await button('Confirm and add annual source').click();
     assert.equal(await page.locator('.year-end-source-card').count(), 1);
+    await page.getByText('Imported source provenance', { exact: true }).click();
     assert.ok((await page.locator('.annual-source-provenance').innerText()).includes('SHA-256'));
 
     // Editing an imported source invalidates its review and removes it from final reconciliation until reconfirmed.
