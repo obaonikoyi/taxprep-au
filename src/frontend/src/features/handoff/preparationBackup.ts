@@ -6,7 +6,7 @@ import {
   type CoverageStatus,
   type YearEndPreparationAnswers,
 } from '../payslips/yearEndPreparation'
-import { parseYearEndHandoffValue, type YearEndHandoff } from './yearEndHandoff'
+import { handoffConflicts, parseYearEndHandoffValue, type YearEndHandoff } from './yearEndHandoff'
 
 export const PREPARATION_BACKUP_VERSION = 'taxprep-year-end-preparation-backup-v1'
 export const PREPARATION_BACKUP_PAYLOAD_VERSION = 'taxprep-year-end-preparation-payload-v1'
@@ -67,7 +67,8 @@ function base64ToBytes(value: string) {
 }
 
 async function sha256Text(value: string) {
-  const digest = await crypto.subtle.digest('SHA-256', encoder.encode(value))
+  const bytes = encoder.encode(value)
+  const digest = await crypto.subtle.digest('SHA-256', bytes.slice().buffer as ArrayBuffer)
   return [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, '0')).join('')
 }
 
@@ -118,7 +119,8 @@ function validatePassphrase(passphrase: string) {
 }
 
 async function deriveKey(passphrase: string, salt: Uint8Array, iterations: number) {
-  const material = await crypto.subtle.importKey('raw', encoder.encode(passphrase), 'PBKDF2', false, ['deriveKey'])
+  const passphraseBytes = encoder.encode(passphrase)
+  const material = await crypto.subtle.importKey('raw', passphraseBytes.slice().buffer as ArrayBuffer, 'PBKDF2', false, ['deriveKey'])
   return crypto.subtle.deriveKey(
     { name: 'PBKDF2', salt: salt.slice().buffer as ArrayBuffer, iterations, hash: 'SHA-256' },
     material,
@@ -175,9 +177,14 @@ function validatePayload(value: unknown): PreparationBackupPayload {
   if (!timestamp(value.createdAt)) throw new Error('The decrypted backup creation time is invalid.')
   if (!Array.isArray(value.handoffs) || value.handoffs.length > 20) throw new Error('The decrypted backup handoff list is invalid.')
   const handoffs = value.handoffs.map(parseYearEndHandoffValue)
+  const financialYear = String(value.financialYear).replace('-', '–')
+  if (handoffs.some(handoff => handoff.financialYear !== financialYear)) throw new Error('The decrypted backup contains a handoff for a different financial year.')
+  for (let index = 0; index < handoffs.length; index++) {
+    if (handoffConflicts(handoffs.slice(0, index), handoffs[index])) throw new Error('The decrypted backup contains duplicate or conflicting workspace handoffs.')
+  }
   return {
     version: PREPARATION_BACKUP_PAYLOAD_VERSION,
-    financialYear: value.financialYear.replace('-', '–'),
+    financialYear,
     reconciliationFingerprint: value.reconciliationFingerprint,
     createdAt: value.createdAt,
     answers: cloneAnswers(value.answers),
@@ -216,7 +223,7 @@ export async function createPreparationBackup(
   const salt = crypto.getRandomValues(new Uint8Array(16))
   const iv = crypto.getRandomValues(new Uint8Array(12))
   const key = await deriveKey(passphrase, salt, PREPARATION_BACKUP_ITERATIONS)
-  const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv.slice().buffer as ArrayBuffer }, key, plaintext)
+  const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv.slice().buffer as ArrayBuffer }, key, plaintext.slice().buffer as ArrayBuffer)
   const envelope: BackupEnvelope = {
     version: PREPARATION_BACKUP_VERSION,
     kdf: { name: 'PBKDF2', hash: 'SHA-256', iterations: PREPARATION_BACKUP_ITERATIONS, salt: bytesToBase64(salt) },
@@ -256,6 +263,8 @@ export async function decryptPreparationBackup(
   if (payload.financialYear !== expectedYear) throw new Error(`This backup is for ${payload.financialYear}, not the selected ${expectedYear} financial year.`)
   const fingerprint = await reconciliationFingerprint(reconciliation)
   if (payload.reconciliationFingerprint !== fingerprint) throw new Error('This backup belongs to different checked pay or annual-source facts. Load the matching reconciliation before restoring it.')
+  const employerKeys = new Set(reconciliation.employerNames.map(([key]) => key))
+  if (Object.keys(payload.answers.bank).some(key => !employerKeys.has(key))) throw new Error('This backup contains a bank-check answer that does not belong to the matched reconciliation.')
   return payload
 }
 
