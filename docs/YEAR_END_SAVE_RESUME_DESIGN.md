@@ -35,3 +35,15 @@ TaxPrep year-end preparation can contain pay history, annual income-source facts
 ## Current Milestone 16C-1 decision
 
 Keep the preparation hub session-only. Do not write pay, bank, receipt or preparation answers to localStorage, sessionStorage or the API. The user can download the offline handover if they want to keep the result.
+
+## Milestone 16C-2 interim portability
+
+Before cloud save/resume exists, TaxPrep may use an explicit downloaded/imported `taxprep-year-end-handoff-v1` JSON summary between local workspaces. This is not hidden persistence:
+
+- the user must explicitly download the summary;
+- the user must explicitly select it for import;
+- the year-end hub validates its financial year and source hashes;
+- the summary excludes raw bank transactions, merchant descriptions and OCR text; and
+- applying imported coverage requires a separate confirmation action.
+
+This portable summary does not change the storage, retention, deletion or account decisions required before real save/resume can be implemented.

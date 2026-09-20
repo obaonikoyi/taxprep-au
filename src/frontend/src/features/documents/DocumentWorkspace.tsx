@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { mergeWorkDetails, money, pairKey, reconcile, validLink, YEAR, type Evidence, type EvidenceLink } from './evidence'
 import { fingerprint, MAX_FILES, readDocument, validateDocument, type DocumentSource } from './documentReader'
 import { downloadEvidenceReport, evidenceReport } from './evidenceReport'
+import { downloadYearEndHandoff } from '../handoff/yearEndHandoff'
+import { buildEvidenceYearEndHandoff } from './evidenceHandoff'
 import { sampleDocuments } from './sampleDocuments'
 import EvidenceCard from './EvidenceCard'
 import { emptyPhoneAnswers, phoneCredits } from '../assessment/phone'
@@ -111,7 +113,7 @@ export default function DocumentWorkspace() {
       })}</section>}
       <div className="evidence-list">{groups.map(group => <EvidenceCard key={group.item.id} item={group.item} evidence={group.evidence} sources={sources} credits={phoneCredits(group.item, records)} questions={group.unresolved} counted={group.counted} onChange={change} onUnlink={() => setLinks(current => current.filter(link => link.receipt !== group.item.id))} />)}</div>
       <SourceRegister />
-      <div className="evidence-export"><h3>Take the facts and assessment with you</h3><p>The report includes source references, corrections, draft phone assessments and unanswered questions. Tax rules await qualified review; no deduction is approved and no tax return is calculated.</p><button className="primary-button" disabled={busy} onClick={() => { try { downloadEvidenceReport(evidenceReport(records, links, separate, sources, 'Employee phone-service example', jobs.filter(job => job.failed).map(job => `${job.name}: ${job.status}`))); setMessage('Evidence report downloaded. Your source files are not embedded; keep them separately.') } catch { setMessage('Download failed. Please try again.') } }}>Download evidence report</button></div></>}
+      <div className="evidence-export"><h3>Take the facts and assessment with you</h3><p>The detailed report includes source references, corrections, draft phone assessments and unanswered questions. The year-end handoff carries only coverage counts, reviewed-spending metadata and source hashes — no OCR text, merchant descriptions or approved deduction.</p><div className="button-row"><button className="primary-button" disabled={busy} onClick={() => { try { downloadEvidenceReport(evidenceReport(records, links, separate, sources, 'Employee phone-service example', jobs.filter(job => job.failed).map(job => `${job.name}: ${job.status}`))); setMessage('Evidence report downloaded. Your source files are not embedded; keep them separately.') } catch { setMessage('Download failed. Please try again.') } }}>Download evidence report</button><button className="secondary-button" disabled={busy||!sources.length} onClick={() => { try { const handoff=buildEvidenceYearEndHandoff(records,links,separate,sources); downloadYearEndHandoff(handoff,'taxprep-evidence-handoff-2025-26.json'); setMessage('Year-end handoff downloaded. It contains summary coverage and source hashes only.') } catch(error) { setMessage(error instanceof Error?error.message:'Year-end handoff could not be created.') } }}>Download year-end handoff</button></div></div></>}
       </div>
     </>}
     <p role="status" className="document-message">{message}</p>
