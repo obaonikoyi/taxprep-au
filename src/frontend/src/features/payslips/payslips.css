@@ -317,3 +317,7 @@
   .annual-statement-form { grid-template-columns: 1fr; }
   .annual-statement-actions > * { width: 100%; }
 }
+
+.annual-source-provenance { min-width: 0; max-width: 100%; overflow: hidden; }
+.annual-source-provenance :is(summary, p, th, td) { overflow-wrap: anywhere; word-break: break-word; }
+.annual-source-provenance table { table-layout: fixed; }
