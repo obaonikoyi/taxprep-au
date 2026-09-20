@@ -238,7 +238,7 @@ export async function verifyPayslips(context, base, artifacts) {
     assert.equal(await page.getByLabel('Year-end prep: ruleReview', { exact: true }).inputValue(), '');
 
     await handoffInput.setInputFiles(jsonFile('statement-again.json', statementHandoff));
-    await page.getByRole('alert').filter({ hasText: 'already been imported' }).waitFor();
+    await page.getByRole('alert').filter({ hasText: 'duplicates a source already represented' }).waitFor();
     assert.ok((await page.getByLabel('Applied year-end handoffs', { exact: true }).innerText()).includes('Bank spending summary'));
     assert.ok((await page.getByLabel('Applied year-end handoffs', { exact: true }).innerText()).includes('Tax document evidence summary'));
 
