@@ -1,6 +1,6 @@
 # Milestone 16B — local annual income-statement extraction
 
-Status: implementation in progress for [issue #30](https://github.com/obaonikoyi/taxprep-au/issues/30), feeding the published [Milestone 16A](MILESTONE_16A_INCOME_RECONCILIATION.md) reconciliation model.
+Status: published for [issue #30](https://github.com/obaonikoyi/taxprep-au/issues/30), feeding the published [Milestone 16A](MILESTONE_16A_INCOME_RECONCILIATION.md) reconciliation model.
 
 ## User outcome
 
@@ -173,4 +173,6 @@ Automated verification covers:
 - 390px mobile overflow;
 - existing no-document-upload/no-model-request monitoring.
 
-Feature CI, Railway publication and public hosted-browser evidence are recorded here after the PR passes.
+Feature [PR #52](https://github.com/obaonikoyi/taxprep-au/pull/52) merged as `5b72ac6d763d7e7b57cb716743c259602188432c`. Feature CI run `35486688336` passed frontend lint/tests/build, backend/API plus browser smoke, and the production-container browser journey.
+
+Railway feature deployment `ee0431c2-782c-4a79-abbc-c11fd4e41763` reached **SUCCESS** for that exact merge commit at the existing standalone URL. This publication record triggers the dedicated public hosted-browser workflow; final live evidence is recorded in issue #30. The portfolio website remains unchanged.
