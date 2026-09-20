@@ -150,6 +150,7 @@ export function candidateToAnnualPaySource(candidate: AnnualStatementCandidate, 
       statementDate: candidate.original.statementDate,
     },
     originalText: candidate.text,
+    parserVersion: ANNUAL_STATEMENT_VERSION,
     unresolvedCoverage: [...candidate.unresolvedCoverage],
   }
 }
