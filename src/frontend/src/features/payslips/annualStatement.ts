@@ -115,7 +115,7 @@ export function annualStatementIssues(candidate: AnnualStatementCandidate, selec
   if (!statementDate || statementDate !== facts.statementDate) issues.push('Check the statement date.')
   const gross = money(facts.gross), withheld = money(facts.withheld)
   if (gross === null) issues.push('Check gross income. Blank is not zero.')
-  if (withheld === null) issues.push('Check tax withheld. Enter 0 only when the source confirms zero.')
+  if (withheld === null) issues.push('Check tax withheld. Blank is not zero; enter 0 only when the source confirms zero.')
   if (gross !== null && withheld !== null && withheld > gross) issues.push('Tax withheld cannot be greater than gross income.')
   if (!facts.finalStatus) issues.push('Check whether the source is Tax ready/finalised, not final or unsure.')
   return issues
