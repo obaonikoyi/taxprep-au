@@ -137,7 +137,8 @@ export async function verifyPayslips(context, base, artifacts) {
     assert.ok(reconciliationReport.includes('do not add them together'));
     assert.ok(reconciliationReport.includes('Harbour income statement'));
     assert.ok(reconciliationReport.includes('Garden payment summary'));
-    assert.ok(reconciliationReport.includes('Tax/refund results remain locked'));\n    assert.ok(reconciliationReport.includes('User annual-source coverage statement:</strong> Yes'));
+    assert.ok(reconciliationReport.includes('Tax/refund results remain locked'));
+    assert.ok(reconciliationReport.includes('User annual-source coverage statement:</strong> Yes'));
     await page.screenshot({ path: artifacts + 'year-end-reconciliation-desktop.png', fullPage: true });
     await page.setViewportSize({ width: 390, height: 844 }); await noOverflow();
     await page.screenshot({ path: artifacts + 'year-end-reconciliation-mobile.png', fullPage: true });
