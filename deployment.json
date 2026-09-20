@@ -7,10 +7,10 @@
   "initialDeploymentId": "87ca38d9-c44f-46fa-a3b3-2b5aa23af8fb",
   "initialCommit": "e9e5fac6d469ee117b9796eaf306723401fecf61",
   "portfolioPublished": false,
-  "latestMilestone": 15,
-  "latestFeatureCommit": "26bc12f9d12793d4d7edbfe9f173cc787788d37f",
-  "latestFeatureDeploymentId": "50f28ea3-a868-45ae-aba6-ad2d4132808c",
-  "latestMilestoneStatus": "Milestone 15B-1 tax readiness published with whole-year/all-employer coverage, explicit profile blockers and a permanently locked tax result pending qualified review",
+  "latestMilestone": 16,
+  "latestFeatureCommit": "ffe05eb13bd815780386d937b089044dcc21dfb5",
+  "latestFeatureDeploymentId": "831d9075-2be5-4c43-abd0-f626e66ab201",
+  "latestMilestoneStatus": "Milestone 16A year-end employment reconciliation published with manual annual-source entry, final/provisional handling, no double counting and source-linked handover; tax/refund results remain locked pending qualified review",
   "qualifiedTaxReview": "pending",
-  "latestMilestonePhase": "15B-1"
+  "latestMilestonePhase": "16A"
 }

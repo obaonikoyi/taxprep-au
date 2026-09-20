@@ -1,6 +1,6 @@
 # Milestone 16A — annual employment-source reconciliation
 
-Status: feature implementation in progress for [issue #49](https://github.com/obaonikoyi/taxprep-au/issues/49), the first safe slice of [Milestone 16](https://github.com/obaonikoyi/taxprep-au/issues/37).
+Status: published for [issue #49](https://github.com/obaonikoyi/taxprep-au/issues/49), the first safe slice of [Milestone 16](https://github.com/obaonikoyi/taxprep-au/issues/37).
 
 ## User outcome
 
@@ -135,4 +135,6 @@ Automated coverage includes:
 - desktop and 390px mobile screenshots/overflow; and
 - existing request monitoring for no document upload or external model request.
 
-Feature CI must pass before merge. Standalone Railway publication and hosted-browser evidence are recorded separately before issue #49 is considered complete.
+Feature [PR #50](https://github.com/obaonikoyi/taxprep-au/pull/50) merged as `ffe05eb13bd815780386d937b089044dcc21dfb5`. Feature CI run `35483459872` passed frontend lint/tests/build, backend/API plus browser smoke, and the production-container browser journey.
+
+Railway feature deployment `831d9075-2be5-4c43-abd0-f626e66ab201` reached **SUCCESS** for that exact merge commit at the existing standalone URL. This publication record triggers the dedicated public hosted-browser workflow; its final evidence is recorded in issue #49. The portfolio website remains unchanged.
