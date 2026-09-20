@@ -233,3 +233,54 @@
 @media (max-width: 420px) {
   .tax-readiness { padding: 17px; }
 }
+
+
+/* Milestone 16A: year-end employment-source reconciliation. */
+.year-end-reconciliation { margin-top: 30px; padding: 26px; border: 1px solid #d6dfdb; border-radius: 16px; background: #fbfcfb; }
+.year-end-heading, .year-end-result-heading, .year-end-source-heading { display: flex; align-items: start; justify-content: space-between; gap: 20px; }
+.year-end-heading h3, .year-end-result-heading h4, .year-end-source-heading h4 { margin: 0 0 8px; }
+.year-end-heading p:not(.eyebrow), .year-end-result-heading p { margin: 0; max-width: 720px; color: var(--pay-muted); font-size: .86rem; line-height: 1.65; }
+.year-end-badge { flex-shrink: 0; display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border-radius: 999px; background: #e5f2e9; color: #245a3d; font-size: .72rem; font-weight: 700; }
+.year-end-badge.locked { background: #f0ece4; color: #5a4f3b; }.year-end-badge.warning { background: #fff0d8; color: #7a531c; }
+.year-end-scope-note { margin: 18px 0 0; padding: 13px 15px; border-left: 3px solid #8ba9a0; background: #f2f7f5; color: #466158; font-size: .8rem; line-height: 1.6; }
+.year-end-notice, .year-end-guidance, .year-end-lock, .year-end-blocked, .year-end-empty { margin: 20px 0; padding: 16px 18px; border-radius: 10px; font-size: .82rem; line-height: 1.65; }
+.year-end-notice { border: 1px solid #d9caa3; background: #fff8e9; color: #645332; }
+.year-end-guidance { border: 1px solid #d7e2da; background: #f1f6f2; color: #405e4e; }
+.year-end-lock { border: 1px solid #e3cf9c; background: #fff8e8; color: #675637; }
+.year-end-blocked { border: 1px solid #ead8b8; background: #fff8eb; color: #6c5a37; }
+.year-end-empty { border: 1px dashed #ccd9d0; background: #fff; color: #52685e; }
+.year-end-notice p, .year-end-guidance p, .year-end-lock p, .year-end-blocked p, .year-end-empty p { margin: 7px 0 0; }
+.year-end-coverage { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 22px 0 12px; }
+.year-end-coverage > div { display: grid; gap: 6px; padding: 16px; border: 1px solid #dde5df; border-radius: 10px; background: #fff; }
+.year-end-coverage span { color: var(--pay-muted); font-size: .74rem; }.year-end-coverage strong { font-size: 1rem; }
+.year-end-employers { margin: 0 0 20px; color: var(--pay-muted); font-size: .78rem; line-height: 1.6; }
+.year-end-actions { display: flex; align-items: center; gap: 12px; margin: 18px 0; }.year-end-actions span { color: var(--pay-muted); font-size: .76rem; }
+.year-end-source-list { display: grid; gap: 18px; }
+.year-end-source-card { padding: 20px; border: 1px solid #dbe4dd; border-radius: 12px; background: #fff; }
+.year-end-source-heading .eyebrow { margin-bottom: 6px; }.year-end-source-heading button { flex-shrink: 0; }
+.year-end-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 18px; }
+.year-end-form label { display: grid; gap: 7px; min-width: 0; font-size: .8rem; font-weight: 650; }
+.year-end-form input, .year-end-form select { width: 100%; }.year-end-form small { color: var(--pay-muted); font-size: .72rem; font-weight: 400; line-height: 1.5; }
+.year-end-link-field { grid-column: 1/-1; }
+.year-end-source-status { display: flex; justify-content: space-between; gap: 16px; margin-top: 16px; padding: 11px 13px; border-radius: 8px; font-size: .76rem; }
+.year-end-source-status.final { background: #edf7ef; color: #31593e; }.year-end-source-status.provisional { background: #fff7e8; color: #6a5229; }.year-end-source-status.needs-review { background: #fff2ed; color: #714431; }
+.year-end-source-status span { opacity: .85; }.year-end-issues { margin: 12px 0 0; padding-left: 20px; color: #724531; font-size: .78rem; line-height: 1.6; }
+.year-end-coverage-answer { margin: 24px 0; padding: 18px; border: 1px solid #dce4dd; border-radius: 10px; background: #fff; }
+.year-end-coverage-answer label { display: grid; grid-template-columns: minmax(0, 1fr) minmax(180px, 230px); align-items: center; gap: 20px; font-size: .82rem; font-weight: 650; }
+.year-end-coverage-answer select { width: 100%; }.year-end-coverage-answer p { margin: 8px 0 0; color: var(--pay-muted); font-size: .74rem; }
+.year-end-result { margin-top: 24px; padding-top: 24px; border-top: 1px solid #dde5df; }
+.year-end-table-wrap { width: 100%; overflow-x: auto; margin: 18px 0; }
+.year-end-table { width: 100%; min-width: 1180px; border-collapse: collapse; font-size: .76rem; }
+.year-end-table th, .year-end-table td { padding: 10px 9px; border-bottom: 1px solid #dfe6e1; text-align: left; vertical-align: top; font-variant-numeric: tabular-nums; }
+.year-end-table th[scope=row] { min-width: 150px; color: #274d40; }.year-end-table td:last-child { min-width: 170px; }
+.year-end-state { display: inline-block; font-weight: 700; line-height: 1.45; }.year-end-state.matches { color: #2f6b45; }.year-end-state.differs, .year-end-state.pay-without-final-source, .year-end-state.annual-without-pay-history, .year-end-state.source-still-provisional { color: #7a531c; }
+.year-end-table small { display: block; margin-top: 5px; color: var(--pay-muted); line-height: 1.45; }
+.year-end-questions { margin: 18px 0; padding: 16px 18px; border-radius: 10px; background: #fff5e8; color: #674b25; font-size: .8rem; line-height: 1.6; }.year-end-questions.clear { background: #edf7ef; color: #31593e; }
+.year-end-questions ul { margin-bottom: 0; padding-left: 20px; }.year-end-questions p { margin: 7px 0 0; }
+.year-end-sources { margin-top: 18px; }.year-end-sources ul { padding-left: 20px; }
+@media (max-width: 700px) {
+  .year-end-reconciliation { padding: 20px; }.year-end-heading, .year-end-result-heading, .year-end-source-heading { flex-direction: column; }
+  .year-end-coverage, .year-end-form { grid-template-columns: 1fr; }.year-end-link-field { grid-column: auto; }
+  .year-end-coverage-answer label { grid-template-columns: 1fr; gap: 10px; }.year-end-source-status { flex-direction: column; gap: 5px; }
+}
+@media (max-width: 420px) { .year-end-reconciliation { padding: 17px; }.year-end-source-card { padding: 16px; } }
