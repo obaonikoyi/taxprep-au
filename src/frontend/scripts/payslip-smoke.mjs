@@ -301,7 +301,7 @@ export async function verifyPayslips(context, base, artifacts) {
     assert.ok(prepReport.includes('Bank spending summary'));
     assert.ok(prepReport.includes('Tax document evidence summary'));
     assert.ok(prepReport.includes('dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd'));
-    assert.ok(prepReport.includes('Session only'));
+    assert.ok(prepReport.includes('Session by default'));
     assert.ok(prepReport.includes('Tax/refund/final-tax results remain locked'));
 
     await page.screenshot({ path: artifacts + 'year-end-preparation-desktop.png', fullPage: true });
