@@ -1,6 +1,6 @@
 import { confirmationIssues, employerKey, financialYear, money, totals, type Payslip } from './payslip'
 
-export const YEAR_END_RECONCILIATION_VERSION = 'year-end-pay-reconciliation-v1'
+export const YEAR_END_RECONCILIATION_VERSION = 'year-end-pay-reconciliation-v2'
 export const ANNUAL_SOURCE_GUIDANCE_VERSION = 'ato-annual-employment-sources.2026-09-20'
 export const MAX_ANNUAL_PAY_SOURCES = 30
 
@@ -38,6 +38,7 @@ export type AnnualPaySource = {
     statementDate: string
   }
   originalText?: string
+  parserVersion?: string
   unresolvedCoverage?: string[]
 }
 
