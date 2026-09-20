@@ -363,3 +363,21 @@
   .year-end-bank-title > span { text-align: left; overflow-wrap: anywhere; }
   .year-end-prep-export .primary-button { width: 100%; }
 }
+
+
+/* Milestone 16C-2: portable cross-workspace handoff. */
+.year-end-handoff-actions { display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 8px; }
+.year-end-handoff-file { position:relative; overflow:hidden; cursor:pointer; }
+.year-end-handoff-file input { position:absolute; inset:0; opacity:0; cursor:pointer; }
+.year-end-handoff-message { min-height:18px; margin:8px 0; color:#496355; font-size:.76rem; }
+.year-end-handoff-candidate { margin-top:14px; padding:16px; border:1px solid #d9e4dc; border-radius:10px; background:#f8fbf9; min-width:0; }
+.year-end-handoff-summary { padding-left:20px; font-size:.78rem; line-height:1.6; }
+.year-end-handoff-hashes code { overflow-wrap:anywhere; word-break:break-word; }
+.year-end-handoff-applied { margin-top:14px; padding:14px; border-radius:10px; background:#f4f8f5; border:1px solid #dde6df; font-size:.78rem; }
+.year-end-handoff-applied ul { list-style:none; padding:0; margin:10px 0 0; display:grid; gap:8px; }
+.year-end-handoff-applied li { display:grid; gap:2px; padding-top:8px; border-top:1px solid #e1e8e3; overflow-wrap:anywhere; }
+.year-end-handoff-applied small { color:var(--pay-muted); }
+@media(max-width:700px){
+ .year-end-handoff-actions>* { width:100%; }
+ .year-end-handoff-candidate { padding:14px; }
+}
