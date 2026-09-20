@@ -8,9 +8,9 @@
   "initialCommit": "e9e5fac6d469ee117b9796eaf306723401fecf61",
   "portfolioPublished": false,
   "latestMilestone": 16,
-  "latestFeatureCommit": "5b72ac6d763d7e7b57cb716743c259602188432c",
-  "latestFeatureDeploymentId": "ee0431c2-782c-4a79-abbc-c11fd4e41763",
-  "latestMilestoneStatus": "Milestone 16B annual income-statement extraction published with local PDF/image reading, explicit source review, provenance and duplicate protection feeding year-end reconciliation; tax/refund results remain locked pending qualified review",
+  "latestFeatureCommit": "36287428246c6a5f7cb9c0be654d34fce1229df8",
+  "latestFeatureDeploymentId": "6a0cf3c8-9d65-4363-87bc-0160c55c0f65",
+  "latestMilestoneStatus": "Milestone 16C-1 unified year-end preparation published with net-pay bank completeness checks, expense/evidence coverage, one session-only handover and an explicit no-persistence boundary; tax/refund results remain locked pending qualified review",
   "qualifiedTaxReview": "pending",
-  "latestMilestonePhase": "16B"
+  "latestMilestonePhase": "16C-1"
 }
