@@ -6,8 +6,6 @@ import PayslipStart from './PayslipStart'
 import PayslipSummary from './PayslipSummary'
 import PayslipHistory from './PayslipHistory'
 import PayslipReview from './PayslipReview'
-import '../statements/statements.css'
-import './payslips.css'
 
 export default function PayslipDashboard() {
   const [stage, setStage] = useState<'add' | 'review' | 'summary'>('add')

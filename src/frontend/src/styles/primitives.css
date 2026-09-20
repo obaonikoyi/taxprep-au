@@ -1,0 +1,419 @@
+/*
+ * Shared UI primitives.
+ *
+ * Each milestone used to ship its own heading row, badge, stat grid, callout
+ * and form grid, so the same pattern existed a dozen times with slightly
+ * different padding and colour. The milestone class names are kept — markup
+ * and tests refer to them — but they are now aliases onto one definition
+ * here, so a change lands everywhere at once.
+ *
+ * Feature stylesheets should only hold what is genuinely specific to that
+ * workspace. Anything that reads like "a card", "a pill" or "a title with an
+ * action on the right" belongs in this file.
+ */
+
+/* ---------------------------------------------------------------- focus --
+ * One focus ring for the whole app, on every interactive element.
+ */
+:is(button, a, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+.statement-file:focus-within { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+/* --------------------------------------------------------------- buttons --
+ * Three weights: primary (the one action that moves you forward), secondary
+ * (an alternative), text (a low-stakes or destructive aside).
+ */
+.primary-button,
+.secondary-button,
+.statement-file {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  cursor: pointer;
+  transition: background var(--duration) var(--ease), border-color var(--duration) var(--ease), color var(--duration) var(--ease);
+}
+
+.primary-button {
+  border: 1px solid var(--brand);
+  color: var(--ink-inverse);
+  background: var(--brand);
+}
+.primary-button:hover:not(:disabled) { border-color: var(--brand-hover); background: var(--brand-hover); }
+.primary-button:active:not(:disabled) { border-color: var(--brand-deep); background: var(--brand-deep); }
+
+.secondary-button {
+  border: 1px solid var(--line-strong);
+  color: var(--brand-ink);
+  background: var(--surface);
+}
+.secondary-button:hover:not(:disabled) { border-color: var(--brand); background: var(--brand-tint); }
+
+.text-button {
+  min-height: 44px;
+  padding: var(--space-2) 0;
+  border: 0;
+  color: var(--brand-ink);
+  background: transparent;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.text-button:hover:not(:disabled) { color: var(--brand-hover); }
+
+:is(.primary-button, .secondary-button, .text-button):disabled { opacity: .5; cursor: not-allowed; }
+
+/* The "choose a file" control is a label wrapping a hidden input, so it needs
+ * the button look without being a button. */
+.statement-file {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--brand);
+  color: var(--ink-inverse);
+  background: var(--brand);
+  vertical-align: middle;
+}
+.statement-file input { position: absolute; inset: 0; width: 100%; opacity: 0; cursor: pointer; }
+.statement-file:has(input:disabled) { opacity: .5; cursor: not-allowed; }
+
+/* ----------------------------------------------------------- type basics -- */
+.eyebrow {
+  margin: 0 0 var(--space-2);
+  color: var(--brand-ink);
+  font-size: var(--text-2xs);
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+/* ------------------------------------------------------------- surfaces --
+ * One card look. Feature stylesheets vary padding, not the border or radius.
+ */
+.statement-panel,
+.pay-start-card,
+.pay-history,
+.year-end-source-card,
+.year-end-bank-card,
+.year-end-prep-section,
+.connection-panel,
+.upload-panel,
+.card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  min-width: 0;
+}
+
+/* A workspace section: a tinted, bordered region that groups a whole feature. */
+.pay-outlook,
+.tax-readiness,
+.year-end-reconciliation,
+.year-end-preparation-hub,
+.annual-statement-intake {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  background: var(--surface-sunken);
+}
+
+/* ------------------------------------------------------- split headings --
+ * A title (with optional eyebrow and description) on the left, an action or
+ * status on the right; stacks on narrow screens.
+ */
+.statement-title-row,
+.panel-heading,
+.pay-section-heading,
+.pay-chart-heading,
+.pay-outlook-heading,
+.pay-outlook-result-heading,
+.tax-readiness-heading,
+.tax-readiness-result-heading,
+.year-end-heading,
+.year-end-result-heading,
+.year-end-source-heading,
+.year-end-prep-heading,
+.year-end-prep-section-heading,
+.year-end-bank-title,
+.year-end-prep-export,
+.annual-statement-intake-heading,
+.annual-statement-review-heading,
+.expense-card-heading,
+.preview-heading,
+.workspace-heading,
+.evidence-heading,
+.income-heading,
+.workspace-toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-5);
+}
+.statement-title-row > :last-child,
+.pay-section-heading > :last-child,
+.pay-outlook-heading > :last-child,
+.tax-readiness-heading > :last-child,
+.year-end-heading > :last-child,
+.year-end-prep-heading > :last-child { flex-shrink: 0; }
+
+/* --------------------------------------------------------------- badges --
+ * A pill stating a state. `.is-*` modifiers set the intent; the existing
+ * per-feature modifier names are aliased onto them below.
+ */
+.local-badge,
+.pay-badge,
+.pay-outlook-status,
+.tax-readiness-badge,
+.year-end-badge,
+.category-pill,
+.expense-status,
+.demo-badge,
+.pay-demo-label,
+.year-end-prep-section-heading > span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  min-height: 28px;
+  border-radius: var(--radius-pill);
+  color: var(--brand-ink);
+  background: var(--brand-tint-strong);
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+:is(.pay-outlook-status, .tax-readiness-badge, .year-end-badge).warning,
+.pay-badge:not(.confirmed),
+.expense-status--needs-attention { color: var(--warn-ink); background: var(--warn-tint-strong); }
+/* A locked or waiting state needs a visible edge: its tint is close to the
+ * sunken surfaces these pills usually sit on. */
+:is(.pay-outlook-status, .tax-readiness-badge, .year-end-badge).locked,
+.expense-status--excluded { border: 1px solid var(--line-strong); color: var(--ink-muted); background: var(--surface); }
+.tax-readiness-badge.info { color: var(--info-ink); background: var(--info-tint); }
+.category-pill { color: var(--ink-muted); background: var(--surface-sunken); font-weight: 600; }
+
+/* ------------------------------------------------------------ stat grids --
+ * A row of figures. Every workspace had its own; they now share one grid and
+ * one card, and only differ in how many columns they ask for.
+ */
+.statement-metrics,
+.pay-outlook-recorded,
+.tax-readiness-coverage,
+.tax-readiness-counts,
+.year-end-coverage,
+.year-end-prep-metrics,
+.review-totals,
+.preparation-totals {
+  display: grid;
+  gap: var(--space-3);
+  margin: var(--space-5) 0;
+}
+.statement-metrics > div,
+.pay-outlook-recorded > div,
+.tax-readiness-coverage > div,
+.tax-readiness-counts > div,
+.year-end-coverage > div,
+.year-end-prep-metrics > div,
+.review-totals > div,
+.preparation-totals > div {
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+:is(.statement-metrics, .pay-outlook-recorded, .tax-readiness-coverage, .tax-readiness-counts, .year-end-coverage, .year-end-prep-metrics) :is(span, dt) {
+  color: var(--ink-muted);
+  font-size: var(--text-xs);
+}
+:is(.statement-metrics, .pay-outlook-recorded, .tax-readiness-coverage, .tax-readiness-counts, .year-end-coverage, .year-end-prep-metrics) strong {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.02em;
+  overflow-wrap: anywhere;
+}
+:is(.statement-metrics, .year-end-prep-metrics) small { color: var(--ink-subtle); font-size: var(--text-2xs); line-height: var(--leading-snug); }
+
+/* One figure per row can carry the emphasis: the one people recognise.
+ * Marked explicitly rather than by position, so a stylesheet loading for
+ * another workspace cannot promote a second card by accident. */
+/* `div.metric-feature` rather than `.metric-feature`: it has to match the
+ * specificity of the `.statement-metrics > div` rule above and win on source
+ * order, without reaching for !important. */
+div.metric-feature { border-color: var(--surface-inverse); background: var(--surface-inverse); }
+div.metric-feature, div.metric-feature :is(span, small, strong) { color: var(--ink-inverse); }
+div.metric-feature :is(span, small) { opacity: .82; }
+
+/* ------------------------------------------------------------- callouts --
+ * A bordered note. The intent classes decide the colour; the long list of
+ * per-milestone names maps onto them.
+ */
+.statement-error,
+.pay-checks,
+.pay-outlook-blocked,
+.pay-outlook-note,
+.pay-outlook-errors,
+.tax-readiness-blocked,
+.tax-readiness-lock,
+.tax-readiness-list,
+.year-end-notice,
+.year-end-guidance,
+.year-end-lock,
+.year-end-blocked,
+.year-end-empty,
+.year-end-questions,
+.year-end-prep-boundary,
+.annual-statement-error,
+.annual-statement-issues,
+.annual-statement-coverage-warning,
+.notice,
+.review-error,
+.form-message,
+.next-action,
+.preparation-gaps,
+.tax-blockers,
+.document-warning,
+.match-panel {
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  color: var(--ink-body);
+  background: var(--surface-sunken);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+/* Needs checking. */
+.pay-checks,
+.pay-outlook-blocked,
+.pay-outlook-note,
+.tax-readiness-blocked,
+.tax-readiness-lock,
+.year-end-notice,
+.year-end-lock,
+.year-end-blocked,
+.year-end-questions,
+.year-end-prep-boundary,
+.annual-statement-coverage-warning,
+.notice,
+.preparation-gaps,
+.tax-blockers,
+.document-warning,
+.match-panel,
+.tax-readiness-list.warning { border-color: var(--warn-line); color: var(--warn-ink); background: var(--warn-tint); }
+/* Something went wrong. */
+.statement-error,
+.pay-outlook-errors,
+.annual-statement-error,
+.annual-statement-issues,
+.review-error,
+.form-message--error { border-color: var(--alert-line); color: var(--alert-ink); background: var(--alert-tint); }
+/* Resolved / informational. */
+.year-end-guidance,
+.next-action,
+.form-message--success,
+.tax-readiness-list.ready,
+.year-end-questions.clear { border-color: var(--brand-line); color: var(--brand-hover); background: var(--brand-tint); }
+.year-end-empty { border-style: dashed; color: var(--ink-muted); background: var(--surface); }
+:is(.statement-error, .pay-outlook-blocked, .tax-readiness-blocked, .tax-readiness-lock, .year-end-notice, .year-end-guidance, .year-end-lock, .year-end-blocked, .year-end-empty, .year-end-prep-boundary, .annual-statement-error, .annual-statement-coverage-warning, .notice, .next-action) p:last-child { margin-bottom: 0; }
+:is(.pay-checks, .pay-outlook-errors, .tax-readiness-list, .year-end-questions, .annual-statement-issues) ul { margin-bottom: 0; padding-left: var(--space-5); }
+
+/* ---------------------------------------------------------------- forms --
+ * One control appearance across every workspace, sized for touch.
+ */
+input:not([type=file]):not([type=checkbox]):not([type=radio]),
+select,
+textarea {
+  min-height: 44px;
+  padding: var(--space-3);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  background: var(--surface);
+  font-size: 1rem;
+  min-width: 0;
+}
+textarea { min-height: 88px; resize: vertical; }
+:is(input, select, textarea)[aria-invalid=true] { border-color: var(--alert-line); }
+input[type=checkbox] { width: 20px; height: 20px; accent-color: var(--brand); cursor: pointer; }
+
+/* Two-column field grids, collapsing to one column on narrow screens. */
+.pay-fields,
+.pay-outlook-form,
+.year-end-form,
+.annual-statement-form,
+.year-end-bank-form,
+.year-end-expense-form,
+.expense-fields,
+.evidence-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+:is(.pay-outlook-form, .year-end-form, .annual-statement-form, .year-end-bank-form, .year-end-expense-form) label {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+  font-size: var(--text-xs);
+  font-weight: 650;
+}
+:is(.pay-outlook-form, .year-end-form, .annual-statement-form, .year-end-bank-form, .year-end-expense-form) :is(input, select, textarea) { width: 100%; }
+:is(.pay-outlook-form, .year-end-form, .annual-statement-form, .year-end-bank-form) small {
+  color: var(--ink-muted);
+  font-size: var(--text-2xs);
+  font-weight: 400;
+  line-height: var(--leading-snug);
+}
+
+/* ---------------------------------------------------------------- misc --- */
+.year-end-scope-note,
+.tax-readiness-scope-note {
+  margin: var(--space-4) 0 0;
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--brand-line);
+  color: var(--ink-muted);
+  background: var(--brand-tint);
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+}
+
+@media (max-width: 700px) {
+  .statement-title-row,
+  .pay-section-heading,
+  .pay-outlook-heading,
+  .pay-outlook-result-heading,
+  .tax-readiness-heading,
+  .tax-readiness-result-heading,
+  .year-end-heading,
+  .year-end-result-heading,
+  .year-end-source-heading,
+  .year-end-prep-heading,
+  .year-end-prep-section-heading,
+  .year-end-bank-title,
+  .year-end-prep-export,
+  .annual-statement-intake-heading,
+  .annual-statement-review-heading,
+  .workspace-heading,
+  .income-heading { flex-direction: column; gap: var(--space-3); }
+
+  .pay-fields,
+  .pay-outlook-form,
+  .year-end-form,
+  .annual-statement-form,
+  .year-end-bank-form,
+  .year-end-expense-form,
+  .expense-fields,
+  .evidence-form { grid-template-columns: 1fr; }
+}

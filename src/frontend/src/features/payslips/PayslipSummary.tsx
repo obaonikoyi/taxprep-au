@@ -18,7 +18,7 @@ export default function PayslipSummary({ allSlips, slips, years, employers, year
     {slips.length === 0 ? <div className="statement-panel pay-empty"><h3>No checked payslips to show</h3><p>Check your payslip figures first. If you already have, try showing all years and employers.</p>{(year !== 'all' || employer !== 'all') && <button className="secondary-button" onClick={onResetFilters}>Show all payslips</button>}</div> : <>
       <div className="statement-metrics pay-metrics" aria-label="Confirmed pay totals">
         <div><span>Pay before deductions</span><strong>{aud(t.gross)}</strong><small>Called “gross pay” on your payslip</small></div>
-        <div><span>Take-home pay</span><strong>{aud(t.net)}</strong><small>What you were paid after deductions</small></div>
+        <div className="metric-feature"><span>Take-home pay</span><strong>{aud(t.net)}</strong><small>What you were paid after deductions</small></div>
         <div><span>Tax taken out</span><strong>{aud(t.withheld)}</strong><small>{t.percentage === null ? 'Withholding recorded on your payslips' : `${t.percentage}% of pay before deductions`}</small></div>
         <div><span>Super on payslips</span><strong>{t.superKnown ? aud(t.superCents) : 'Unknown'}</strong><small>{t.superKnown} of {t.count} payslips show an amount · check your fund for payments</small></div>
       </div>

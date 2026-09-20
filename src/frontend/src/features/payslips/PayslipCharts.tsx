@@ -22,13 +22,13 @@ function Trend({ title, dates, series }: { title: string; dates: string[]; serie
     <div className="pay-legend">{series.map(s => <span key={s.label}><i style={{ background: s.color }} />{s.label}{s.dashed ? ' (dashed)' : ''}</span>)}</div>
     <svg viewBox={`0 0 ${width} 240`} role="img" aria-labelledby={id}>
       <title id={id}>{title}. Exact values are in the table below.</title>
-      {[0, .5, 1].map(fraction => <g key={fraction}><line x1="70" x2={right} y1={y(highest * fraction)} y2={y(highest * fraction)} stroke="#dce6e0" /><text x="57" y={y(highest * fraction) + 4} textAnchor="end" fill="#50685c" fontSize="13">{axisAmount(highest * fraction)}</text></g>)}
+      {[0, .5, 1].map(fraction => <g key={fraction}><line x1="70" x2={right} y1={y(highest * fraction)} y2={y(highest * fraction)} style={{ stroke: 'var(--chart-grid)' }} /><text x="57" y={y(highest * fraction) + 4} textAnchor="end" style={{ fill: 'var(--ink-muted)' }} fontSize="13">{axisAmount(highest * fraction)}</text></g>)}
       {series.map(s => <g key={s.label}>{s.values.map((v, i) => v === null ? null : <g key={i}>
-        {i > 0 && s.values[i - 1] !== null && <line x1={x(i - 1)} y1={y(s.values[i - 1]!)} x2={x(i)} y2={y(v)} stroke={s.color} strokeWidth="3" strokeDasharray={s.dashed ? '7 5' : undefined} />}
-        <circle cx={x(i)} cy={y(v)} r="4.5" fill={s.color}><title>{dateLabel(dates[i])}: {s.label} {aud(v)}</title></circle>
+        {i > 0 && s.values[i - 1] !== null && <line x1={x(i - 1)} y1={y(s.values[i - 1]!)} x2={x(i)} y2={y(v)} style={{ stroke: s.color }} strokeWidth="3" strokeDasharray={s.dashed ? '7 5' : undefined} />}
+        <circle cx={x(i)} cy={y(v)} r="4.5" style={{ fill: s.color }}><title>{dateLabel(dates[i])}: {s.label} {aud(v)}</title></circle>
       </g>)}</g>)}
-      <text x={x(0)} y="222" fill="#50685c" fontSize="13" textAnchor={dates.length === 1 ? 'middle' : 'start'}>{dateLabel(dates[0])}</text>
-      {dates.length > 1 && <text x={right} y="222" textAnchor="end" fill="#50685c" fontSize="13">{dateLabel(dates.at(-1)!)}</text>}
+      <text x={x(0)} y="222" style={{ fill: 'var(--ink-muted)' }} fontSize="13" textAnchor={dates.length === 1 ? 'middle' : 'start'}>{dateLabel(dates[0])}</text>
+      {dates.length > 1 && <text x={right} y="222" textAnchor="end" style={{ fill: 'var(--ink-muted)' }} fontSize="13">{dateLabel(dates.at(-1)!)}</text>}
     </svg>
   </div>
 }
@@ -36,9 +36,9 @@ export default function PayslipCharts({ slips, grouping, onGrouping }: { slips: 
   const [view, setView] = useState<'pay' | 'tax' | 'super'>('pay')
   const all = buckets(slips, grouping), data = all.slice(-24), dates = data.map(d => d.date)
   const series: Series[] = view === 'pay' ? [
-    { label: 'Before deductions', color: '#17735a', values: data.map(d => d.gross) },
-    { label: 'Take-home pay', color: '#536ba0', dashed: true, values: data.map(d => d.net) },
-  ] : view === 'tax' ? [{ label: 'Tax taken out', color: '#a45d20', values: data.map(d => d.withheld) }] : [{ label: 'Super on payslips', color: '#536ba0', values: data.map(d => d.superKnown === d.count ? d.superCents : null) }]
+    { label: 'Before deductions', color: 'var(--chart-1)', values: data.map(d => d.gross) },
+    { label: 'Take-home pay', color: 'var(--chart-2)', dashed: true, values: data.map(d => d.net) },
+  ] : view === 'tax' ? [{ label: 'Tax taken out', color: 'var(--chart-3)', values: data.map(d => d.withheld) }] : [{ label: 'Super on payslips', color: 'var(--chart-2)', values: data.map(d => d.superKnown === d.count ? d.superCents : null) }]
   const title = view === 'pay' ? 'Your pay over time' : view === 'tax' ? 'Tax taken out over time' : 'Super recorded over time'
   return <section className="statement-panel pay-charts" aria-label="Pay charts">
     <div className="pay-chart-heading"><div><h3>{title}</h3><p>{view === 'pay' ? 'Compare what you earned with what you took home.' : view === 'tax' ? 'See the withholding recorded for each payment period.' : 'Amounts shown on your payslips, not confirmed payments to your fund.'}</p></div><label>Show by<select aria-label="Chart grouping" value={grouping} onChange={e => onGrouping(e.target.value as 'month' | 'payday')}><option value="month">Month</option><option value="payday">Payday</option></select></label></div>

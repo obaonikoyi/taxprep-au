@@ -79,6 +79,13 @@ jobs:
         working-directory: src/frontend
         run: npm run test:e2e
 
+      # Renders every workspace in both colour schemes and checks the design
+      # tokens resolve, no workspace logs an error and the phone layout does
+      # not scroll sideways. Needs no API, but reuses the Chromium above.
+      - name: Workspace render checks
+        working-directory: src/frontend
+        run: npm run test:ui
+
       - name: Upload verification evidence
         if: always()
         uses: actions/upload-artifact@v4

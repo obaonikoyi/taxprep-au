@@ -1,41 +1,48 @@
+/*
+ * The income and preparation handover inside the documents workspace.
+ *
+ * Stat grids, split headings, callouts and controls come from
+ * `styles/primitives.css`; values come from `styles/tokens.css`.
+ */
+
 .workspace-tabs { display: flex; gap: 12px; margin: 22px 0; flex-wrap: wrap; }
-.workspace-tabs button[aria-pressed="true"] { background: #123c32; color: white; border-color: #123c32; }
+.workspace-tabs button[aria-pressed="true"] { border-color: var(--brand); color: var(--ink-inverse); background: var(--brand); }
 .preparation-workspace { margin-top: 30px; }
 .preparation-workspace h3 { font-size: 1.65rem; }
 .preparation-workspace h4 { font-size: 1.1rem; line-height: 1.5; }
-.preparation-totals { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 26px 0; }
-.preparation-totals > div { display: grid; align-content: start; gap: 12px; padding: 24px; background: #123c32; color: white; border-radius: 14px; }
-.preparation-totals strong { font-size: 1.8rem; overflow-wrap: anywhere; }
-.preparation-totals span, .preparation-totals small { color: #d2e7da; line-height: 1.5; }
-.preparation-sample { padding: 24px; margin: 24px 0; background: #ecf4ef; border-radius: 12px; }
+.preparation-totals { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.preparation-totals > div { padding: var(--space-6); border-color: var(--surface-inverse); color: var(--ink-inverse); background: var(--surface-inverse); }
+.preparation-totals strong { font-size: var(--text-2xl); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.preparation-totals span, .preparation-totals small { color: var(--ink-inverse); line-height: var(--leading-snug); opacity: .82; }
+.preparation-sample { padding: 24px; margin: 24px 0; background: var(--brand-tint-strong); border-radius: 12px; }
 .preparation-sample p { font-size: .88rem; line-height: 1.7; margin-bottom: 0; }
-.preparation-step { border: 1px solid #c6d9ce; border-radius: 14px; padding: 22px; margin: 20px 0; background: white; }
+.preparation-step { border: 1px solid var(--line); border-radius: 14px; padding: 22px; margin: 20px 0; background: white; }
 .preparation-step > summary { cursor: pointer; font-weight: 700; padding: 5px 0; }
 .preparation-step p { line-height: 1.65; }
 .income-editor > .button-row { justify-content: start; margin: 22px 0; }
-.income-card { border-top: 1px solid #d3e1d8; padding: 26px 0; }
-.income-heading { display: flex; justify-content: space-between; align-items: start; gap: 18px; flex-wrap: wrap; }
+.income-card { border-top: 1px solid var(--line-soft); padding: 26px 0; }
+.income-heading { flex-wrap: wrap; }
 .income-heading h4, .income-heading p, .preparation-expense p { overflow-wrap: anywhere; }
 .income-status { font-weight: 650; font-size: .88rem; }
 .preparation-notes { display: grid; gap: 10px; font-weight: 650; }
-.preparation-notes textarea { width: 100%; border: 1px solid #a8c2b4; padding: 14px; border-radius: 8px; color: #193f31; resize: vertical; font: inherit; }
+.preparation-notes textarea { width: 100%; }
 .preparation-step .field-help { font-weight: 400; line-height: 1.6; }
-.preparation-expense { border-top: 1px solid #dce7df; margin: 18px 0; padding-top: 16px; }
-.preparation-gaps { padding: 24px; background: #fff7e6; border-radius: 14px; }
+.preparation-expense { border-top: 1px solid var(--line); margin: 18px 0; padding-top: 16px; }
+.preparation-gaps { border-radius: var(--radius-lg); }
 .preparation-gaps ul { padding-left: 0; list-style: none; }
-.preparation-gaps li { display: grid; grid-template-columns: 85px 1fr; gap: 16px; padding: 15px 0; border-top: 1px solid #ead9b5; line-height: 1.7; font-size: .88rem; overflow-wrap: anywhere; }
+.preparation-gaps li { display: grid; grid-template-columns: 85px 1fr; gap: 16px; padding: 15px 0; border-top: 1px solid var(--warn-line); line-height: 1.7; font-size: .88rem; overflow-wrap: anywhere; }
 @media(max-width:760px) { .preparation-totals { grid-template-columns: 1fr; } .preparation-step, .preparation-gaps { padding: 18px; } .preparation-gaps li { grid-template-columns: 1fr; gap: 4px; } }
-.tax-balance { padding: 24px; background: #edf5ef; border-left: 4px solid #287151; border-radius: 8px; }
+.tax-balance { padding: 24px; background: var(--brand-tint); border-left: 4px solid var(--brand); border-radius: 8px; }
 .tax-balance > span, .tax-balance > strong { display: block; }
 .tax-balance > strong { margin: 10px 0; font-size: 2rem; }
 .tax-balance p { margin-bottom: 0; }
 .tax-table-wrap { overflow-x: auto; margin: 24px 0; }
 .tax-position table { width: 100%; border-collapse: collapse; }
 .tax-position caption { text-align: left; font-weight: 700; margin-bottom: 16px; }
-.tax-position th, .tax-position td { text-align: left; padding: 16px 10px; border-bottom: 1px solid #d3e1d8; vertical-align: top; }
+.tax-position th, .tax-position td { text-align: left; padding: 16px 10px; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
 .tax-position td { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .tax-position small { display: block; font-weight: 400; line-height: 1.6; margin-top: 6px; }
 .tax-position details, .tax-blockers { line-height: 1.7; overflow-wrap: anywhere; }
 .tax-position summary { cursor: pointer; font-weight: 650; }
-.tax-blockers { padding: 20px; margin: 20px 0; background: #fff7e6; border-radius: 8px; }
+.tax-blockers { margin: var(--space-5) 0; }
 .tax-blockers li { margin-top: 8px; }

@@ -1,0 +1,221 @@
+/*
+ * TaxPrep AU design tokens — the single source of truth for colour, space,
+ * type, radius, elevation and motion.
+ *
+ * Every workspace (pay, bank spending, documents, guided example) draws from
+ * this file. Before it existed each milestone invented its own greens, which
+ * left 287 distinct hex values across the stylesheets. Add a token here rather
+ * than a new literal in a feature stylesheet.
+ *
+ * Surfaces and text are declared as semantic roles, so the dark scheme at the
+ * bottom only has to redefine the roles, not every rule that uses them.
+ */
+
+:root {
+  /* Brand — eucalyptus green, light to dark. */
+  --green-50: #f1f7f3;
+  --green-100: #e3efe8;
+  --green-200: #c8e0d2;
+  --green-300: #9fc8b2;
+  --green-400: #68a98b;
+  --green-500: #3c8b69;
+  --green-600: #1f6f52;
+  --green-700: #175943;
+  --green-800: #134537;
+  --green-900: #0f322a;
+
+  /* Neutrals carry a trace of the brand hue so greys never look cold. */
+  --grey-0: #ffffff;
+  --grey-25: #f8faf8;
+  --grey-50: #f2f6f3;
+  --grey-100: #e9efeb;
+  --grey-200: #dae3dd;
+  --grey-300: #c1cec6;
+  --grey-400: #97a79e;
+  --grey-500: #73847b;
+  --grey-600: #56675f;
+  --grey-700: #3c4b44;
+  --grey-800: #25332d;
+  --grey-900: #15201b;
+
+  /* Amber — "needs checking", not an error. */
+  --amber-50: #fff8e9;
+  --amber-100: #fdeecb;
+  --amber-200: #f2dca8;
+  --amber-300: #dfbe74;
+  --amber-600: #8a6414;
+  --amber-700: #6b4d12;
+
+  /* Terracotta — problems and destructive actions. */
+  --clay-50: #fff4f0;
+  --clay-100: #fbdfd4;
+  --clay-200: #f0c6b6;
+  --clay-600: #9c4a2c;
+  --clay-700: #7a3922;
+
+  /* Blue — neutral information, kept away from the brand green. */
+  --blue-50: #eff3fa;
+  --blue-100: #dbe4f3;
+  --blue-600: #3b5a83;
+
+  /* ---- Semantic roles ---- */
+  --page: var(--grey-25);
+  --surface: var(--grey-0);
+  --surface-sunken: var(--grey-50);
+  --surface-inverse: var(--green-800);
+
+  --ink: var(--green-900);
+  --ink-body: var(--grey-700);
+  --ink-muted: var(--grey-600);
+  --ink-subtle: var(--grey-500);
+  --ink-inverse: #ffffff;
+  --ink-inverse-muted: var(--green-200);
+
+  --line: var(--grey-200);
+  --line-strong: var(--grey-300);
+  --line-soft: var(--grey-100);
+
+  --brand: var(--green-600);
+  --brand-hover: var(--green-700);
+  --brand-deep: var(--green-800);
+  --brand-ink: var(--green-700);
+  --brand-tint: var(--green-50);
+  --brand-tint-strong: var(--green-100);
+  --brand-line: var(--green-200);
+
+  --warn-tint: var(--amber-50);
+  --warn-tint-strong: var(--amber-100);
+  --warn-line: var(--amber-200);
+  --warn-ink: var(--amber-700);
+
+  --alert-tint: var(--clay-50);
+  --alert-line: var(--clay-200);
+  --alert-ink: var(--clay-700);
+
+  --info-tint: var(--blue-50);
+  --info-line: var(--blue-100);
+  --info-ink: var(--blue-600);
+
+  --focus: #a26a0c;
+
+  /* Chart series, in fixed order: 1 = earnings, 2 = take-home / super,
+   * 3 = tax withheld. Validated against a white chart surface for the
+   * lightness band, chroma floor, CVD separation and contrast; the dark
+   * scheme below re-steps them against the dark surface rather than
+   * flipping these. Assign by series identity, never by rank. */
+  --chart-1: #00875c;
+  --chart-2: #5468b8;
+  --chart-3: #a45c14;
+  --chart-grid: var(--line);
+
+  /* ---- Space: a 4px scale. ---- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 40px;
+  --space-9: 48px;
+  --space-10: 64px;
+
+  /* ---- Radius ---- */
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-pill: 999px;
+
+  /* ---- Type scale ---- */
+  --text-2xs: .72rem;
+  --text-xs: .78rem;
+  --text-sm: .85rem;
+  --text-base: .95rem;
+  --text-md: 1.05rem;
+  --text-lg: 1.2rem;
+  --text-xl: 1.45rem;
+  --text-2xl: clamp(1.7rem, 3vw, 2.1rem);
+  --text-3xl: clamp(2rem, 4vw, 2.7rem);
+
+  --leading-tight: 1.2;
+  --leading-snug: 1.45;
+  --leading-normal: 1.65;
+
+  /* ---- Elevation ---- */
+  --shadow-sm: 0 1px 2px rgb(16 45 35 / 6%);
+  --shadow-md: 0 6px 18px rgb(16 45 35 / 7%);
+  --shadow-lg: 0 18px 44px rgb(16 45 35 / 10%);
+
+  /* ---- Motion ---- */
+  --ease: cubic-bezier(.2, .6, .3, 1);
+  --duration: 160ms;
+
+  /* Width of a workspace column. */
+  --shell-width: 1180px;
+}
+
+/*
+ * Dark scheme. Only the semantic roles move: the ramps stay put and the
+ * brand ramp is re-pointed so mid greens stay legible on a dark surface.
+ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page: #0d1714;
+    --surface: #14211d;
+    --surface-sunken: #101b18;
+    --surface-inverse: #e3efe8;
+
+    --ink: #eaf3ee;
+    --ink-body: #c4d5cc;
+    --ink-muted: #9ab0a5;
+    --ink-subtle: #86998f;
+    --ink-inverse: #0f322a;
+    --ink-inverse-muted: #2c4b3f;
+
+    --line: #26362f;
+    --line-strong: #35493f;
+    --line-soft: #1d2b25;
+
+    --brand: var(--green-400);
+    --brand-hover: var(--green-300);
+    --brand-deep: var(--green-200);
+    --brand-ink: var(--green-300);
+    --brand-tint: #172c24;
+    --brand-tint-strong: #1d3a2f;
+    --brand-line: #2c4b3d;
+
+    --warn-tint: #2b2214;
+    --warn-tint-strong: #3a2d18;
+    --warn-line: #4d3c1f;
+    --warn-ink: #e7c684;
+
+    --alert-tint: #2e1c16;
+    --alert-line: #4a2b20;
+    --alert-ink: #eaa98e;
+
+    --info-tint: #18212f;
+    --info-line: #2a3a4d;
+    --info-ink: #a8bfdd;
+
+    --focus: #e0b45e;
+
+    --chart-1: #1da073;
+    --chart-2: #7089d8;
+    --chart-3: #c08737;
+
+    --shadow-sm: 0 1px 2px rgb(0 0 0 / 40%);
+    --shadow-md: 0 6px 18px rgb(0 0 0 / 45%);
+    --shadow-lg: 0 18px 44px rgb(0 0 0 / 55%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

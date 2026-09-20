@@ -61,7 +61,7 @@ export default function PayOutlook({ allSlips, slips, year, employer, employerNa
 
   if (year === 'all' || employer === 'all') {
     return <section className="pay-outlook" aria-labelledby="pay-outlook-heading">
-      <div className="pay-outlook-heading"><div><p className="eyebrow">Optional outlook</p><h3 id="pay-outlook-heading">Explore the rest of the year</h3><p>Choose <strong>one financial year</strong> and <strong>one employer</strong> above first. TaxPrep keeps each outlook to one job so the numbers are not mistaken for your whole income.</p></div></div>
+      <div className="pay-outlook-heading"><div><p className="eyebrow">Optional outlook</p><h3 id="pay-outlook-heading">Explore the rest of the year</h3><p>Choose <strong>one financial year</strong> and <strong>one employer</strong> above first. TaxPrep keeps each outlook to one job so the numbers are not mistaken for your whole income.</p></div><span className="pay-outlook-status locked">Choose a year and employer</span></div>
     </section>
   }
 
@@ -74,7 +74,7 @@ export default function PayOutlook({ allSlips, slips, year, employer, employerNa
 
   if (!slips.length) {
     return <section className="pay-outlook" aria-labelledby="pay-outlook-heading">
-      <div className="pay-outlook-heading"><div><p className="eyebrow">Optional outlook</p><h3 id="pay-outlook-heading">Explore the rest of the year</h3><p>Add and check at least one payslip for this employer and financial year first.</p></div></div>
+      <div className="pay-outlook-heading"><div><p className="eyebrow">Optional outlook</p><h3 id="pay-outlook-heading">Explore the rest of the year</h3><p>Add and check at least one payslip for this employer and financial year first.</p></div><span className="pay-outlook-status locked">Needs a checked payslip</span></div>
     </section>
   }
 
