@@ -75,7 +75,9 @@ describe('portable year-end handoff', () => {
   })
 
   it('rejects the wrong financial year during file import', async () => {
-    const file = new File([JSON.stringify({ ...statement(), financialYear: '2025–26', scope: { from: '2025-07-01', to: '2026-06-30' } })], 'handoff.json', { type: 'application/json' })
+    const value = { ...statement(), financialYear: '2025–26', scope: { from: '2025-07-01', to: '2026-06-30' } }
+    const file = new File([JSON.stringify(value)], 'handoff.json', { type: 'application/json' })
+    Object.defineProperty(file, 'text', { value: async () => JSON.stringify(value) })
     await expect(readYearEndHandoff(file, '2026–27')).rejects.toThrow('not the selected 2026–27')
   })
 
