@@ -9,7 +9,8 @@ export function validateAnnualStatementFile(file: File) {
 }
 
 async function sha256(bytes: Uint8Array) {
-  const hash = await crypto.subtle.digest('SHA-256', bytes)
+  const stable = bytes.slice().buffer as ArrayBuffer
+  const hash = await crypto.subtle.digest('SHA-256', stable)
   return [...new Uint8Array(hash)].map(byte => byte.toString(16).padStart(2, '0')).join('')
 }
 
