@@ -2,7 +2,7 @@
 
 TaxPrep helps Australian workers understand their pay, track withholding and recorded super, and prepare for tax time with fewer surprises. The longer-term goal remains supported self-preparation or a useful accountant handover.
 
-> **Published: Milestone 16C-1 — unified year-end preparation.** Reconciled employment sources can now feed a session-only preparation hub with optional net-pay/bank-deposit completeness checks, expense/evidence coverage and one traceable handover. Tax/refund results remain locked pending qualified review.
+> **Published: Milestone 16C-2 — portable cross-workspace handoff.** Bank spending and Tax documents can now export privacy-bounded, year-scoped JSON summaries that the year-end hub validates and explicitly applies. Raw transactions/OCR text and rule approvals remain excluded. Tax/refund results remain locked pending qualified review.
 
 **[Try the standalone app](https://taxprep-au-production.up.railway.app)** — no account needed. Choose **Try example payslips** for six fictional PDFs and an immediate pay-history dashboard. The owner's portfolio website has not been changed.
 
@@ -28,7 +28,7 @@ Published: [Milestone 16B — annual income-statement extraction](docs/MILESTONE
 
 Published: [Milestone 16C-1 — unified year-end preparation](docs/MILESTONE_16C1_YEAR_END_PREPARATION.md) adds optional net-pay/bank-deposit completeness checks and expense/evidence coverage to one session-only handover. Bank deposits do not establish taxable income, amounts flagged for work review are not deductions, and save/resume remains blocked on the [storage/retention design gate](docs/YEAR_END_SAVE_RESUME_DESIGN.md).
 
-In development: [Milestone 16C-2 — portable cross-workspace handoff](docs/MILESTONE_16C2_PORTABLE_HANDOFF.md) lets Bank spending and Tax documents export small year-scoped JSON summaries containing coverage metrics and source hashes only. The year-end hub validates the file and requires explicit application; raw transactions/OCR text are not transferred, employer matching is not inferred, and rule-review coverage remains untouched.
+Published: [Milestone 16C-2 — portable cross-workspace handoff](docs/MILESTONE_16C2_PORTABLE_HANDOFF.md) lets Bank spending and Tax documents export small year-scoped JSON summaries containing coverage metrics and source hashes only. The year-end hub validates the file and requires explicit application; raw transactions/OCR text are not transferred, employer matching is not inferred, and rule-review coverage remains untouched.
 
 The reviewed withholding/annual-tax work remains under [Milestone 15](https://github.com/obaonikoyi/taxprep-au/issues/36) after #28. Existing tax-rule review remains open in #21 and #28.
 
