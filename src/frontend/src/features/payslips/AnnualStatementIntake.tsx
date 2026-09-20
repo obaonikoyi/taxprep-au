@@ -114,7 +114,7 @@ export default function AnnualStatementIntake({ year, employers, sources, onAdd 
     <p className="annual-statement-message" role="status">{message}</p>
     {error && <div className="annual-statement-error" role="alert"><strong>Annual statement not added.</strong><p>{error}</p></div>}
 
-    {candidate && <article className="annual-statement-review" aria-label="Review extracted annual statement">
+    {candidate && <article className="annual-statement-review" role="region" aria-label="Review extracted annual statement">
       <div className="annual-statement-review-heading">
         <div><p className="eyebrow">Review before transfer</p><h4>{candidate.name}</h4><p>Page {candidate.page} · SHA-256 {candidate.hash}</p></div>
         <button className="text-button" onClick={() => { setCandidate(null); setChecked(false); setMessage('Candidate discarded. No annual source was added.') }}>Discard candidate</button>
