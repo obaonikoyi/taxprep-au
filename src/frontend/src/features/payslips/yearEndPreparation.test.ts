@@ -31,7 +31,7 @@ function pay(id: string, employer: string, gross: string, withheld: string, net:
       periodEnd: '2026-07-14',
       payDate: '2026-07-16',
       gross,
-      witheld,
+      withheld,
       deductions: '0',
       net,
       super: '',
@@ -89,8 +89,8 @@ describe('year-end preparation hub model', () => {
     })
     expect(result.reconciliation.rows[0].payGross).toBe(2200)
     expect(result.reconciliation.rows[0].annualGross).toBe(2200)
-    expect(result.reconciliation.rows[0].payWitheld).toBe(330)
-    expect(result.reconciliation.rows[0].annualWitheld).toBe(330)
+    expect(result.reconciliation.rows[0].payWithheld).toBe(330)
+    expect(result.reconciliation.rows[0].annualWithheld).toBe(330)
     expect(result.questions.some(question => question.includes('bank'))).toBe(false)
   })
 
