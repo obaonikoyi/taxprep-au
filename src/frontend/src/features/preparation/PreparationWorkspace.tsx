@@ -4,7 +4,6 @@ import { downloadEvidenceReport } from '../documents/evidenceReport'
 import IncomeEditor from './IncomeEditor'
 import { preparationSummary, samplePreparation, situationQuestions, type Answer, type Preparation } from './preparation'
 import { preparationReport } from './preparationReport'
-import './preparation.css'
 import TaxPositionPanel from '../tax-position/TaxPositionPanel'
 import { taxPosition } from '../tax-position/taxPosition'
 interface Props { value: Preparation; onChange: (value: Preparation) => void; records: Evidence[]; links: EvidenceLink[]; separate: string[]; sources: DocumentSource[]; importIssues: string[]; onDocuments: () => void; onMessage: (message: string) => void; busy: boolean }

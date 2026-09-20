@@ -84,9 +84,14 @@ cd src/frontend
 npm test
 npm run lint
 npm run build
+npm run test:ui
 ```
 
-`dotnet test` builds and runs real endpoint tests using `WebApplicationFactory`. Vitest runs React interaction tests and API-client contract tests. GitHub Actions runs both suites and both builds on pull requests and changes to `main`.
+`dotnet test` builds and runs real endpoint tests using `WebApplicationFactory`. Vitest runs React interaction tests and API-client contract tests. `npm run test:ui` renders every workspace in a real browser in both colour schemes and checks what the stylesheets are responsible for: no workspace logs an error, design tokens resolve, one figure per metric row is emphasised, the shell does not stack two page headings, and a 390px phone has no horizontal scroll. It needs no backend; set `CHROMIUM_PATH` to reuse an installed browser instead of downloading one. GitHub Actions runs both suites and both builds on pull requests and changes to `main`.
+
+## Interface styles
+
+Colour, space, type, radius and elevation come from `src/styles/tokens.css`; shared patterns (buttons, badges, callouts, stat grids, split headings, form grids, the focus ring) come from `src/styles/primitives.css`. Workspace stylesheets should hold only what is specific to that workspace, and every stylesheet is imported in a fixed order from `src/index.css` so the cascade does not depend on which workspace loads first. See [the design system](DESIGN_SYSTEM.md) before adding a colour or rebuilding an existing pattern.
 
 ## Troubleshooting
 
@@ -107,6 +112,7 @@ After a Release backend build, run from `src/frontend`:
 ```powershell
 npx playwright install chromium
 npm run test:e2e
+npm run test:ui
 ```
 
 The script starts/stops its own API and Vite processes on 5087/5173 (stop your development servers first). It checks the guided expense interview, edits and partial totals, manual mobile entry, validation focus, real service interruption/retry and reset, plus real localStorage save/resume, new-tab restoration, two-tab conflicts, corrupt-copy recovery, and the CSV upload regression flow and selected spending → expense draft → API review → offline report. It checks renamed/reordered uploads, original versus adjusted amounts, unsupported rows, cancellation and the 50-row grouping limit. Desktop and 390px mobile widths are covered. The report checks verify the print action and browser print-event capability, real HTML download bytes, offline reopening without network requests, partial amounts and long notes. They also generate A4 PDFs from the downloaded HTML for inspection. It writes screenshots and a JSON report to ignored `test-results/browser/`. CI installs browser system dependencies and uploads these files alongside the API test report as a seven-day artifact.

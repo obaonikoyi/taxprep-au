@@ -10,7 +10,6 @@ import { emptyPhoneAnswers, phoneCredits } from '../assessment/phone'
 import SourceRegister from '../assessment/SourceRegister'
 import PreparationWorkspace from '../preparation/PreparationWorkspace'
 import { emptyPreparation } from '../preparation/preparation'
-import './documents.css'
 interface Job { id: string; name: string; status: string; failed: boolean; file?: File }
 export default function DocumentWorkspace() {
   const [view, setView] = useState<'documents' | 'preparation'>('documents')
