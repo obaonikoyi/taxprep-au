@@ -1,6 +1,7 @@
 import { aud } from './payslip'
 import { annualFinalStatusLabel, annualSourceTypeLabel, coverageAnswerLabel, reconciliationStateLabel } from './yearEndReconciliation'
 import { bankCheckStatusLabel, coverageStatusLabel, type YearEndPreparationResult } from './yearEndPreparation'
+import { handoffLabel, handoffSummaryLines } from '../handoff/yearEndHandoff'
 
 const escape = (value: unknown) => String(value ?? '').replace(/[&<>"']/g, char => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
@@ -40,9 +41,11 @@ export function yearEndPreparationReport(result: YearEndPreparationResult) {
     ? result.questions.map(question => `<li>${escape(question)}</li>`).join('')
     : '<li>No open questions are recorded in this preparation pass. This is not proof that the return is complete or correct.</li>'
 
+  const handoffRows = result.handoffs.map(handoff => `<article><h3>${escape(handoffLabel(handoff))}</h3><p><strong>Financial year:</strong> ${escape(handoff.financialYear)}<br><strong>Handoff ID:</strong> ${escape(handoff.handoffId)}<br><strong>Generated:</strong> ${escape(handoff.generatedAt)}</p><ul>${handoffSummaryLines(handoff).map(line => `<li>${escape(line)}</li>`).join('')}</ul><p><strong>Source SHA-256 references:</strong><br>${handoff.sourceHashes.map(hash => escape(hash)).join('<br>')}</p></article>`).join('')
+
   return `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TaxPrep AU year-end preparation handover</title><style>body{max-width:1120px;margin:40px auto;padding:0 20px;font:16px/1.6 system-ui;color:#173f35}table{width:100%;border-collapse:collapse;margin:14px 0 28px;table-layout:fixed}th,td{padding:8px;border-bottom:1px solid #ddd;text-align:left;vertical-align:top;overflow-wrap:anywhere}.notice,.question{padding:16px;border:1px solid #dccb9d;background:#fff8e9;border-radius:10px}.question{border-color:#e1d8c3;background:#fffdf8}@media(max-width:700px){table{font-size:10px}th,td{padding:4px}}@media print{body{font-size:9px}}</style>
 <h1>TaxPrep AU year-end preparation handover</h1>
-<p><strong>Financial year:</strong> ${escape(result.year)}<br><strong>Preparation version:</strong> ${escape(result.version)}<br><strong>Pay reconciliation version:</strong> ${escape(r.version)}<br><strong>Storage:</strong> Session only — this handover was generated from the current browser session.</p>
+<p><strong>Financial year:</strong> ${escape(result.year)}<br><strong>Preparation version:</strong> ${escape(result.version)}<br><strong>Pay reconciliation version:</strong> ${escape(r.version)}<br><strong>Storage:</strong> Session by default. TaxPrep does not automatically save this workspace.</p>
 <div class="notice"><strong>Important boundaries</strong><p>Payslips and annual income statements are two views of the same employment income and are not added together. Bank deposits are used only as a completeness/review check against checked net pay; they do not establish gross income, withholding or taxable income. Amounts flagged for work review are not approved deductions.</p><p>Tax/refund/final-tax results remain locked.</p></div>
 
 <h2>Preparation coverage</h2>
@@ -67,8 +70,13 @@ export function yearEndPreparationReport(result: YearEndPreparationResult) {
 
 <div class="question"><h2>Open questions and unsupported sections</h2><ul>${questions}</ul></div>
 
+<h2>Imported workspace handoffs</h2>
+<p>These summaries were explicitly imported and applied by the user. They contain bounded coverage metadata and source hashes, not raw transaction descriptions or OCR text.</p>
+${handoffRows || '<p>No workspace handoffs were applied in this preparation pass.</p>'}
+
 <h2>Save/resume boundary</h2>
-<p>TaxPrep does not save this sensitive year-end workspace yet. A future save/resume feature must first define storage location, encryption, retention period, user-initiated deletion, account recovery and how original financial files are separated from derived facts. This prototype intentionally clears with the browser session/workspace flow.</p>
+<p>TaxPrep does not automatically save this sensitive year-end workspace to browser storage or the TaxPrep API. The optional encrypted local backup is created only when the user explicitly downloads it and remains under the user's control. It contains preparation answers and applied summary handoffs, not raw financial documents or transactions. TaxPrep does not store or recover the backup passphrase.</p>
+<p>Account-based cloud save/resume remains a separate future decision requiring storage, retention, deletion, backup and account-recovery rules.</p>
 </html>`
 }
 

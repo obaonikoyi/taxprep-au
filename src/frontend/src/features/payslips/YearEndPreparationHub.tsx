@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { aud } from './payslip'
 import {
   bankCheckStatusLabel,
@@ -12,6 +12,16 @@ import {
 } from './yearEndPreparation'
 import { downloadYearEndPreparationReport, yearEndPreparationReport } from './yearEndPreparationReport'
 import type { YearEndReconciliation } from './yearEndReconciliation'
+import {
+  coveragePatchFromHandoff,
+  handoffConflicts,
+  handoffLabel,
+  handoffSummaryLines,
+  readYearEndHandoff,
+  type YearEndHandoff,
+} from '../handoff/yearEndHandoff'
+import PreparationBackupPanel from '../handoff/PreparationBackupPanel'
+import type { PreparationBackupPayload } from '../handoff/preparationBackup'
 
 type Props = {
   reconciliation: YearEndReconciliation
@@ -22,7 +32,12 @@ const difference = (value: number | null) => value === null ? '—' : `${value >
 export default function YearEndPreparationHub({ reconciliation }: Props) {
   const [open, setOpen] = useState(false)
   const [answers, setAnswers] = useState<YearEndPreparationAnswers>(() => blankYearEndPreparationAnswers())
-  const result = useMemo(() => buildYearEndPreparation(reconciliation, answers), [reconciliation, answers])
+  const [handoffs, setHandoffs] = useState<YearEndHandoff[]>([])
+  const [handoffCandidate, setHandoffCandidate] = useState<YearEndHandoff | null>(null)
+  const [handoffMessage, setHandoffMessage] = useState('')
+  const [handoffError, setHandoffError] = useState('')
+  const handoffInput = useRef<HTMLInputElement>(null)
+  const result = useMemo(() => buildYearEndPreparation(reconciliation, answers, handoffs), [reconciliation, answers, handoffs])
 
   function patchBank(key: string, patch: Partial<BankDepositAnswer>) {
     setAnswers(current => ({
@@ -36,6 +51,44 @@ export default function YearEndPreparationHub({ reconciliation }: Props) {
 
   function patchExpense(patch: Partial<YearEndPreparationAnswers['expenses']>) {
     setAnswers(current => ({ ...current, expenses: { ...current.expenses, ...patch } }))
+  }
+
+  async function importHandoff(file: File) {
+    setHandoffError('')
+    setHandoffMessage('Checking year-end handoff…')
+    try {
+      const next = await readYearEndHandoff(file, reconciliation.year)
+      const existing = handoffCandidate ? [...handoffs, handoffCandidate] : handoffs
+      if (handoffConflicts(existing, next)) {
+        throw new Error('This handoff duplicates a source already represented by the same workspace type.')
+      }
+      setHandoffCandidate(next)
+      setHandoffMessage('Handoff checked. Review the summary before applying any coverage fields.')
+    } catch (error) {
+      setHandoffCandidate(null)
+      setHandoffError(error instanceof Error ? error.message : 'This year-end handoff could not be read.')
+      setHandoffMessage('')
+    } finally {
+      if (handoffInput.current) handoffInput.current.value = ''
+    }
+  }
+
+  function applyHandoff() {
+    if (!handoffCandidate) return
+    const patch = coveragePatchFromHandoff(handoffCandidate)
+    setAnswers(current => ({ ...current, expenses: { ...current.expenses, ...patch } }))
+    setHandoffs(current => [...current, handoffCandidate])
+    setHandoffMessage(`${handoffLabel(handoffCandidate)} applied. Source hashes remain attached to the preparation handover.`)
+    setHandoffError('')
+    setHandoffCandidate(null)
+  }
+
+  function restorePreparation(payload: PreparationBackupPayload) {
+    setAnswers(payload.answers)
+    setHandoffs(payload.handoffs)
+    setHandoffCandidate(null)
+    setHandoffError('')
+    setHandoffMessage(payload.handoffs.length ? 'Restored applied workspace summaries from encrypted local backup.' : '')
   }
 
   function coverageSelect(label: string, key: keyof Pick<YearEndPreparationAnswers['expenses'], 'bankSpending' | 'receiptEvidence' | 'workPurpose' | 'ruleReview'>) {
@@ -57,7 +110,7 @@ export default function YearEndPreparationHub({ reconciliation }: Props) {
         <h4 id="year-end-preparation-heading">Bring the year-end checks into one handover</h4>
         <p>Keep the reconciled employment sources above, then record optional bank-deposit checks and expense/evidence coverage for {reconciliation.year}. This does not create a tax result.</p>
       </div>
-      <span className="year-end-badge locked">Session only</span>
+      <span className="year-end-badge locked">Session by default</span>
     </div>
 
     <div className="year-end-prep-boundary">
@@ -72,6 +125,40 @@ export default function YearEndPreparationHub({ reconciliation }: Props) {
         <div><span>Expense/evidence areas</span><strong>{result.expenseAreasAnswered}/{result.expenseAreas}</strong><small>Coverage answers recorded</small></div>
         <div><span>Open preparation questions</span><strong>{result.questions.length}</strong><small>Remain visible in export</small></div>
       </div>
+
+      <section className="year-end-prep-section year-end-handoff-import" aria-labelledby="workspace-handoff-heading">
+        <div className="year-end-prep-section-heading">
+          <div><p className="eyebrow">Explicit cross-workspace handoff</p><h5 id="workspace-handoff-heading">Import reviewed coverage from another TaxPrep workspace</h5></div>
+          <span>{handoffs.length} applied</span>
+        </div>
+        <p className="year-end-prep-help">Bank spending and Tax documents can export a small JSON summary with coverage counts and source SHA-256 references. TaxPrep checks the version and financial year first. Nothing changes until you choose <strong>Apply imported coverage</strong>.</p>
+        <p className="year-end-prep-help"><strong>Not transferred:</strong> raw bank transactions, merchant descriptions, OCR text, employer matching or an approved deduction. Rule-review coverage is never auto-completed.</p>
+        <div className="year-end-handoff-actions">
+          <label className="secondary-button year-end-handoff-file">Import year-end handoff
+            <input ref={handoffInput} aria-label="Import year-end handoff" type="file" accept=".json,application/json" onChange={event => {
+              const file = event.target.files?.[0]
+              if (file) void importHandoff(file)
+            }} />
+          </label>
+        </div>
+        <p className="year-end-handoff-message" role="status">{handoffMessage}</p>
+        {handoffError && <div className="annual-statement-error" role="alert"><strong>Handoff not applied.</strong><p>{handoffError}</p></div>}
+
+        {handoffCandidate && <article className="year-end-handoff-candidate" role="region" aria-label="Review imported year-end handoff">
+          <div className="year-end-bank-title">
+            <div><p className="eyebrow">Candidate only</p><h6>{handoffLabel(handoffCandidate)}</h6><p>{handoffCandidate.financialYear} · {handoffCandidate.sourceHashes.length} source hash{handoffCandidate.sourceHashes.length === 1 ? '' : 'es'}</p></div>
+            <button className="text-button" onClick={() => { setHandoffCandidate(null); setHandoffMessage('Handoff candidate discarded. No preparation fields changed.') }}>Discard handoff</button>
+          </div>
+          <ul className="year-end-handoff-summary">{handoffSummaryLines(handoffCandidate).map(line => <li key={line}>{line}</li>)}</ul>
+          <details className="statement-help year-end-handoff-hashes"><summary>Source SHA-256 references</summary><ul>{handoffCandidate.sourceHashes.map(hash => <li key={hash}><code>{hash}</code></li>)}</ul></details>
+          <button className="primary-button" onClick={applyHandoff}>Apply imported coverage</button>
+        </article>}
+
+        {handoffs.length > 0 && <div className="year-end-handoff-applied" aria-label="Applied year-end handoffs">
+          <strong>Applied workspace summaries</strong>
+          <ul>{handoffs.map(handoff => <li key={handoff.handoffId}><span>{handoffLabel(handoff)} · {handoff.financialYear}</span><small>{handoff.sourceHashes.length} source hash{handoff.sourceHashes.length === 1 ? '' : 'es'} retained in export</small></li>)}</ul>
+        </div>}
+      </section>
 
       <section className="year-end-prep-section" aria-labelledby="bank-deposit-checks-heading">
         <div className="year-end-prep-section-heading">
@@ -157,6 +244,8 @@ export default function YearEndPreparationHub({ reconciliation }: Props) {
         </div>
       </section>
 
+      <PreparationBackupPanel reconciliation={reconciliation} answers={answers} handoffs={handoffs} onRestore={restorePreparation} />
+
       <section className="year-end-prep-section year-end-prep-questions" aria-label="Year-end preparation questions">
         <div className="year-end-prep-section-heading"><div><p className="eyebrow">One review list</p><h5>Open questions and unsupported sections</h5></div><span>{result.questions.length}</span></div>
         {result.questions.length ? <ul>{result.questions.map((question, index) => <li key={`${index}-${question}`}>{question}</li>)}</ul> : <p>No open questions are recorded in this preparation pass. This is not proof that the return is complete or correct.</p>}
@@ -168,9 +257,10 @@ export default function YearEndPreparationHub({ reconciliation }: Props) {
       </div>
 
       <details className="statement-help year-end-prep-save-boundary">
-        <summary>Why TaxPrep does not save this workspace yet</summary>
-        <p>Pay histories, bank checks and receipt/evidence summaries are sensitive financial data. Before adding save/resume, TaxPrep needs an explicit design for storage location, encryption, retention period, user-initiated deletion, account recovery and separation of original files from derived facts.</p>
-        <p>This milestone intentionally keeps the preparation hub in the current browser session and does not turn the fictional demo storage into a document vault.</p>
+        <summary>What is saved and what is not?</summary>
+        <p>TaxPrep still has no automatic browser or cloud save for this workspace. Refreshing or leaving the workflow clears the in-app preparation state.</p>
+        <p>The optional encrypted backup is a file you explicitly download and keep yourself. It contains preparation answers and applied summary handoffs, protected by your passphrase, but not raw financial documents or transactions. TaxPrep does not store the file or passphrase and cannot recover a forgotten passphrase.</p>
+        <p>Future account-based save/resume still needs separate storage, retention, deletion, backup and recovery decisions before implementation.</p>
       </details>
     </>}
   </section>

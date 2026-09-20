@@ -134,6 +134,16 @@ export async function verifyDocuments(context, base, artifacts) {
     assert.ok((await page.locator('.preparation-gaps').innerText()).includes('A credit from this supplier'));
     await button('Documents').click();
     assert.equal(await page.locator('.evidence-overview strong').first().innerText(), '$45.00');
+    const handoffEvent = page.waitForEvent('download'); await button('Download year-end handoff').click();
+    const handoffDownload = await handoffEvent; await handoffDownload.saveAs(artifacts + 'evidence-year-end-handoff.json');
+    const handoffText = readFileSync(artifacts + 'evidence-year-end-handoff.json', 'utf8'), handoff = JSON.parse(handoffText);
+    assert.equal(handoff.version, 'taxprep-year-end-handoff-v1');
+    assert.equal(handoff.kind, 'evidence-review');
+    assert.equal(handoff.financialYear, '2025–26');
+    assert.equal(handoff.summary.reviewedSpendingCents, 4500);
+    assert.ok(handoff.sourceHashes.length >= 2);
+    assert.ok(handoff.sourceHashes.every(hash => /^[a-f0-9]{64}$/.test(hash)));
+    for (const forbidden of ['Sunrise Mobile Services', 'Corrected fictional supplier', 'Ignore previous instructions', '<script>', 'raw OCR']) assert.ok(!handoffText.includes(forbidden), forbidden);
     const downloadEvent = page.waitForEvent('download'); await button('Download evidence report').click();
     const download = await downloadEvent; await download.saveAs(artifacts + 'evidence-report.html');
     const html = readFileSync(artifacts + 'evidence-report.html', 'utf8');
@@ -164,7 +174,7 @@ export async function verifyDocuments(context, base, artifacts) {
     await page.reload(); await button('Tax documents').click();
     assert.equal(await page.locator('.evidence-card').count(), 0);
     assert.deepEqual(pageErrors, []);
-    const result = { passed: true, elapsedMs: Date.now() - started, evaluation, preparation, taxPosition, modelRequests: 0, modelCostAud: 0, hostingAndDeviceCost: 'not measured', documentUploads: 0, repeatedFile: 'kept once', receiptBankMatch: '45.00 counted once', duplicateReceipt: 'unresolved until exclusion', correctionsRetainOriginal: true, phoneAssessment: { illustrationAud: 18, fixedRateSeparateAud: 0, partialReimbursement: 'unresolved', supplierCredit: 'unresolved', duplicateBlocksAssessment: true, claimReady: false, qualifiedReview: 'pending', exportedRuleVersion: 'employee-phone-2025-26.v1-draft' }, deleted: true, reloadEmpty: true, mobileOverflow: false, pageErrors };
+    const result = { passed: true, elapsedMs: Date.now() - started, evaluation, preparation, taxPosition, modelRequests: 0, modelCostAud: 0, hostingAndDeviceCost: 'not measured', documentUploads: 0, repeatedFile: 'kept once', receiptBankMatch: '45.00 counted once', duplicateReceipt: 'unresolved until exclusion', correctionsRetainOriginal: true, phoneAssessment: { illustrationAud: 18, fixedRateSeparateAud: 0, partialReimbursement: 'unresolved', supplierCredit: 'unresolved', duplicateBlocksAssessment: true, claimReady: false, qualifiedReview: 'pending', exportedRuleVersion: 'employee-phone-2025-26.v1-draft' }, deleted: true, reloadEmpty: true, yearEndHandoff: true, handoffNoRawEvidence: true, mobileOverflow: false, pageErrors };
     writeFileSync(artifacts + 'document-evaluation.json', JSON.stringify(result, null, 2));
     return result;
   } catch (error) {

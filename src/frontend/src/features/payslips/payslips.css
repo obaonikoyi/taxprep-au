@@ -386,3 +386,41 @@
   .year-end-source-card, .annual-statement-intake { padding: var(--space-4); }
   .pay-outlook-dates ol { columns: 1; }
 }
+
+
+/* ------------------- 16C-2: portable cross-workspace handoff ------------- */
+.year-end-handoff-actions { display: flex; flex-wrap: wrap; gap: var(--space-3); margin: var(--space-3) 0 var(--space-2); }
+.year-end-handoff-file { position: relative; overflow: hidden; cursor: pointer; }
+.year-end-handoff-file input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.year-end-handoff-message { min-height: 18px; margin: var(--space-2) 0; color: var(--ink-muted); font-size: var(--text-2xs); }
+.year-end-handoff-candidate { min-width: 0; margin-top: var(--space-3); padding: var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface-sunken); }
+.year-end-handoff-summary { padding-left: var(--space-5); font-size: var(--text-xs); line-height: var(--leading-normal); }
+.year-end-handoff-hashes code { overflow-wrap: anywhere; word-break: break-word; }
+.year-end-handoff-applied { margin-top: var(--space-3); padding: var(--space-3); border: 1px solid var(--brand-line); border-radius: var(--radius-md); background: var(--brand-tint); font-size: var(--text-xs); }
+.year-end-handoff-applied ul { display: grid; gap: var(--space-2); margin: var(--space-2) 0 0; padding: 0; list-style: none; }
+.year-end-handoff-applied li { display: grid; gap: 2px; padding-top: var(--space-2); border-top: 1px solid var(--brand-line); overflow-wrap: anywhere; }
+.year-end-handoff-applied small { color: var(--ink-muted); }
+
+/* ------------- 16C-3: explicit encrypted local backup and restore -------- */
+.year-end-backup-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); margin-top: var(--space-4); }
+.year-end-backup-card { display: grid; gap: var(--space-3); min-width: 0; padding: var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface-sunken); }
+.year-end-backup-card h6 { margin: 0; }
+.year-end-backup-card label { display: grid; gap: var(--space-2); min-width: 0; font-size: var(--text-xs); font-weight: 650; }
+.year-end-backup-card input { width: 100%; }
+.year-end-backup-card small { color: var(--ink-muted); font-size: var(--text-2xs); font-weight: 400; line-height: var(--leading-snug); }
+.year-end-backup-file { position: relative; overflow: hidden; cursor: pointer; }
+.year-end-backup-file input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.year-end-backup-selected { margin: 0; font-size: var(--text-2xs); overflow-wrap: anywhere; word-break: break-word; }
+.year-end-backup-candidate { min-width: 0; padding: var(--space-3); border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface); }
+.year-end-backup-candidate ul { padding-left: var(--space-5); font-size: var(--text-xs); line-height: var(--leading-normal); }
+.year-end-backup-candidate p { font-size: var(--text-xs); line-height: var(--leading-normal); }
+
+@media (max-width: 700px) {
+  .year-end-handoff-actions > * { width: 100%; }
+  .year-end-handoff-candidate { padding: var(--space-3); }
+  .year-end-backup-grid { grid-template-columns: 1fr; }
+  .year-end-backup-card { padding: var(--space-3); }
+  .year-end-backup-card .secondary-button,
+  .year-end-backup-card .primary-button,
+  .year-end-backup-file { width: 100%; }
+}

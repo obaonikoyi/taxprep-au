@@ -8,9 +8,9 @@
   "initialCommit": "e9e5fac6d469ee117b9796eaf306723401fecf61",
   "portfolioPublished": false,
   "latestMilestone": 16,
-  "latestFeatureCommit": "5b72ac6d763d7e7b57cb716743c259602188432c",
-  "latestFeatureDeploymentId": "ee0431c2-782c-4a79-abbc-c11fd4e41763",
-  "latestMilestoneStatus": "Milestone 16B annual income-statement extraction published with local PDF/image reading, explicit source review, provenance and duplicate protection feeding year-end reconciliation; tax/refund results remain locked pending qualified review",
+  "latestFeatureCommit": "ac1f933f08ac75fa1be8ab09a352b2e7b1687ac3",
+  "latestFeatureDeploymentId": "7c6ea1ba-15ef-449e-90ae-727d79e30757",
+  "latestMilestoneStatus": "Milestone 16C-3 encrypted local preparation backup published with browser-only WebCrypto, explicit candidate review/restore, reconciliation-fingerprint gating, no hidden persistence and no raw financial files; tax/refund results remain locked pending qualified review",
   "qualifiedTaxReview": "pending",
-  "latestMilestonePhase": "16B"
+  "latestMilestonePhase": "16C-3"
 }

@@ -35,3 +35,41 @@ TaxPrep year-end preparation can contain pay history, annual income-source facts
 ## Current Milestone 16C-1 decision
 
 Keep the preparation hub session-only. Do not write pay, bank, receipt or preparation answers to localStorage, sessionStorage or the API. The user can download the offline handover if they want to keep the result.
+
+## Milestone 16C-2 interim portability
+
+Before cloud save/resume exists, TaxPrep may use an explicit downloaded/imported `taxprep-year-end-handoff-v1` JSON summary between local workspaces. This is not hidden persistence:
+
+- the user must explicitly download the summary;
+- the user must explicitly select it for import;
+- the year-end hub validates its financial year and source hashes;
+- the summary excludes raw bank transactions, merchant descriptions and OCR text; and
+- applying imported coverage requires a separate confirmation action.
+
+This portable summary does not change the storage, retention, deletion or account decisions required before real save/resume can be implemented.
+
+
+## Milestone 16C-3 decision — user-controlled encrypted local backup
+
+The first save/resume implementation may be an explicit **encrypted file download/import** for the year-end preparation layer only.
+
+This does not authorise TaxPrep cloud persistence or hidden browser persistence.
+
+Allowed:
+
+- preparation answers and applied privacy-bounded handoff summaries;
+- deterministic fingerprint of the matching reconciliation;
+- WebCrypto PBKDF2-SHA-256 + AES-GCM;
+- user-supplied passphrase that is never stored or transmitted;
+- explicit download, explicit import, explicit decrypt and explicit restore.
+
+Not allowed in this milestone:
+
+- raw financial documents or OCR text in the backup;
+- raw transactions/descriptions in the backup;
+- localStorage/sessionStorage/IndexedDB workspace persistence;
+- TaxPrep API/database/object-storage persistence;
+- passphrase recovery service;
+- restore onto a different financial year or reconciliation fingerprint.
+
+This user-controlled encrypted file does not resolve the remaining design requirements for future account-based storage, retention/deletion, server-side key management, backup deletion delay or account recovery.
