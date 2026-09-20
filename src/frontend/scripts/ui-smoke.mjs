@@ -26,9 +26,15 @@ async function ready(u){for(let i=0;i<150;i++){try{if((await fetch(u)).ok)return
     await page.goto('http://127.0.0.1:5202');
 
     // Pay: load the fictional example, reach the summary, read the totals.
+    // Gate on the summary heading, which only exists once the example has
+    // finished loading. Do not gate on a figure: $8,815.00 is also printed on
+    // the start screen's example-preview card, so waiting for it passes
+    // immediately and the assertions below then race the six-PDF read.
+    // That read is in-browser pdf.js and is far slower on a cold CI runner
+    // than on a warm dev machine, so it gets a generous budget.
     await page.getByRole('button',{name:'Try example payslips'}).click();
-    await page.getByText('$8,815.00').first().waitFor({timeout:30000});
-    await page.getByText('$10,450.00').first().waitFor();
+    await page.getByRole('heading',{name:'Your pay at a glance'}).waitFor({timeout:120000});
+    await page.getByText('$10,450.00').first().waitFor({timeout:15000});
     // The emphasised figure is marked once, by class, not by position.
     assert.equal(await page.locator('.statement-metrics .metric-feature').count(), 1, 'exactly one emphasised metric');
     // Chart series colours resolve to a real colour, not an unset var().
@@ -48,7 +54,7 @@ async function ready(u){for(let i=0;i<150;i++){try{if((await fetch(u)).ok)return
                                   ['Tax documents','From documents to one evidence list.'],
                                   ['Guided example','Turn expense details into a clear checklist.']]) {
       await page.getByRole('button',{name:tab,exact:true}).click();
-      await page.getByRole('heading',{name:heading}).waitFor({timeout:20000});
+      await page.getByRole('heading',{name:heading}).waitFor({timeout:60000});
     }
     // The shell supplies one page-level heading, not two stacked heroes.
     await page.getByRole('button',{name:'Tax documents',exact:true}).click();
