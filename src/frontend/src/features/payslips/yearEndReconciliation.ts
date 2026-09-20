@@ -152,9 +152,11 @@ export function reconcileYearEndPay(
 ): YearEndReconciliation {
   const coverage = payCoverageForYear(allSlips, year)
   const duplicates = duplicateAnnualSourceIds(sources)
+  const validEmployerKeys = new Set(coverage.employerNames.map(([key]) => key))
 
   const sourceRows = sources.map(source => {
     const issues = annualSourceIssues(source)
+    if (source.linkedEmployer && !validEmployerKeys.has(source.linkedEmployer)) issues.push('Linked employer is not in checked pay history for this financial year.')
     const duplicate = duplicates.has(source.id)
     if (duplicate) issues.push('Possible duplicate annual source: the payer, source type and reference match another entry.')
     return {
