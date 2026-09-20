@@ -148,7 +148,7 @@ export default function AnnualStatementIntake({ year, employers, sources, onAdd 
         </label>
         <label>Tax withheld
           <input aria-label="Extracted annual statement tax withheld (AUD)" inputMode="decimal" value={candidate.facts.withheld} onChange={event => patch({ withheld: event.target.value })} />
-          {candidate.original.witheld !== candidate.facts.withheld && <small>Original extraction: {candidate.original.withheld || 'blank'}</small>}
+          {candidate.original.withheld !== candidate.facts.withheld && <small>Original extraction: {candidate.original.withheld || 'blank'}</small>}
         </label>
         <label>Link to checked pay history (optional)
           <select aria-label="Extracted annual statement linked employer" value={linkedEmployer} onChange={event => { setLinkedEmployer(event.target.value); setChecked(false) }}>
@@ -157,7 +157,7 @@ export default function AnnualStatementIntake({ year, employers, sources, onAdd 
         </label>
       </div>
 
-      {candidate.unresolvedCoverage.length > 0 && <div className="annual-statement-coverage-warning"><strong>Extra annual fields need separate review</strong><ul>{candidate.unresolvedCoverage.map(note => <li key={note}>{note}</li<)}</ul><p>They are preserved but never folded into ordinary gross income automatically. This source will stay excluded from final reconciliation totals until those fields are supported or separately reviewed.</p></div>}
+      {candidate.unresolvedCoverage.length > 0 && <div className="annual-statement-coverage-warning"><strong>Extra annual fields need separate review</strong><ul>{candidate.unresolvedCoverage.map(note => <li key={note}>{note}</li>)}</ul><p>They are preserved but never folded into ordinary gross income automatically. This source will stay excluded from final reconciliation totals until those fields are supported or separately reviewed.</p></div>}
       {issues.length > 0 && <div className="annual-statement-issues" role="alert"><strong>Check these extracted values</strong><ul>{issues.map(issue => <li key={issue}>{issue}</li>)}</ul></div>}
 
       <label className="annual-statement-confirm"><input type="checkbox" checked={checked} onChange={event => setChecked(event.target.checked)} /> I checked these extracted values against the annual source.</label>
