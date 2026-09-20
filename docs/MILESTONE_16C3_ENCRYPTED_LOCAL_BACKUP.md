@@ -1,6 +1,6 @@
 # Milestone 16C-3 — encrypted local preparation backup and restore
 
-Status: implementation in progress for [issue #60](https://github.com/obaonikoyi/taxprep-au/issues/60), under parent [#37](https://github.com/obaonikoyi/taxprep-au/issues/37).
+Status: published for [issue #60](https://github.com/obaonikoyi/taxprep-au/issues/60), under parent [#37](https://github.com/obaonikoyi/taxprep-au/issues/37).
 
 ## User outcome
 
@@ -126,4 +126,6 @@ Automated checks cover:
 - 390px mobile layout;
 - existing no-document-upload/no-model-request monitoring.
 
-Feature CI, Railway publication and hosted-browser evidence will be recorded here after the PR passes.
+Feature [PR #61](https://github.com/obaonikoyi/taxprep-au/pull/61) merged as `ac1f933f08ac75fa1be8ab09a352b2e7b1687ac3`. Feature CI run `35506501056` passed frontend lint/tests/build, backend/API plus browser smoke, and the production-container visitor journey.
+
+Railway feature deployment `7c6ea1ba-15ef-449e-90ae-727d79e30757` reached **SUCCESS** for that exact merge commit at the existing standalone URL. This publication record triggers the dedicated public hosted-browser workflow; final live evidence is recorded in issue #60. The portfolio website remains unchanged.
