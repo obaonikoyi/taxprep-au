@@ -9,6 +9,7 @@ import {
 import { yearEndPreparationReport } from './yearEndPreparationReport'
 
 function pay(id: string, employer: string, gross: string, withheld: string, net: string): Payslip {
+  const payDate = id === 'a2' ? '2026-07-30' : '2026-07-16'
   return {
     id,
     name: id + '.pdf',
@@ -16,9 +17,9 @@ function pay(id: string, employer: string, gross: string, withheld: string, net:
     text: '',
     original: {
       employer,
-      periodStart: '2026-07-01',
-      periodEnd: '2026-07-14',
-      payDate: '2026-07-16',
+      periodStart: payDate,
+      periodEnd: payDate,
+      payDate,
       gross,
       withheld,
       deductions: '0',
@@ -27,9 +28,9 @@ function pay(id: string, employer: string, gross: string, withheld: string, net:
     },
     facts: {
       employer,
-      periodStart: '2026-07-01',
-      periodEnd: '2026-07-14',
-      payDate: '2026-07-16',
+      periodStart: payDate,
+      periodEnd: payDate,
+      payDate,
       gross,
       withheld,
       deductions: '0',
@@ -81,16 +82,16 @@ describe('year-end preparation hub model', () => {
     const result = buildYearEndPreparation(reconciliation, answers)
 
     expect(result.bankRows[0]).toMatchObject({
-      checkedNet: 1870,
-      depositTotal: 1870,
+      checkedNet: 187000,
+      depositTotal: 187000,
       difference: 0,
       status: 'matched',
       issues: [],
     })
-    expect(result.reconciliation.rows[0].payGross).toBe(2200)
-    expect(result.reconciliation.rows[0].annualGross).toBe(2200)
-    expect(result.reconciliation.rows[0].payWithheld).toBe(330)
-    expect(result.reconciliation.rows[0].annualWithheld).toBe(330)
+    expect(result.reconciliation.rows[0].payGross).toBe(220000)
+    expect(result.reconciliation.rows[0].annualGross).toBe(220000)
+    expect(result.reconciliation.rows[0].payWithheld).toBe(33000)
+    expect(result.reconciliation.rows[0].annualWithheld).toBe(33000)
     expect(result.questions.some(question => question.includes('bank'))).toBe(false)
   })
 
@@ -104,7 +105,7 @@ describe('year-end preparation hub model', () => {
     }
 
     const split = buildYearEndPreparation(reconciliation, answers)
-    expect(split.bankRows[0].difference).toBe(-1020)
+    expect(split.bankRows[0].difference).toBe(-102000)
     expect(split.questions.join(' ')).toContain('split or timing difference')
     expect(split.reconciliation.rows[0].state).toBe('matches')
 
@@ -152,7 +153,7 @@ describe('year-end preparation hub model', () => {
 
     const result = buildYearEndPreparation(reconciliation, answers)
 
-    expect(result.expenses.flaggedWorkAmountValue).toBe(145.5)
+    expect(result.expenses.flaggedWorkAmountValue).toBe(14550)
     expect(result.expenseAreasAnswered).toBe(4)
     expect(result.questions.join(' ')).toContain('Receipt/evidence review: only part')
     expect(result.questions.join(' ')).toContain('Applicable supported-rule review: this area has not been reviewed')
