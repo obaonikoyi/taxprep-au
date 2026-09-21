@@ -20,6 +20,41 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment() && !builder.Configuration.GetValue<bool>("Hosting:HttpsHandledByProxy"))
     app.UseHttpsRedirection();
 
+// TaxPrep reads payslips, bank statements and receipts in the browser and
+// sends none of them anywhere. That promise cannot rest on every proxy in
+// front of this app leaving the page alone: Cloudflare's analytics feature,
+// for one, injects a third-party script into HTML responses that look like
+// they came from a browser, which is invisible to curl and to any check that
+// does not drive a real one. These headers make the browser enforce the
+// promise, whoever is in front of us.
+// Parameter types are spelled out: `Use` has two overloads here, and the
+// RequestDelegate one is the cheaper per request.
+app.Use(async (HttpContext context, RequestDelegate next) =>
+{
+    var headers = context.Response.Headers;
+    headers["Content-Security-Policy"] = string.Join("; ",
+        "default-src 'self'",
+        // pdf.js compiles WebAssembly. Nothing here evaluates strings, so
+        // 'unsafe-eval' stays out.
+        "script-src 'self' 'wasm-unsafe-eval'",
+        // The document engine runs in a worker, and pdf.js can fall back to a
+        // blob worker when the module worker is unavailable.
+        "worker-src 'self' blob:",
+        // React writes style attributes for chart bars and progress fills.
+        "style-src 'self' 'unsafe-inline'",
+        "img-src 'self' data: blob:",
+        "font-src 'self'",
+        // The line that carries the promise: no page may talk to a third party.
+        "connect-src 'self' blob: data:",
+        "object-src 'none'",
+        "base-uri 'self'",
+        "form-action 'self'",
+        "frame-ancestors 'none'");
+    headers["X-Content-Type-Options"] = "nosniff";
+    headers["Referrer-Policy"] = "no-referrer";
+    await next(context);
+});
+
 app.UseDefaultFiles();
 // The browser document engine is hosted here; documents never enter this API.
 var assetTypes = new FileExtensionContentTypeProvider();
