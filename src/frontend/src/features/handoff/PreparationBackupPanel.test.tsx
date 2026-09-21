@@ -31,8 +31,8 @@ function reconciliation() {
     name: 'pay.pdf',
     hash: 'a'.repeat(64),
     text: '',
-    original: { employer: 'Harbour Example Services', periodStart: '2026-07-01', periodEnd: '2026-07-14', payDate: '2026-07-16', gross: '1000', withheld: '150', deductions: '0', net: '850', super: '' },
-    facts: { employer: 'Harbour Example Services', periodStart: '2026-07-01', periodEnd: '2026-07-14', payDate: '2026-07-16', gross: '1000', withheld: '150', deductions: '0', net: '850', super: '' },
+    original: { employer: 'Harbour Example Services', periodStart: '2026-07-01', periodEnd: '2026-07-14', payDate: '2026-07-16', gross: '1000', withheld: '150', deductions: '0', net: '850', super: '', hours: '', rate: '', ordinary: '' },
+    facts: { employer: 'Harbour Example Services', periodStart: '2026-07-01', periodEnd: '2026-07-14', payDate: '2026-07-16', gross: '1000', withheld: '150', deductions: '0', net: '850', super: '', hours: '', rate: '', ordinary: '' },
     confirmed: true,
     sample: false,
   }

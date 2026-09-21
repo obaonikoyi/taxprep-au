@@ -10,8 +10,11 @@ export async function verifyPayslips(context, base, artifacts) {
   const noOverflow = async () => assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   const examples = JSON.parse(readFileSync(new URL('../../../sample-data/payslips/examples.json', import.meta.url), 'utf8'));
   const advices = JSON.parse(readFileSync(new URL('../../../sample-data/payslips/advice-examples.json', import.meta.url), 'utf8'));
+  const advicesV3 = JSON.parse(readFileSync(new URL('../../../sample-data/payslips/advice-v3-examples.json', import.meta.url), 'utf8'));
   const file = (index, name) => ({ name: name || examples[index].name, mimeType: 'application/pdf', buffer: Buffer.from(examples[index].pdfBase64, 'base64') });
   const advice = index => ({ name: advices[index].name, mimeType: 'application/pdf', buffer: Buffer.from(advices[index].pdfBase64, 'base64') });
+  const adviceV3 = index => ({ name: advicesV3[index].name, mimeType: 'application/pdf', buffer: Buffer.from(advicesV3[index].pdfBase64, 'base64') });
+  const ratePanel = () => page.getByRole('region', { name: 'Pay rate checks' });
   try {
     await page.goto(base.href);
     await page.getByRole('heading', { name: 'Understand your payslip.', exact: true }).waitFor();
@@ -406,6 +409,50 @@ export async function verifyPayslips(context, base, artifacts) {
     await button('Clear pay history').click(); await button('Yes, clear history').click();
     assert.equal(await page.locator('.pay-metrics').count(), 0);
 
+    // The third layout itemises its earnings, so a payslip can state the hours
+    // and rate it claims to have paid. That is what makes a rate check possible
+    // at all, and the fixtures cover a match, a lower rate, and an advice whose
+    // ordinary line does not agree with its own hours and rate.
+    await page.getByLabel('Choose payslip PDFs', { exact: true }).setInputFiles([adviceV3(0), adviceV3(1), adviceV3(2)]);
+    await page.getByRole('heading', { name: 'Check your figures' }).waitFor();
+    assert.ok((await page.locator('.pay-source-name').first().innerText()).includes('PAY ADVICE v3'));
+    assert.equal(await page.getByLabel('Ordinary hours (optional)', { exact: true }).inputValue(), '38.00');
+    assert.equal(await page.getByLabel('Hourly rate (AUD, optional)', { exact: true }).inputValue(), '28.90');
+    assert.equal(await page.getByLabel('Pay for those hours (AUD, optional)', { exact: true }).inputValue(), '1,098.20');
+    for (let i = 0; i < 3; i++) await button('Confirm and continue').click();
+    await page.getByRole('heading', { name: 'Your pay at a glance' }).waitFor();
+
+    // Before any rate is recorded, the only question is the one that needs no
+    // record: an ordinary line that does not match its own hours and rate.
+    await ratePanel().scrollIntoViewIfNeeded();
+    assert.ok((await ratePanel().innerText()).includes('This payslip does not agree with itself'));
+    assert.ok((await ratePanel().innerText()).includes('38.00 hours at $28.90 is $1,098.20, but the pay for those hours reads $1,080.00.'));
+
+    await ratePanel().getByRole('button', { name: 'Add a pay rate' }).click();
+    await ratePanel().getByLabel('Employer', { exact: true }).fill('Riverbend Example Cafe');
+    await ratePanel().getByLabel('Hourly rate (AUD)', { exact: true }).fill('28.90');
+    await ratePanel().getByLabel('This rate started', { exact: true }).fill('2026-07-01');
+    await ratePanel().getByLabel('Source note (optional)', { exact: true }).fill('clause 4.1');
+    await ratePanel().getByRole('button', { name: 'Save this rate' }).click();
+    const rateText = await ratePanel().innerText();
+    assert.ok(rateText.includes('The rate on this payslip is not the rate you recorded'));
+    assert.ok(rateText.includes('$1.40 an hour below what you recorded, or $53.20 over this period.'));
+    assert.ok(rateText.includes('Your rate changed with no rate change recorded'));
+    // Nothing here may characterise the employer or the user's situation.
+    assert.equal(/\b(underpaid|unlawful|owed|wage theft)\b/i.test(rateText), false);
+
+    const rateReport = page.waitForEvent('download'); await button('Download pay report').click();
+    await (await rateReport).saveAs(artifacts + 'pay-advice-v3.html');
+    const rateHtml = readFileSync(artifacts + 'pay-advice-v3.html', 'utf8');
+    assert.ok(rateHtml.includes('pay-advice-v3'));
+    assert.ok(rateHtml.includes('Pay rate checks'));
+    assert.ok(rateHtml.includes('What was checked, and what was not'));
+    assert.ok(rateHtml.includes('$53.20 over this period'));
+    // A rate check never reads a cumulative column, exactly as the totals never do.
+    assert.ok(!rateHtml.includes('32,946.00') && !rateHtml.includes('48,912.00'));
+    await button('Clear pay history').click(); await button('Yes, clear history').click();
+    assert.equal(await page.locator('.pay-rate-panel').count(), 0);
+
     await button('Try example payslips').click(); await page.getByRole('status').filter({ hasText: 'Six fictional payslips loaded.' }).waitFor();
     await button('Bank spending').click(); await button('My pay').click(); assert.equal(await page.locator('.pay-metrics').count(), 0);
     await button('Try example payslips').click(); await page.getByRole('status').filter({ hasText: 'Six fictional payslips loaded.' }).waitFor();
@@ -414,7 +461,7 @@ export async function verifyPayslips(context, base, artifacts) {
     assert.deepEqual(await page.evaluate(() => Object.keys(localStorage).filter(k => /payslip/i.test(k))), []);
     assert.deepEqual(errors, []); assert.ok(requests.every(r => r.method === 'GET'));
     assert.ok(requests.every(r => r.url.startsWith(base.origin) || r.url.startsWith('blob:') || r.url.startsWith('data:')));
-    const result = { passed: true, guidedSteps: true, automaticBatchReview: true, noUnconfirmedZeroTotals: true, manualEntry: true, correctionInvalidates: true, duplicateBlocked: true, badBatchAtomic: true, exampleToOwnData: true, chartSwitching: true, yearAndEmployerFilters: true, emptyFilterRecovery: true, offlineExport: true, payOutlook: true, payOutlookWithholdingNotScaled: true, payOutlookMobile: true, taxReadiness: true, taxReadinessWholeYear: true, taxReadinessLocked: true, taxReadinessExport: true, taxReadinessMobile: true, yearEndReconciliation: true, yearEndNoDoubleCount: true, annualStatementPdfExtraction: true, annualStatementReviewGate: true, annualStatementDuplicateBlocked: true, annualStatementProvenance: true, yearEndProvisionalExcluded: true, yearEndExport: true, yearEndMobile: true, yearEndPreparationHub: true, yearEndBankChecksNetOnly: true, yearEndExpenseCoverage: true, portableWorkspaceHandoff: true, handoffYearMismatchBlocked: true, handoffExplicitApply: true, handoffDuplicateBlocked: true, handoffNoDoubleCount: true, yearEndPreparationExport: true, yearEndPreparationMobile: true, encryptedPreparationBackup: true, encryptedBackupWrongPassphraseBlocked: true, encryptedBackupExplicitRestore: true, payAdviceV2Layout: true, payAdviceV2CurrentPeriodOnly: true, payAdviceV2ReportRecordsLayout: true, clearConfirmation: true, clearRefreshAndWorkspaceChange: true, mobileOverflow: false, mobileReviewActionsVisible: true, documentUploads: 0, modelRequests: 0, pageErrors: errors };
+    const result = { passed: true, guidedSteps: true, automaticBatchReview: true, noUnconfirmedZeroTotals: true, manualEntry: true, correctionInvalidates: true, duplicateBlocked: true, badBatchAtomic: true, exampleToOwnData: true, chartSwitching: true, yearAndEmployerFilters: true, emptyFilterRecovery: true, offlineExport: true, payOutlook: true, payOutlookWithholdingNotScaled: true, payOutlookMobile: true, taxReadiness: true, taxReadinessWholeYear: true, taxReadinessLocked: true, taxReadinessExport: true, taxReadinessMobile: true, yearEndReconciliation: true, yearEndNoDoubleCount: true, annualStatementPdfExtraction: true, annualStatementReviewGate: true, annualStatementDuplicateBlocked: true, annualStatementProvenance: true, yearEndProvisionalExcluded: true, yearEndExport: true, yearEndMobile: true, yearEndPreparationHub: true, yearEndBankChecksNetOnly: true, yearEndExpenseCoverage: true, portableWorkspaceHandoff: true, handoffYearMismatchBlocked: true, handoffExplicitApply: true, handoffDuplicateBlocked: true, handoffNoDoubleCount: true, yearEndPreparationExport: true, yearEndPreparationMobile: true, encryptedPreparationBackup: true, encryptedBackupWrongPassphraseBlocked: true, encryptedBackupExplicitRestore: true, payAdviceV2Layout: true, payAdviceV2CurrentPeriodOnly: true, payAdviceV2ReportRecordsLayout: true, payAdviceV3EarningsBlock: true, payRateSelfCheckWithoutRecord: true, payRateAgainstRecordedRate: true, payRateSilentChange: true, payRateReportNamesWhatWasNotChecked: true, payRateNoEmployerCharacterisation: true, clearConfirmation: true, clearRefreshAndWorkspaceChange: true, mobileOverflow: false, mobileReviewActionsVisible: true, documentUploads: 0, modelRequests: 0, pageErrors: errors };
     writeFileSync(artifacts + 'payslip-evaluation.json', JSON.stringify(result, null, 2)); return result;
   } catch (e) { await page.screenshot({ path: artifacts + 'payslip-failure.png', fullPage: true }); console.error((await page.locator('body').innerText()).slice(-10000)); throw e } finally { await page.close() }
 }

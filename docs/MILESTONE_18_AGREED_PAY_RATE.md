@@ -1,6 +1,6 @@
 # Milestone 18 — the agreed pay rate, and the questions it raises
 
-Status: designed, not implemented. Extends the payslip work under [#35](https://github.com/obaonikoyi/taxprep-au/issues/35).
+Status: engineering implemented, minus the two parts held back below. Extends the payslip work under [#35](https://github.com/obaonikoyi/taxprep-au/issues/35).
 
 ## User outcome
 
@@ -76,7 +76,11 @@ This milestone therefore adds:
    ```
 
    The column-anchoring rule from Milestone 17 extends to it unchanged: anchors come from the header row, amounts are matched to a column by the **centre** of the token, and the year-to-date column is never read. `Hours` and `Rate` become two more anchored columns.
-3. **A third documented layout, `PAY ADVICE v3`**, identical to v2 plus that earnings block, so the reader has a fixture that exercises the new columns without changing v2's behaviour.
+3. **A third documented layout, `PAY ADVICE v3`**, identical to v2 plus that earnings block. It shares v2's parser outright: a v2 advice has no earnings header, so the block reads nothing and v2's behaviour is untouched, which its existing suite proves.
+
+   The reader anchors on the header row exactly as Milestone 17 does, but with four columns rather than two, and rejects a figure that does not sit clearly under one of them. Both the earnings header and the totals header carry the words "This pay" and "Year to date"; the two are told apart by the earnings header also carrying "Hours".
+
+The example payslips in the guided journey now state their hours and rate too, so the checks can be seen without uploading anything. The fourth Harbour payslip drops from $30.00 to $28.50 an hour with nothing recorded to explain it — a payslip that is perfectly consistent with itself and still worth a question.
 
 A payslip with several earnings lines — ordinary, overtime, penalty, allowance — has **only its ordinary-hours line** checked against the agreed rate. Overtime and penalty multipliers depend on the award and the roster, which TaxPrep does not know. The other lines are displayed, totalled and explicitly excluded from the check, with the reason shown.
 
@@ -116,13 +120,12 @@ Offers two actions side by side: record a rate change (if the user knew about it
 
 **Cannot conclude:** that the change was improper. Classification changes, the end of a casual loading arrangement and roster changes all move a rate lawfully.
 
-### 4 · Hours paid are fewer than hours you recorded
+### 4 · Hours paid are fewer than hours you recorded — **not built**
 
-*Needs: the user to have recorded hours for the period. Optional throughout.*
-
-A deliberately minimal log — date, hours, optional note — because the users who need this check most are the ones with no roster system to export from. Compares recorded hours for the period against hours paid.
-
-**Cannot conclude:** that the extra hours were payable. Unpaid breaks, time in lieu and shift swaps all account for a gap.
+Deferred, as the open questions below anticipated. An hours log is a second
+data-entry surface with its own model, and the three checks above are useful
+without it. It stays listed here so the decision is visible rather than
+forgotten.
 
 ### 5 · Super looks low against the payslip's ordinary earnings — **gated**
 
@@ -142,9 +145,9 @@ A silent check is worse than no check: a user who sees no findings will conclude
 | Record exists, but its dates do not cover this period | "Your $28.90 record starts 1 July 2026; this period ends 24 June 2026. Add the earlier rate to check it." |
 | Payslip states no hours or rate | "This payslip does not show hours or a rate, so it cannot be checked against your contract. You can type them in from the original." |
 | Payslip not yet confirmed | "Check this payslip's figures first." |
-| Everything present, nothing found | "Checked against your $28.90 record. The ordinary hours on this payslip match it." — never a tick, never the word "correct" |
+| Everything present, nothing found | "Checked the hours and rate on this payslip against each other, and this payslip's rate against $28.90 an hour from your contract." — never a tick, never the word "correct" |
 
-The last row is the one to get right. TaxPrep confirms *what it compared*, and nothing beyond it.
+The last row is the one to get right. TaxPrep names *what it compared*, and nothing beyond it. A payslip can be partly checked: one that states hours and a rate but falls outside every rate record still has its own arithmetic tested, and the note says so.
 
 ## Privacy
 
@@ -157,27 +160,33 @@ A contract is a more sensitive document than a payslip: it carries salary, signa
 
 ## In the report
 
-The downloaded report gains a **Pay rate checks** section: the rate records used with their sources and date ranges, each finding with its full arithmetic and period, and — explicitly — the payslips that were *not* checked and why. A report that lists only findings would let a reader infer that everything else was verified.
+The downloaded report gains a **Pay rate checks** section: the rate records used with their sources and date ranges, each finding with its full arithmetic and period, and — explicitly — every payslip that was *not* checked and why. A report that lists only findings would let a reader infer that everything else was verified.
 
 The section carries the same framing as the screen: questions, the three-part arithmetic, and no characterisation of the employer.
+
+**One difference from the screen, deliberately.** The panel looks at every payslip in the session whatever filters are set, so a filter can never hide a question. The report's section is scoped to the report's own filters, because a report is a document someone sends on and one scoped to a single employer must not name another. Both say which of the two they are doing, and a test holds the report to it.
 
 ## Verification plan
 
 Engineering checks only. These do not constitute payroll, industrial-relations or tax approval.
 
-- Invented `PAY ADVICE v3` fixtures driven through real pdf.js bytes, as Milestone 17's are: a clean match, a rate mismatch, a self-inconsistent payslip, a multi-line advice with overtime and a penalty rate, and one whose earnings block has no rate column.
-- Column-reading tests inherited from Milestone 17 and extended: hours and rate are anchored by token centre; the year-to-date column is never read; a missing header leaves the fields blank.
-- Arithmetic tests in integer units against hand-computed expectations, including the 2-cent rounding band at its boundaries (2 cents produces nothing, 3 cents produces a finding), a rate effective mid-period, and a payslip that falls in no record's range.
-- A test asserting that **no generated string contains** "underpaid", "unlawful", "owed", "wage theft", or a bare "correct" — the safety property, enforced rather than reviewed.
-- A test that every unchecked payslip carries a reason, so silence can never be mistaken for a pass.
-- The hosted smoke script records a rate, uploads a mismatching advice, and confirms the finding and its arithmetic appear on screen and in the downloaded report.
-- **The differentiation test, with people, not code:** give a user a contract and four payslips, one of which is short. Can they produce the specific dated question within one session, unaided? Measure it before any claim about this feature is published.
+Thirty tests in `payRate.test.ts`, on top of the 364 already passing.
+
+- Three invented `PAY ADVICE v3` fixtures driven through real pdf.js bytes, as Milestone 17's are: one whose ordinary line agrees with its own hours and rate, one paid below an agreed rate, and one that disagrees with itself *and* carries an overtime line.
+- Column reading: hours, rate and amount are each anchored by token centre; the overtime line's 4.00 hours at $43.35 never reaches any field; no year-to-date figure reaches any field; and the three v2 advices come back with hours, rate and ordinary pay all blank, so Milestone 17's layout is provably untouched.
+- Arithmetic in integer units against hand-computed expectations, including the rounding band at its boundaries (2 cents produces nothing, 3 cents produces a finding), a rate effective mid-period, a salary converted before comparison, and a payslip falling in no record's range.
+- The same sum is never raised twice: when a payslip's stated rate matches the record, the amount comparison stands down because the self-check already tests it.
+- A test asserting that **no generated string contains** "underpaid", "unlawful", "owed", "wage theft", "correct" or six other conclusions — the safety property, enforced rather than reviewed — across a fixture that produces all four kinds of finding at once.
+- A test that every payslip carries a check state with a reason, so silence can never be mistaken for a pass, and a test that a filtered report never names an employer outside its scope.
+- The hosted payslip smoke script uploads all three v3 advices, reads the hours and rate off the form, confirms the self-inconsistency finding appears with no rate recorded at all, then records a rate and confirms the rate difference, its $53.20 arithmetic and the silent rate change appear on screen and in the downloaded report — which must also carry the "what was not checked" table and no year-to-date figure.
+- **Still outstanding — the differentiation test, with people, not code:** give a user a contract and four payslips, one of which is short. Can they produce the specific dated question within one session, unaided? Measure it before any claim about this feature is published.
 
 ## Not included
 
 - **Award, classification, penalty and overtime rates.** No lookup, no inference, no "your award says". Overtime and penalty lines are displayed and excluded from the check.
 - **Any legal characterisation.** TaxPrep points at the Fair Work Ombudsman; it does not describe the user's situation.
 - **AI contract reading.** The user-facing ask is real and it is the natural next step, but it is deliberately not in this milestone — see below.
+- **The hours log** (check 4), deferred as above.
 - **The super check**, until a reviewed SG percentage and a reviewed OTE definition exist.
 - **Persistence.** Rate records are session-only, like everything else in this workspace.
 - Any change to the tax and refund gates in [#21](https://github.com/obaonikoyi/taxprep-au/issues/21) and [#28](https://github.com/obaonikoyi/taxprep-au/issues/28).
@@ -197,5 +206,6 @@ Until then: manual entry, clearly labelled, with the source recorded.
 
 1. **Salary → hourly.** Converting an annual salary needs ordinary weekly hours and a convention for weeks in a year. The convention has to be stated on screen, because it changes the answer.
 2. **Casual loading.** A casual rate often quotes the loaded figure; a contract may quote the base. Asking the user which one they recorded is probably unavoidable.
-3. **Scope of the hours log** (check 4). It may be simpler and more honest to ship checks 1–3 first and treat the log as its own milestone.
-4. **Where the feature lives.** A rate check is arguably its own step in the payslip journey rather than a panel inside the summary. Worth a sketch before implementation.
+3. ~~**Scope of the hours log** (check 4).~~ Resolved by shipping checks 1–3 without it.
+4. **Where the feature lives.** It is a panel under the pay summary, which is where someone who has just checked their payslips is standing. Whether it deserves its own step in the journey is worth revisiting once someone has used it.
+5. **Two findings, one payslip.** A payslip that is both below the recorded rate and the first at a changed rate raises two questions about the same period. Both are true and distinct, and they are shown separately. Whether that reads as thorough or as noise is a question for the user test.

@@ -9,8 +9,8 @@ function slip(id: string, payDate: string, gross = '1000.00', withheld = '100.00
     name: id + '.pdf',
     hash: 'hash-' + id,
     text: '',
-    original: { employer, periodStart: '2027-05-01', periodEnd: '2027-05-14', payDate, gross, withheld, deductions: '0', net: String(Number(gross) - Number(withheld)), super: '' },
-    facts: { employer, periodStart: '2027-05-01', periodEnd: '2027-05-14', payDate, gross, withheld, deductions: '0', net: String(Number(gross) - Number(withheld)), super: '' },
+    original: { employer, periodStart: '2027-05-01', periodEnd: '2027-05-14', payDate, gross, withheld, deductions: '0', net: String(Number(gross) - Number(withheld)), super: '', hours: '', rate: '', ordinary: '' },
+    facts: { employer, periodStart: '2027-05-01', periodEnd: '2027-05-14', payDate, gross, withheld, deductions: '0', net: String(Number(gross) - Number(withheld)), super: '', hours: '', rate: '', ordinary: '' },
     confirmed: true,
     sample: false,
   }

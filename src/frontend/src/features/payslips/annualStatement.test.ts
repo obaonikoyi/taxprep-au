@@ -53,8 +53,8 @@ function pay(id: string, gross: string, withheld: string): Payslip {
     name: id + '.pdf',
     hash: 'hash-' + id,
     text: '',
-    original: { employer: 'Harbour Example Services', periodStart: '2026-07-01', periodEnd: '2026-07-14', payDate: '2026-07-16', gross, withheld, deductions: '0', net: String(Number(gross) - Number(withheld)), super: '' },
-    facts: { employer: 'Harbour Example Services', periodStart: '2026-07-01', periodEnd: '2026-07-14', payDate: '2026-07-16', gross, withheld, deductions: '0', net: String(Number(gross) - Number(withheld)), super: '' },
+    original: { employer: 'Harbour Example Services', periodStart: '2026-07-01', periodEnd: '2026-07-14', payDate: '2026-07-16', gross, withheld, deductions: '0', net: String(Number(gross) - Number(withheld)), super: '', hours: '', rate: '', ordinary: '' },
+    facts: { employer: 'Harbour Example Services', periodStart: '2026-07-01', periodEnd: '2026-07-14', payDate: '2026-07-16', gross, withheld, deductions: '0', net: String(Number(gross) - Number(withheld)), super: '', hours: '', rate: '', ordinary: '' },
     confirmed: true,
     sample: false,
   }

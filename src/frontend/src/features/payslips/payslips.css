@@ -431,3 +431,54 @@
 .pay-format-list li p { margin: 0; color: var(--ink-muted); }
 .pay-format-list li em { font-style: normal; font-weight: 650; color: var(--ink); }
 .pay-format-list .text-button { min-height: 0; padding: 0; font-size: var(--text-2xs); }
+
+/* ------------------------------------------------- agreed pay rate -------
+ * A finding is always the same three parts, then what it cannot establish.
+ * It is styled as a question, not an alert: amber would tell the user
+ * something is wrong, which is precisely what TaxPrep cannot know.
+ */
+.pay-rate-panel { margin-top: var(--space-6); }
+.pay-rate-heading h3 { margin: 0 0 var(--space-2); font-size: var(--text-xl); letter-spacing: -.02em; }
+.pay-rate-heading p { margin: 0; color: var(--ink-body); font-size: var(--text-sm); line-height: var(--leading-normal); }
+.pay-rate-scope { margin: var(--space-5) 0; padding: var(--space-4) var(--space-5); border: 1px solid var(--info-line); border-radius: var(--radius-md); background: var(--info-tint); color: var(--ink-body); font-size: var(--text-xs); line-height: var(--leading-normal); }
+.pay-rate-scope a { color: var(--info-ink); }
+
+.pay-rate-records { margin: var(--space-6) 0; }
+.pay-rate-records-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-4); }
+.pay-rate-records h4, .pay-rate-findings h4 { margin: 0; font-size: var(--text-md); }
+.pay-rate-records ul { display: grid; gap: var(--space-3); margin: var(--space-4) 0 0; padding: 0; list-style: none; }
+.pay-rate-records li { display: flex; flex-wrap: wrap; align-items: start; justify-content: space-between; gap: var(--space-4); padding: var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface-sunken); }
+.pay-rate-records li p { margin: var(--space-1) 0; font-size: var(--text-sm); }
+.pay-rate-records li small { color: var(--ink-muted); font-size: var(--text-2xs); }
+.pay-rate-empty { margin: var(--space-4) 0 0; color: var(--ink-muted); font-size: var(--text-sm); line-height: var(--leading-normal); }
+.pay-rate-message:empty { display: none; }
+.pay-rate-message { margin: var(--space-4) 0; color: var(--ok-ink); font-size: var(--text-sm); }
+
+.pay-rate-form { margin: var(--space-5) 0; padding: var(--space-5); border: 1px solid var(--brand-line); border-radius: var(--radius-md); background: var(--brand-tint); }
+.pay-rate-form fieldset { margin: 0; padding: 0; border: 0; }
+.pay-rate-form legend { padding: 0 0 var(--space-4); font-size: var(--text-md); font-weight: 700; }
+.pay-rate-form select { width: 100%; }
+.pay-field-wide { grid-column: 1 / -1; }
+
+.pay-rate-findings { margin: var(--space-7) 0 var(--space-5); }
+.pay-rate-findings ol { display: grid; gap: var(--space-4); margin: var(--space-4) 0 0; padding: 0; list-style: none; }
+.pay-rate-finding { padding: var(--space-5); border: 1px solid var(--line-strong); border-left: 4px solid var(--brand); border-radius: var(--radius-md); background: var(--surface); }
+.pay-rate-finding-heading { display: grid; gap: var(--space-1); margin-bottom: var(--space-4); }
+.pay-rate-finding-heading strong { font-size: var(--text-md); line-height: var(--leading-snug); }
+.pay-rate-finding-heading small { color: var(--ink-muted); font-size: var(--text-2xs); }
+.pay-rate-finding dl { display: grid; gap: var(--space-3); margin: 0 0 var(--space-4); }
+.pay-rate-finding dl > div { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: var(--space-4); }
+.pay-rate-finding dt { color: var(--ink-muted); font-size: var(--text-2xs); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; padding-top: 2px; }
+.pay-rate-finding dd { margin: 0; font-size: var(--text-sm); line-height: var(--leading-normal); overflow-wrap: anywhere; }
+.pay-rate-limit, .pay-rate-question { margin: var(--space-2) 0 0; font-size: var(--text-xs); line-height: var(--leading-normal); }
+.pay-rate-limit { color: var(--ink-muted); }
+.pay-rate-question { color: var(--ink-body); font-weight: 650; }
+
+.pay-rate-states ul { display: grid; gap: var(--space-3); margin: var(--space-4) 0; padding: 0; list-style: none; }
+.pay-rate-state { display: grid; gap: var(--space-1); padding-left: var(--space-4); border-left: 3px solid var(--line-strong); font-size: var(--text-xs); line-height: var(--leading-normal); }
+.pay-rate-state.checked { border-left-color: var(--ok-line); }
+.pay-rate-state span { color: var(--ink-muted); }
+
+@media (max-width: 620px) {
+  .pay-rate-finding dl > div { grid-template-columns: 1fr; gap: var(--space-1); }
+}
