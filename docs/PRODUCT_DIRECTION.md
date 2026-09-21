@@ -53,7 +53,7 @@ The current draft phone and annual-calculation review gates in #21 and #28 remai
 
 The broad idea is not unique. [TaxTank Work Tank](https://taxtank.com.au/income-tax/) advertises employment-income tracking, multiple employers, withholding and income forecasts (public page checked 19 September 2026; not a hands-on audit).
 
-Our hypothesis is that a short payslip-upload experience, understandable changes, traceable corrections and a clear path into tax preparation could be useful for people with variable hours or multiple jobs. Adelaide is a sensible place to recruit initial users, not a separate income-tax jurisdiction.
+Our hypothesis is that a short payslip-upload experience, understandable changes, traceable corrections and a clear path into tax preparation could be useful for people with variable hours or multiple jobs. The sharper hypothesis is Milestone 18: payroll software checks pay from the employer's side, the Fair Work pay calculator never sees a payslip, and income trackers record what arrived — so comparing the rate a person agreed to against the payslips they were actually given may be the gap worth occupying. That is a hypothesis to test with users, not a market claim. Adelaide is a sensible place to recruit initial users, not a separate income-tax jurisdiction.
 
 Evaluate whether a new visitor can understand a sample immediately, whether supported documents need many corrections, whether people understand the withholding/final-tax distinction, and whether the year-end handover reduces repeated work. Measure time and accuracy before publishing claims. Pricing remains undecided.
 
@@ -62,6 +62,7 @@ Evaluate whether a new visitor can understand a sample immediately, whether supp
 - **14 — Pay understanding:** #35; documents, confirmation, actual-history charts, observations and export.
 - **15 — Tax outlook:** #36; confirmed tax profile, verified withholding checks and bounded annual scenarios.
 - **16 — Preparation:** #37; reconcile annual income, pay history and bank/receipt evidence into a supported year-end handover. #30 is the deferred annual-statement format.
+- **18 — Agreed pay rate:** extends #35; record the rate agreed in a contract and raise specific dated arithmetic questions where a payslip disagrees with it or with itself. Checks the payslip against the user's own record, never against an award or legal minimum; the super-guarantee check stays behind the same reviewed-source gate as #21 and #28. [Scope](MILESTONE_18_AGREED_PAY_RATE.md).
 - **Later:** additional payroll layouts, OCR/AI extraction where useful, explicitly designed history storage, broader reviewed tax rules, practitioner workflows and authorised integrations.
 
 The standalone prototype is authorised for publication. The portfolio website remains unchanged until Obadiah decides to showcase it.
