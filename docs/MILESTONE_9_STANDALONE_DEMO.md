@@ -4,11 +4,13 @@
 
 ## Published demo
 
-**[Open TaxPrep AU](https://taxprep-au-production.up.railway.app)**
+**[Open TaxPrep AU](https://taxprep.3xoba.com)**
+
+Since 21 September 2026 the demo answers at `taxprep.3xoba.com`, a custom domain on the same Railway service. The Railway address `taxprep-au-production.up.railway.app` still serves it and stays recorded in [`deployment.json`](../deployment.json) as the origin behind it.
 
 First published on 18 September 2026 from commit `e9e5fac6d469ee117b9796eaf306723401fecf61`, Railway deployment `87ca38d9-c44f-46fa-a3b3-2b5aa23af8fb`. The service tracks `main`; later commits may redeploy. Hosting identifiers and the public address are recorded in [`deployment.json`](../deployment.json), without credentials.
 
-The [production build verification](https://github.com/obaonikoyi/taxprep-au/actions/runs/35322971382) passed all three jobs: frontend, backend and production container. The [hosted verification workflow](https://github.com/obaonikoyi/taxprep-au/actions/workflows/verify-hosted.yml) runs the same visitor journey against the actual public address whenever `deployment.json` changes, and can also be run manually. Its artifact contains screenshots, the downloaded sample report and JSON results. Obadiah's portfolio and custom domains remain unchanged.
+The [production build verification](https://github.com/obaonikoyi/taxprep-au/actions/runs/35322971382) passed all three jobs: frontend, backend and production container. The [hosted verification workflow](https://github.com/obaonikoyi/taxprep-au/actions/workflows/verify-hosted.yml) runs the same visitor journey against the actual public address whenever `deployment.json` changes, and can also be run manually. Its artifact contains screenshots, the downloaded sample report and JSON results. Obadiah's portfolio website itself remains unchanged; the app has its own address under his domain rather than a page on that site.
 
 ## Purpose
 
@@ -43,11 +45,11 @@ Official references: [Railway Dockerfiles](https://docs.railway.com/builds/docke
 
 - Create a separate Railway project/service from `obaonikoyi/taxprep-au`, branch `main`, with the repository root as the build context.
 - The root `Dockerfile` and `railway.json` configure the build and healthcheck. No application secrets or database variables are required.
-- Generate a Railway service domain after deployment. Do not attach the portfolio domain.
+- Generate a Railway service domain after deployment. The app now also answers at `taxprep.3xoba.com`, a subdomain of the owner's brand domain proxied through Cloudflare; the portfolio website itself is still a separate thing and is not served from this project.
 - Keep the public URL and initial release record in this document and `deployment.json`; inspect Railway for the latest deployed commit.
 - Railway hosting uses the owner's existing account and its usage billing; this setup does not add a database or paid third-party service.
 - Inspect Railway build/runtime logs if a deployment fails. To roll back, use Railway's previous successful deployment or revert the relevant GitHub commit and redeploy.
-- Same-browser progress belongs to the exact origin. Moving to a different domain does not transfer saved copies. Restart/delete removes the local snapshot; the server has no copy to recover.
+- Same-browser progress belongs to the exact origin, so the move to `taxprep.3xoba.com` left any progress saved against the Railway address behind. Moving to a different domain does not transfer saved copies. Restart/delete removes the local snapshot; the server has no copy to recover.
 - Request processing remains in memory with existing validation and upload limits. Use fictional data; do not collect TFNs, identity documents or financial account credentials. Platform request metadata may still appear in hosting logs.
 
 ## Verify

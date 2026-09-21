@@ -1,5 +1,6 @@
 {
-  "url": "https://taxprep-au-production.up.railway.app",
+  "url": "https://taxprep.3xoba.com",
+  "railwayUrl": "https://taxprep-au-production.up.railway.app",
   "provider": "Railway",
   "projectId": "6978b59a-af18-4aa6-ae56-b92d7367a205",
   "serviceId": "3d80d439-8a34-483a-9337-33626f3db358",
@@ -7,10 +8,10 @@
   "initialDeploymentId": "87ca38d9-c44f-46fa-a3b3-2b5aa23af8fb",
   "initialCommit": "e9e5fac6d469ee117b9796eaf306723401fecf61",
   "portfolioPublished": false,
-  "latestMilestone": 16,
-  "latestFeatureCommit": "ac1f933f08ac75fa1be8ab09a352b2e7b1687ac3",
-  "latestFeatureDeploymentId": "7c6ea1ba-15ef-449e-90ae-727d79e30757",
-  "latestMilestoneStatus": "Milestone 16C-3 encrypted local preparation backup published with browser-only WebCrypto, explicit candidate review/restore, reconciliation-fingerprint gating, no hidden persistence and no raw financial files; tax/refund results remain locked pending qualified review",
+  "latestMilestone": 18,
+  "latestFeatureCommit": "dea21b7f57ce6c8acaf1eaa461dd530a8a318629",
+  "latestFeatureDeploymentId": "dccda539-1a11-4521-bca0-51e25dac73a8",
+  "latestMilestoneStatus": "Milestone 18 agreed pay rate checks published: a session-only rate record per employer, and dated arithmetic questions where a payslip disagrees with that record or with its own hours and rate. Compared against the user's own record only, never an award or legal minimum; the super-guarantee check stays gated pending a reviewed SG rate and ordinary-time-earnings definition, and tax/refund results remain locked pending qualified review",
   "qualifiedTaxReview": "pending",
-  "latestMilestonePhase": "16C-3"
+  "latestMilestonePhase": "18"
 }

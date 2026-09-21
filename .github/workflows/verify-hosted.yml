@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       demo_url:
-        description: HTTPS URL of the standalone Railway demo
+        description: HTTPS URL of the published demo (taxprep.3xoba.com, or its Railway host)
         required: true
         type: string
 permissions:
@@ -37,7 +37,12 @@ jobs:
           node --input-type=module <<'JS'
           import { readFileSync } from 'node:fs';
           const u = new URL(process.env.DEMO_URL || JSON.parse(readFileSync('../../deployment.json', 'utf8')).url);
-          if (u.protocol !== 'https:' || !u.hostname.endsWith('.up.railway.app')) throw new Error('Expected the Railway demo HTTPS URL');
+          // A rail, not a formality: this job can be dispatched with any URL, and
+          // the smoke test drives a real browser through it. Keep it to the two
+          // hosts that serve this app — the published custom domain, and the
+          // Railway origin behind it, which still answers directly.
+          const published = u.hostname === 'taxprep.3xoba.com' || u.hostname.endsWith('.up.railway.app');
+          if (u.protocol !== 'https:' || !published) throw new Error('Expected the published demo HTTPS URL: taxprep.3xoba.com or a *.up.railway.app host');
           process.env.DEMO_URL = u.href;
           await import('./scripts/hosted-smoke.mjs');
           JS
