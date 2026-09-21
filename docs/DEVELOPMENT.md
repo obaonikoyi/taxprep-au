@@ -93,6 +93,25 @@ npm run test:ui
 
 Colour, space, type, radius and elevation come from `src/styles/tokens.css`; shared patterns (buttons, badges, callouts, stat grids, split headings, form grids, the focus ring) come from `src/styles/primitives.css`. Workspace stylesheets should hold only what is specific to that workspace, and every stylesheet is imported in a fixed order from `src/index.css` so the cascade does not depend on which workspace loads first. See [the design system](DESIGN_SYSTEM.md) before adding a colour or rebuilding an existing pattern.
 
+## Browser support
+
+pdf.js 6.3 calls `Map.prototype.getOrInsertComputed` thirty-three times across
+its bundle and its worker. That method is a recent addition to the language:
+**Chrome 141 does not have it**, and on any engine that predates it, reading a
+PDF throws `this[#t].getOrInsertComputed is not a function`. Which documents
+reach that code path is not predictable — the payslip reader can work while the
+receipt reader dies on the same browser — so this is not a fringe case.
+
+`src/lib/mapUpsert.ts` installs the missing methods, only where they are
+absent. `src/main.tsx` imports it before anything else, and
+`scripts/prepare-document-assets.mjs` transpiles the same file and prepends it
+to the copied pdf.js worker, which cannot import from the app.
+
+A build target cannot substitute for this. These are runtime methods rather
+than syntax, and nothing transpiles a method that is simply missing. CI runs
+the newest Chromium and so never sees the failure; if you are checking browser
+support, use an older one deliberately.
+
 ## Troubleshooting
 
 - **Service unavailable:** ensure the API is running on 5087 using the `http` profile, then retry.
