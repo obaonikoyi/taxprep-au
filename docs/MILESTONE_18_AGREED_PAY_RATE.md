@@ -179,7 +179,7 @@ Thirty tests in `payRate.test.ts`, on top of the 364 already passing.
 - A test asserting that **no generated string contains** "underpaid", "unlawful", "owed", "wage theft", "correct" or six other conclusions — the safety property, enforced rather than reviewed — across a fixture that produces all four kinds of finding at once.
 - A test that every payslip carries a check state with a reason, so silence can never be mistaken for a pass, and a test that a filtered report never names an employer outside its scope.
 - The hosted payslip smoke script uploads all three v3 advices, reads the hours and rate off the form, confirms the self-inconsistency finding appears with no rate recorded at all, then records a rate and confirms the rate difference, its $53.20 arithmetic and the silent rate change appear on screen and in the downloaded report — which must also carry the "what was not checked" table and no year-to-date figure.
-- **Still outstanding — the differentiation test, with people, not code:** give a user a contract and four payslips, one of which is short. Can they produce the specific dated question within one session, unaided? Measure it before any claim about this feature is published.
+- **Still outstanding — the differentiation test, with people, not code:** give a user a contract and four payslips, one of which is short. Can they produce the specific dated question within one session, unaided? Measure it before any claim about this feature is published. The materials and the protocol now exist and have been piloted — see [the user test](USER_TEST_MILESTONE_18.md) — but the test has not been run, because it needs four people who did not build this.
 
 ## Not included
 
