@@ -59,7 +59,7 @@
 .pay-demo-preview > span, .pay-demo-preview > small { display: block; color: var(--ink-muted); font-size: var(--text-xs); }
 .pay-demo-preview strong { display: block; margin: var(--space-2) 0 var(--space-4); font-size: var(--text-2xl); letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
 .pay-preview-bars { display: flex; align-items: end; gap: var(--space-3); height: 70px; margin-bottom: var(--space-4); }
-.pay-preview-bars i { flex: 1; height: 38%; border-radius: var(--radius-xs) var(--radius-xs) 0 0; background: var(--green-300); }
+.pay-preview-bars i { flex: 1; height: 38%; border-radius: var(--radius-xs) var(--radius-xs) 0 0; background: var(--brand-300); }
 .pay-preview-bars i:nth-child(2) { height: 55%; }
 .pay-preview-bars i:nth-child(3) { height: 45%; }
 .pay-preview-bars i:nth-child(4) { height: 78%; }
@@ -299,7 +299,7 @@
 .year-end-form { margin-top: var(--space-4); }
 .year-end-link-field { grid-column: 1 / -1; }
 .year-end-source-status { display: flex; justify-content: space-between; gap: var(--space-4); margin-top: var(--space-4); padding: var(--space-3); border-radius: var(--radius-sm); font-size: var(--text-2xs); }
-.year-end-source-status.final { color: var(--brand-hover); background: var(--brand-tint); }
+.year-end-source-status.final { color: var(--ok-ink); background: var(--ok-tint); }
 .year-end-source-status.provisional { color: var(--warn-ink); background: var(--warn-tint); }
 .year-end-source-status.needs-review { color: var(--alert-ink); background: var(--alert-tint); }
 .year-end-source-status span { opacity: .85; }
@@ -315,7 +315,7 @@
 .year-end-table td:last-child { min-width: 170px; }
 .year-end-table small { display: block; margin-top: var(--space-1); color: var(--ink-muted); line-height: var(--leading-snug); }
 .year-end-state { display: inline-block; font-weight: 700; line-height: var(--leading-snug); }
-.year-end-state.matches { color: var(--brand-ink); }
+.year-end-state.matches { color: var(--ok-ink); }
 .year-end-state.differs, .year-end-state.pay-without-final-source, .year-end-state.annual-without-pay-history, .year-end-state.source-still-provisional { color: var(--warn-ink); }
 .year-end-questions { margin: var(--space-4) 0; }
 .year-end-questions p { margin: var(--space-2) 0 0; }

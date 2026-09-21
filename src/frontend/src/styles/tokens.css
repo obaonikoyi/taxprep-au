@@ -3,40 +3,51 @@
  * type, radius, elevation and motion.
  *
  * Every workspace (pay, bank spending, documents, guided example) draws from
- * this file. Before it existed each milestone invented its own greens, which
+ * this file. Before it existed each milestone invented its own colours, which
  * left 287 distinct hex values across the stylesheets. Add a token here rather
  * than a new literal in a feature stylesheet.
  *
  * Surfaces and text are declared as semantic roles, so the dark scheme at the
  * bottom only has to redefine the roles, not every rule that uses them.
+ *
+ * Green is deliberately NOT the brand. Money software needs one colour that
+ * only ever means "this is confirmed", and a green chrome makes that signal
+ * invisible. Indigo carries the brand; green carries confirmation.
  */
 
 :root {
-  /* Brand — eucalyptus green, light to dark. */
-  --green-50: #f1f7f3;
-  --green-100: #e3efe8;
-  --green-200: #c8e0d2;
-  --green-300: #9fc8b2;
-  --green-400: #68a98b;
-  --green-500: #3c8b69;
-  --green-600: #1f6f52;
-  --green-700: #175943;
-  --green-800: #134537;
-  --green-900: #0f322a;
+  /* Brand — indigo, light to dark. */
+  --brand-50: #f2f1fe;
+  --brand-100: #e5e3fd;
+  --brand-200: #cfcbfb;
+  --brand-300: #ada6f7;
+  --brand-400: #8a7ef1;
+  --brand-500: #6f5fe6;
+  --brand-600: #5b48cf;
+  --brand-700: #4a3aa6;
+  --brand-800: #3e3186;
+  --brand-900: #312768;
 
-  /* Neutrals carry a trace of the brand hue so greys never look cold. */
+  /* Neutrals lean warm, so a page of figures never feels clinical. */
   --grey-0: #ffffff;
-  --grey-25: #f8faf8;
-  --grey-50: #f2f6f3;
-  --grey-100: #e9efeb;
-  --grey-200: #dae3dd;
-  --grey-300: #c1cec6;
-  --grey-400: #97a79e;
-  --grey-500: #73847b;
-  --grey-600: #56675f;
-  --grey-700: #3c4b44;
-  --grey-800: #25332d;
-  --grey-900: #15201b;
+  --grey-25: #faf9f8;
+  --grey-50: #f4f3f1;
+  --grey-100: #eae8e5;
+  --grey-200: #dcd9d4;
+  --grey-300: #c2beb7;
+  --grey-400: #98938b;
+  --grey-500: #746f67;
+  --grey-600: #57534c;
+  --grey-700: #3d3a35;
+  --grey-800: #26241f;
+  --grey-900: #17150f;
+
+  /* Fern — "this is confirmed". The only green in the interface. */
+  --fern-50: #f0f7f3;
+  --fern-100: #ddeee5;
+  --fern-200: #bfdfcd;
+  --fern-600: #1f7a58;
+  --fern-700: #175e44;
 
   /* Amber — "needs checking", not an error. */
   --amber-50: #fff8e9;
@@ -53,35 +64,42 @@
   --clay-600: #9c4a2c;
   --clay-700: #7a3922;
 
-  /* Blue — neutral information, kept away from the brand green. */
-  --blue-50: #eff3fa;
-  --blue-100: #dbe4f3;
-  --blue-600: #3b5a83;
+  /* Sky — neutral information. Kept a clear step away from the brand indigo
+   * so "here is a fact" never looks like "here is a thing to click". */
+  --sky-50: #eef5fb;
+  --sky-100: #d8e8f4;
+  --sky-600: #1f5e80;
 
   /* ---- Semantic roles ---- */
   --page: var(--grey-25);
   --surface: var(--grey-0);
   --surface-sunken: var(--grey-50);
-  --surface-inverse: var(--green-800);
+  --surface-inverse: var(--brand-800);
 
-  --ink: var(--green-900);
+  --ink: var(--brand-900);
   --ink-body: var(--grey-700);
   --ink-muted: var(--grey-600);
   --ink-subtle: var(--grey-500);
   --ink-inverse: #ffffff;
-  --ink-inverse-muted: var(--green-200);
+  --ink-inverse-muted: var(--brand-200);
 
   --line: var(--grey-200);
   --line-strong: var(--grey-300);
   --line-soft: var(--grey-100);
 
-  --brand: var(--green-600);
-  --brand-hover: var(--green-700);
-  --brand-deep: var(--green-800);
-  --brand-ink: var(--green-700);
-  --brand-tint: var(--green-50);
-  --brand-tint-strong: var(--green-100);
-  --brand-line: var(--green-200);
+  --brand: var(--brand-600);
+  --brand-hover: var(--brand-700);
+  --brand-deep: var(--brand-800);
+  --brand-ink: var(--brand-700);
+  --brand-tint: var(--brand-50);
+  --brand-tint-strong: var(--brand-100);
+  --brand-line: var(--brand-200);
+
+  /* Confirmed / matched / reconciled. Never used for chrome. */
+  --ok-tint: var(--fern-50);
+  --ok-tint-strong: var(--fern-100);
+  --ok-line: var(--fern-200);
+  --ok-ink: var(--fern-700);
 
   --warn-tint: var(--amber-50);
   --warn-tint-strong: var(--amber-100);
@@ -92,9 +110,9 @@
   --alert-line: var(--clay-200);
   --alert-ink: var(--clay-700);
 
-  --info-tint: var(--blue-50);
-  --info-line: var(--blue-100);
-  --info-ink: var(--blue-600);
+  --info-tint: var(--sky-50);
+  --info-line: var(--sky-100);
+  --info-ink: var(--sky-600);
 
   --focus: #a26a0c;
 
@@ -144,9 +162,9 @@
   --leading-normal: 1.65;
 
   /* ---- Elevation ---- */
-  --shadow-sm: 0 1px 2px rgb(16 45 35 / 6%);
-  --shadow-md: 0 6px 18px rgb(16 45 35 / 7%);
-  --shadow-lg: 0 18px 44px rgb(16 45 35 / 10%);
+  --shadow-sm: 0 1px 2px rgb(30 26 45 / 7%);
+  --shadow-md: 0 6px 18px rgb(30 26 45 / 8%);
+  --shadow-lg: 0 18px 44px rgb(30 26 45 / 12%);
 
   /* ---- Motion ---- */
   --ease: cubic-bezier(.2, .6, .3, 1);
@@ -157,34 +175,43 @@
 }
 
 /*
- * Dark scheme. Only the semantic roles move: the ramps stay put and the
- * brand ramp is re-pointed so mid greens stay legible on a dark surface.
+ * Dark scheme. Only the semantic roles move: the ramps stay put and the brand
+ * ramp is re-pointed so mid indigos stay legible on a dark surface. The dark
+ * surfaces are near-neutral with the faintest indigo cast — a tinted dark
+ * background is what makes a finance screen look murky.
  */
 @media (prefers-color-scheme: dark) {
   :root {
-    --page: #0d1714;
-    --surface: #14211d;
-    --surface-sunken: #101b18;
-    --surface-inverse: #e3efe8;
+    --page: #131219;
+    --surface: #1b1a23;
+    --surface-sunken: #17161f;
+    --surface-inverse: var(--brand-100);
 
-    --ink: #eaf3ee;
-    --ink-body: #c4d5cc;
-    --ink-muted: #9ab0a5;
-    --ink-subtle: #86998f;
-    --ink-inverse: #0f322a;
-    --ink-inverse-muted: #2c4b3f;
+    --ink: #ecebf5;
+    --ink-body: #cbc9da;
+    --ink-muted: #a4a1b6;
+    --ink-subtle: #8b889d;
+    /* Not `--brand-900`: this ink also sits on the mid-indigo `--brand` of a
+     * selected tab, where brand-900 only reaches 3.9:1. Darker clears both. */
+    --ink-inverse: #1e1840;
+    --ink-inverse-muted: var(--brand-700);
 
-    --line: #26362f;
-    --line-strong: #35493f;
-    --line-soft: #1d2b25;
+    --line: #2c2a38;
+    --line-strong: #3d3b4d;
+    --line-soft: #232230;
 
-    --brand: var(--green-400);
-    --brand-hover: var(--green-300);
-    --brand-deep: var(--green-200);
-    --brand-ink: var(--green-300);
-    --brand-tint: #172c24;
-    --brand-tint-strong: #1d3a2f;
-    --brand-line: #2c4b3d;
+    --brand: var(--brand-400);
+    --brand-hover: var(--brand-300);
+    --brand-deep: var(--brand-200);
+    --brand-ink: var(--brand-300);
+    --brand-tint: #201d3a;
+    --brand-tint-strong: #2a2550;
+    --brand-line: #3b3470;
+
+    --ok-tint: #14261f;
+    --ok-tint-strong: #1a3228;
+    --ok-line: #2a4b3c;
+    --ok-ink: #6fc79f;
 
     --warn-tint: #2b2214;
     --warn-tint-strong: #3a2d18;
@@ -195,9 +222,9 @@
     --alert-line: #4a2b20;
     --alert-ink: #eaa98e;
 
-    --info-tint: #18212f;
-    --info-line: #2a3a4d;
-    --info-ink: #a8bfdd;
+    --info-tint: #132330;
+    --info-line: #24404f;
+    --info-ink: #8fc6e4;
 
     --focus: #e0b45e;
 

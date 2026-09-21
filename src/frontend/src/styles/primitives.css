@@ -194,6 +194,10 @@
   line-height: 1.3;
   white-space: nowrap;
 }
+/* Green appears here and in the sibling "confirmed" rules below, and
+ * nowhere else. It is the one colour that means a figure has been checked,
+ * so the brand must never borrow it. */
+.pay-badge.confirmed { color: var(--ok-ink); background: var(--ok-tint-strong); }
 :is(.pay-outlook-status, .tax-readiness-badge, .year-end-badge).warning,
 .pay-badge:not(.confirmed),
 .expense-status--needs-attention { color: var(--warn-ink); background: var(--warn-tint-strong); }
