@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import {readFileSync,writeFileSync} from 'node:fs';
+import {assertStayedOnDevice,watchRequests} from './request-log.mjs';
 export async function verifyStatements(context,base,artifacts){
- const page=await context.newPage(),errors=[],requests=[];
- page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>requests.push({url:r.url(),method:r.method()}));
+ const page=await context.newPage(),errors=[];
+ page.on('pageerror',e=>errors.push(e.message));const requests=watchRequests(page);
  const button=name=>page.getByRole('button',{name,exact:true});
  const totals=()=>page.locator('.statement-metrics strong').allTextContents();
  const upload=async(name)=>{const f=JSON.parse(readFileSync(new URL(`../../../sample-data/statements/${name}.json`,import.meta.url),'utf8'));await page.getByLabel('Choose bank statement',{exact:true}).setInputFiles({name:name+'.pdf',mimeType:'application/pdf',buffer:Buffer.from(f.pdfBase64,'base64')});await page.getByRole('status').filter({hasText:/transactions read|^$/}).first().waitFor();};
@@ -46,7 +47,7 @@ export async function verifyStatements(context,base,artifacts){
   await button('Try example statement').click();await page.getByRole('status').filter({hasText:'33 transactions read.'}).waitFor();
   await page.reload();await button('Bank spending').click();await page.getByRole('heading',{name:'Your statements, made clear.',exact:true}).waitFor();assert.equal(await page.locator('.statement-metrics').count(),0);
   assert.deepEqual(await page.evaluate(()=>Object.keys(localStorage).filter(k=>/statement/i.test(k))),[]);
-  assert.deepEqual(errors,[]);assert.ok(requests.every(r=>r.method==='GET'));assert.ok(requests.every(r=>r.url.startsWith(base.origin)||r.url.startsWith('blob:')||r.url.startsWith('data:')));
-  const result={passed:true,syntheticOnly:true,rows:33,creditsAud:12649,debitsAud:5016.75,netAud:7632.25,balancesMatch:true,correctionsPreserveAmounts:true,dateFilter:true,mismatchPreservesSession:true,emptyStatement:true,csv:true,clearAndRefresh:true,offlineExport:true,yearEndHandoff:true,handoffNoDescriptions:true,mobileOverflow:false,documentUploads:0,modelRequests:0,pageErrors:errors};writeFileSync(artifacts+'statement-evaluation.json',JSON.stringify(result,null,2));return result;
+  assert.deepEqual(errors,[]);const thirdPartyRefused=assertStayedOnDevice(assert,requests,base);
+  const result={passed:true,syntheticOnly:true,rows:33,creditsAud:12649,debitsAud:5016.75,netAud:7632.25,balancesMatch:true,correctionsPreserveAmounts:true,dateFilter:true,mismatchPreservesSession:true,emptyStatement:true,csv:true,clearAndRefresh:true,offlineExport:true,yearEndHandoff:true,handoffNoDescriptions:true,mobileOverflow:false,documentUploads:0,modelRequests:0,thirdPartyRefused,pageErrors:errors};writeFileSync(artifacts+'statement-evaluation.json',JSON.stringify(result,null,2));return result;
  }catch(e){await page.screenshot({path:artifacts+'statement-failure.png',fullPage:true});console.error((await page.locator('body').innerText()).slice(-11000));throw e}finally{await page.close()}
 }
