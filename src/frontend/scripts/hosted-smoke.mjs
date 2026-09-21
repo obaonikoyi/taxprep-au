@@ -26,6 +26,21 @@ try {
   assert.equal((await context.request.get(new URL('/api/not-a-route', base).href)).status(), 404);
   const response = await page.goto(base.href);
   assert.equal(response.status(), 200);
+
+  // TaxPrep's promise is that payslips, statements and receipts never leave the
+  // browser. That cannot rest on whatever proxy is in front of this app leaving
+  // the page alone — Cloudflare's analytics feature injects a third-party
+  // script into HTML responses that look like they came from a browser, which
+  // is invisible to curl and to any check that does not drive a real one. The
+  // app states the promise as a policy the browser enforces; this asserts the
+  // two directives that carry it admit no third party at all.
+  const csp = response.headers()['content-security-policy'] ?? '';
+  const directive = name => (csp.split(';').map(part => part.trim()).find(part => part.startsWith(name + ' ')) ?? '').slice(name.length).trim();
+  for (const name of ['script-src', 'connect-src']) {
+    const value = directive(name);
+    assert.ok(value, `${name} is missing from the Content-Security-Policy: ${csp || '(no header)'}`);
+    assert.ok(!/https?:|\/\/|\*/.test(value), `${name} admits a third party: ${value}`);
+  }
   await button('Guided example').click();
   await page.getByRole('heading', { name: 'Organise expenses. See what needs checking.' }).waitFor();
   await page.getByText('Try one useful task: a phone expense', { exact: true }).click();
