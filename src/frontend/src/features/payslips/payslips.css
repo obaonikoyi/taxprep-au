@@ -59,7 +59,7 @@
 .pay-demo-preview > span, .pay-demo-preview > small { display: block; color: var(--ink-muted); font-size: var(--text-xs); }
 .pay-demo-preview strong { display: block; margin: var(--space-2) 0 var(--space-4); font-size: var(--text-2xl); letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
 .pay-preview-bars { display: flex; align-items: end; gap: var(--space-3); height: 70px; margin-bottom: var(--space-4); }
-.pay-preview-bars i { flex: 1; height: 38%; border-radius: var(--radius-xs) var(--radius-xs) 0 0; background: var(--green-300); }
+.pay-preview-bars i { flex: 1; height: 38%; border-radius: var(--radius-xs) var(--radius-xs) 0 0; background: var(--brand-300); }
 .pay-preview-bars i:nth-child(2) { height: 55%; }
 .pay-preview-bars i:nth-child(3) { height: 45%; }
 .pay-preview-bars i:nth-child(4) { height: 78%; }

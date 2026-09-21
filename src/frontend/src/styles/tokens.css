@@ -13,16 +13,16 @@
 
 :root {
   /* Brand — eucalyptus green, light to dark. */
-  --green-50: #f1f7f3;
-  --green-100: #e3efe8;
-  --green-200: #c8e0d2;
-  --green-300: #9fc8b2;
-  --green-400: #68a98b;
-  --green-500: #3c8b69;
-  --green-600: #1f6f52;
-  --green-700: #175943;
-  --green-800: #134537;
-  --green-900: #0f322a;
+  --brand-50: #f1f7f3;
+  --brand-100: #e3efe8;
+  --brand-200: #c8e0d2;
+  --brand-300: #9fc8b2;
+  --brand-400: #68a98b;
+  --brand-500: #3c8b69;
+  --brand-600: #1f6f52;
+  --brand-700: #175943;
+  --brand-800: #134537;
+  --brand-900: #0f322a;
 
   /* Neutrals carry a trace of the brand hue so greys never look cold. */
   --grey-0: #ffffff;
@@ -62,26 +62,26 @@
   --page: var(--grey-25);
   --surface: var(--grey-0);
   --surface-sunken: var(--grey-50);
-  --surface-inverse: var(--green-800);
+  --surface-inverse: var(--brand-800);
 
-  --ink: var(--green-900);
+  --ink: var(--brand-900);
   --ink-body: var(--grey-700);
   --ink-muted: var(--grey-600);
   --ink-subtle: var(--grey-500);
   --ink-inverse: #ffffff;
-  --ink-inverse-muted: var(--green-200);
+  --ink-inverse-muted: var(--brand-200);
 
   --line: var(--grey-200);
   --line-strong: var(--grey-300);
   --line-soft: var(--grey-100);
 
-  --brand: var(--green-600);
-  --brand-hover: var(--green-700);
-  --brand-deep: var(--green-800);
-  --brand-ink: var(--green-700);
-  --brand-tint: var(--green-50);
-  --brand-tint-strong: var(--green-100);
-  --brand-line: var(--green-200);
+  --brand: var(--brand-600);
+  --brand-hover: var(--brand-700);
+  --brand-deep: var(--brand-800);
+  --brand-ink: var(--brand-700);
+  --brand-tint: var(--brand-50);
+  --brand-tint-strong: var(--brand-100);
+  --brand-line: var(--brand-200);
 
   --warn-tint: var(--amber-50);
   --warn-tint-strong: var(--amber-100);
@@ -178,10 +178,10 @@
     --line-strong: #35493f;
     --line-soft: #1d2b25;
 
-    --brand: var(--green-400);
-    --brand-hover: var(--green-300);
-    --brand-deep: var(--green-200);
-    --brand-ink: var(--green-300);
+    --brand: var(--brand-400);
+    --brand-hover: var(--brand-300);
+    --brand-deep: var(--brand-200);
+    --brand-ink: var(--brand-300);
     --brand-tint: #172c24;
     --brand-tint-strong: #1d3a2f;
     --brand-line: #2c4b3d;
