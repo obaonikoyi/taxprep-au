@@ -1,12 +1,13 @@
 import { verifyTaxPosition } from './tax-position-smoke.mjs';
 import assert from 'node:assert/strict';
+import { assertStayedOnDevice, watchRequests } from './request-log.mjs';
 import { verifyPreparation } from './preparation-smoke.mjs';
 import { readFileSync, writeFileSync } from 'node:fs';
 export async function verifyDocuments(context, base, artifacts) {
   const page = await context.newPage();
   page.setDefaultTimeout(20_000);
-  const requests = [], pageErrors = [];
-  page.on('request', request => requests.push({ url: request.url(), method: request.method() }));
+  const pageErrors = [];
+  const requests = watchRequests(page);
   page.on('pageerror', error => pageErrors.push(error.message));
   const button = name => page.getByRole('button', { name, exact: true });
   const started = Date.now();
@@ -151,8 +152,7 @@ export async function verifyDocuments(context, base, artifacts) {
     assert.ok(!html.includes('<script>'));
     assert.ok(!html.includes('$45.00 × 40% = $18.00'));
     assert.ok(html.includes('A credit from this supplier'));
-    assert.ok(!requests.some(request => request.method !== 'GET'));
-    assert.ok(!requests.some(request => !request.url.startsWith(base.origin) && !request.url.startsWith('blob:') && !request.url.startsWith('data:')));
+    const thirdPartyRefused = assertStayedOnDevice(assert, requests, base);
     assert.equal(await page.evaluate(() => localStorage.getItem('taxprep-au:documents')), null);
     await page.setViewportSize({ width: 390, height: 844 });
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
@@ -174,7 +174,7 @@ export async function verifyDocuments(context, base, artifacts) {
     await page.reload(); await button('Tax documents').click();
     assert.equal(await page.locator('.evidence-card').count(), 0);
     assert.deepEqual(pageErrors, []);
-    const result = { passed: true, elapsedMs: Date.now() - started, evaluation, preparation, taxPosition, modelRequests: 0, modelCostAud: 0, hostingAndDeviceCost: 'not measured', documentUploads: 0, repeatedFile: 'kept once', receiptBankMatch: '45.00 counted once', duplicateReceipt: 'unresolved until exclusion', correctionsRetainOriginal: true, phoneAssessment: { illustrationAud: 18, fixedRateSeparateAud: 0, partialReimbursement: 'unresolved', supplierCredit: 'unresolved', duplicateBlocksAssessment: true, claimReady: false, qualifiedReview: 'pending', exportedRuleVersion: 'employee-phone-2025-26.v1-draft' }, deleted: true, reloadEmpty: true, yearEndHandoff: true, handoffNoRawEvidence: true, mobileOverflow: false, pageErrors };
+    const result = { passed: true, elapsedMs: Date.now() - started, evaluation, preparation, taxPosition, modelRequests: 0, modelCostAud: 0, hostingAndDeviceCost: 'not measured', documentUploads: 0, repeatedFile: 'kept once', receiptBankMatch: '45.00 counted once', duplicateReceipt: 'unresolved until exclusion', correctionsRetainOriginal: true, phoneAssessment: { illustrationAud: 18, fixedRateSeparateAud: 0, partialReimbursement: 'unresolved', supplierCredit: 'unresolved', duplicateBlocksAssessment: true, claimReady: false, qualifiedReview: 'pending', exportedRuleVersion: 'employee-phone-2025-26.v1-draft' }, deleted: true, reloadEmpty: true, yearEndHandoff: true, handoffNoRawEvidence: true, mobileOverflow: false, thirdPartyRefused, pageErrors };
     writeFileSync(artifacts + 'document-evaluation.json', JSON.stringify(result, null, 2));
     return result;
   } catch (error) {
