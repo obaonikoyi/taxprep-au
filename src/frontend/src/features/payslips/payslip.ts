@@ -1,6 +1,9 @@
 export const PAYSLIP_VERSION = 'payslip-summary-v1'
 export const MAX_PAYSLIPS = 100
-export const fields = ['employer', 'periodStart', 'periodEnd', 'payDate', 'gross', 'withheld', 'deductions', 'net', 'super'] as const
+export const fields = ['employer', 'periodStart', 'periodEnd', 'payDate', 'gross', 'withheld', 'deductions', 'net', 'super', 'hours', 'rate', 'ordinary'] as const
+/** Fields a payslip may legitimately never state. Blank is a normal, permanent
+ * state for these: it withholds a check rather than failing one. */
+export const optionalFields = ['super', 'hours', 'rate', 'ordinary'] as const
 export type PayField = typeof fields[number]
 export type PayFacts = Record<PayField, string>
 export type Payslip = {
@@ -12,6 +15,7 @@ export type Payslip = {
 export const labels: Record<PayField, string> = {
   employer: 'Employer', periodStart: 'Period start', periodEnd: 'Period end', payDate: 'Pay date',
   gross: 'Gross pay', withheld: 'Tax withheld', deductions: 'Other deductions', net: 'Net pay', super: 'Super recorded',
+  hours: 'Ordinary hours', rate: 'Hourly rate', ordinary: 'Pay for those hours',
 }
 export const blankFacts = (): PayFacts => Object.fromEntries(fields.map(key => [key, ''])) as PayFacts
 export const aud = (cents: number) => new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' }).format(cents / 100)
@@ -21,6 +25,17 @@ export function money(value: string): number | null {
   const n = Number(m[1].replaceAll(',', '')) * 100 + Number((m[2] ?? '').padEnd(2, '0'))
   return Number.isSafeInteger(n) && n <= 1_000_000_000 ? n : null
 }
+/** Hours as integer hundredths, so `hours × rate` never touches a float.
+ * Zero is allowed: a period of nothing but leave really does show 0.00. */
+export function hoursValue(value: string): number | null {
+  const m = value.trim().match(/^(\d{1,3})(?:\.(\d{1,2}))?$/)
+  if (!m) return null
+  const n = Number(m[1]) * 100 + Number((m[2] ?? '').padEnd(2, '0'))
+  // A 63-day period at 24 hours a day cannot exceed 1512; 4000 leaves room
+  // for an unusual layout without letting a mistyped amount through as hours.
+  return n <= 400_00 ? n : null
+}
+export const hoursText = (hundredths: number) => (hundredths / 100).toFixed(2)
 export function dateValue(value: string): string | null {
   const au = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/)
   const s = au ? `${au[3]}-${au[2]}-${au[1]}` : value
@@ -43,8 +58,14 @@ export function validateFacts(f: PayFacts): string[] {
   }
   for (const key of ['gross', 'withheld', 'deductions', 'net'] as const) if (money(f[key]) === null) issues.push(`Enter ${labels[key].toLowerCase()} in AUD. Enter 0 only when the source confirms zero.`)
   if (f.super.trim() && money(f.super) === null) issues.push('Super must be a valid AUD amount, or blank when unknown.')
+  if (f.hours.trim() && hoursValue(f.hours) === null) issues.push('Ordinary hours must be a number of hours such as 38 or 38.00, or blank when the payslip does not show them.')
+  for (const key of ['rate', 'ordinary'] as const) if (f[key].trim() && money(f[key]) === null) issues.push(`${labels[key]} must be a valid AUD amount, or blank when the payslip does not show it.`)
   const gross = money(f.gross), withheld = money(f.withheld), deductions = money(f.deductions), net = money(f.net)
   if (gross !== null && withheld !== null && deductions !== null && net !== null && gross - withheld - deductions !== net) issues.push('Gross pay minus tax withheld and other deductions does not equal net pay. Check every figure; this may be an unsupported pay structure.')
+  // Ordinary pay is one line inside gross, so it cannot exceed it. This is a
+  // data-entry impossibility, unlike a rate difference, which is a question.
+  const ordinary = money(f.ordinary)
+  if (gross !== null && ordinary !== null && ordinary > gross) issues.push('Pay for those hours is more than gross pay. Ordinary pay is part of gross, so check both figures.')
   return issues
 }
 export function samePay(a: PayFacts, b: PayFacts): boolean {

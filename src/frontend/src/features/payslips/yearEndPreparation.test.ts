@@ -25,6 +25,7 @@ function pay(id: string, employer: string, gross: string, withheld: string, net:
       deductions: '0',
       net,
       super: '',
+      hours: '', rate: '', ordinary: '',
     },
     facts: {
       employer,
@@ -36,6 +37,7 @@ function pay(id: string, employer: string, gross: string, withheld: string, net:
       deductions: '0',
       net,
       super: '',
+      hours: '', rate: '', ordinary: '',
     },
     confirmed: true,
     sample: false,

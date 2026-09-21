@@ -15,8 +15,8 @@ function slip(id: string, employer: string, payDate: string, gross: string, with
     name: `${id}.pdf`,
     hash: `hash-${id}`,
     text: '',
-    original: { employer, periodStart: payDate, periodEnd: payDate, payDate, gross, withheld, deductions: '0', net: String(Number(gross) - Number(withheld)), super: '' },
-    facts: { employer, periodStart: payDate, periodEnd: payDate, payDate, gross, withheld, deductions: '0', net: String(Number(gross) - Number(withheld)), super: '' },
+    original: { employer, periodStart: payDate, periodEnd: payDate, payDate, gross, withheld, deductions: '0', net: String(Number(gross) - Number(withheld)), super: '', hours: '', rate: '', ordinary: '' },
+    facts: { employer, periodStart: payDate, periodEnd: payDate, payDate, gross, withheld, deductions: '0', net: String(Number(gross) - Number(withheld)), super: '', hours: '', rate: '', ordinary: '' },
     confirmed,
     sample: false,
   }

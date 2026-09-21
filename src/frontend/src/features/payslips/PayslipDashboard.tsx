@@ -6,11 +6,16 @@ import PayslipStart from './PayslipStart'
 import PayslipSummary from './PayslipSummary'
 import PayslipHistory from './PayslipHistory'
 import PayslipReview from './PayslipReview'
+import PayRatePanel from './PayRatePanel'
+import type { RateRecord } from './payRate'
 
 export default function PayslipDashboard() {
   const [stage, setStage] = useState<'add' | 'review' | 'summary'>('add')
   const [clearRequested, setClearRequested] = useState(false)
   const [slips, setSlips] = useState<Payslip[]>([]), [selected, setSelected] = useState<string | null>(null)
+  // Rate records live beside the payslips and clear with them: they are the
+  // user's statement of what they agreed to, not a stored document.
+  const [rates, setRates] = useState<RateRecord[]>([])
   const [year, setYear] = useState('all'), [employer, setEmployer] = useState('all'), [grouping, setGrouping] = useState<'month' | 'payday'>('month')
   const [busy, setBusy] = useState(false), [message, setMessage] = useState(''), [error, setError] = useState('')
   const active = useRef<AbortController | null>(null), stageHeading = useRef<HTMLHeadingElement>(null), clearButton = useRef<HTMLButtonElement>(null)
@@ -18,6 +23,10 @@ export default function PayslipDashboard() {
   const confirmed = selectedPayslips(slips, year, employer)
   const allConfirmed = selectedPayslips(slips, 'all', 'all')
   const pending = slips.filter(s => !s.confirmed || confirmationIssues(s, slips).length)
+  // Everything the current filters cover, confirmed or not. The rate section
+  // of the downloaded report is built from this, so a report scoped to one
+  // employer never names another.
+  const inScope = slips.filter(s => (year === 'all' || financialYear(s.facts.payDate) === year) && (employer === 'all' || employerKey(s.facts.employer) === employer))
   const years = [...new Set(slips.filter(s => /^\d{4}-\d{2}-\d{2}$/.test(s.facts.payDate)).map(s => financialYear(s.facts.payDate)))].sort().reverse()
   const employers = [...new Map(slips.filter(s => s.facts.employer.trim()).map(s => [employerKey(s.facts.employer), s.facts.employer])).entries()]
   const current = slips.find(s => s.id === selected)
@@ -73,7 +82,7 @@ export default function PayslipDashboard() {
     finally { clearTimeout(timer); if (cancelListener) controller.signal.removeEventListener('abort', cancelListener); if (active.current === controller) { active.current = null; setBusy(false) } }
   }
   function focusStart() { requestAnimationFrame(() => { stageHeading.current?.focus({ preventScroll: true }); stageHeading.current?.scrollIntoView({ block: 'start' }) }) }
-  function clear() { setStage('add'); setClearRequested(false); setSlips([]); setSelected(null); setYear('all'); setEmployer('all'); setMessage('Pay history cleared.'); setError(''); focusStart() }
+  function clear() { setStage('add'); setClearRequested(false); setSlips([]); setRates([]); setSelected(null); setYear('all'); setEmployer('all'); setMessage('Pay history cleared.'); setError(''); focusStart() }
   function manual() {
     if (fictional) { setError('Clear the example history before adding your own figures.'); return }
     if (slips.length >= MAX_PAYSLIPS) { setError('This session already has 100 payslips.'); return }
@@ -93,7 +102,7 @@ export default function PayslipDashboard() {
   }
   function download() {
     const scope = `${year === 'all' ? 'All financial years' : year} · ${employer === 'all' ? 'All employers' : employers.find(([k]) => k === employer)?.[1] ?? employer}`
-    downloadPayReport(payslipReport(confirmed, slips, scope))
+    downloadPayReport(payslipReport(confirmed, slips, scope, rates, inScope))
     setMessage('Pay report downloaded. Keep your original payslips too.')
   }
 
@@ -142,6 +151,7 @@ export default function PayslipDashboard() {
       <PayslipSummary allSlips={slips} slips={confirmed} years={years} employers={employers} year={year} employer={employer} grouping={grouping}
         onYear={setYear} onEmployer={setEmployer} onGrouping={setGrouping}
         onResetFilters={() => { setYear('all'); setEmployer('all') }} />
+      <PayRatePanel slips={slips} records={rates} onRecords={setRates} />
       <div className="pay-summary-actions"><button className="secondary-button" onClick={() => { setStage('add'); setError(''); setMessage(''); focusStart() }}>Add another payslip</button><button className="text-button" onClick={() => openReview(pending[0]?.id ?? slips[0].id)}>Review or edit payslips</button></div>
     </>}
 
@@ -149,7 +159,7 @@ export default function PayslipDashboard() {
       <p><strong>{slips.length ? 'Download your report before you leave.' : 'No account needed.'}</strong> Your pay history clears when you refresh or move to another tool.</p>
       {slips.length > 0 && <button ref={clearButton} className="text-button pay-clear" disabled={busy} onClick={() => setClearRequested(true)}>Clear pay history</button>}
     </footer>
-    {clearRequested && <section className="pay-clear-confirm" aria-label="Clear history confirmation"><h3>Clear all payslips?</h3><p>This removes the history in this tab. Download a report from View summary first if you need a copy.</p><div className="pay-actions"><button autoFocus className="secondary-button" onClick={() => { setClearRequested(false); clearButton.current?.focus() }}>Keep my history</button><button className="primary-button" onClick={clear}>Yes, clear history</button></div></section>}
+    {clearRequested && <section className="pay-clear-confirm" aria-label="Clear history confirmation"><h3>Clear all payslips?</h3><p>This removes the history and any rates you recorded in this tab. Download a report from View summary first if you need a copy.</p><div className="pay-actions"><button autoFocus className="secondary-button" onClick={() => { setClearRequested(false); clearButton.current?.focus() }}>Keep my history</button><button className="primary-button" onClick={clear}>Yes, clear history</button></div></section>}
     <details className="statement-help"><summary>What can TaxPrep check?</summary><p>We check that the figures add up and help you understand the pay recorded on your payslips. This does not confirm your award rate, your employer’s tax payments or whether super reached your fund. <a href="https://www.fairwork.gov.au/pay-and-wages/paying-wages/pay-slips" target="_blank" rel="noreferrer">Learn about payslips at Fair Work.</a></p><p>Your files are read in this tab. They are not uploaded or sent to an AI service. Keep your original payslips; the downloaded report does not contain them.</p></details>
   </section>
 }

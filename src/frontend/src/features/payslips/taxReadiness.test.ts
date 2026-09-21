@@ -24,6 +24,7 @@ function slip(id: string, employer: string, payDate: string, confirmed = true): 
       deductions: '0.00',
       net: '900.00',
       super: '120.00',
+      hours: '', rate: '', ordinary: '',
     },
     facts: {
       employer,
@@ -35,6 +36,7 @@ function slip(id: string, employer: string, payDate: string, confirmed = true): 
       deductions: '0.00',
       net: '900.00',
       super: '120.00',
+      hours: '', rate: '', ordinary: '',
     },
     confirmed,
     sample: false,

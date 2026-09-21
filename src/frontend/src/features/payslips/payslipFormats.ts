@@ -77,9 +77,11 @@ const AMOUNT_ROWS: [keyof PayFacts, string][] = [
 
 const AMOUNT = /^\$?\d[\d,]*(?:\.\d{1,2})?$/
 
-/** Column anchors from the header row, or null when it is not readable. */
+/** Column anchors from the totals header row, or null when it is not readable.
+ * The `hours` guard keeps this off the earnings header below, which carries
+ * the same two phrases but four columns. */
 function columns(rows: TextRow[]): { current: number; ytd: number } | null {
-  const header = rows.find(r => /this pay/i.test(r.text) && /year to date/i.test(r.text))
+  const header = rows.find(r => /this pay/i.test(r.text) && /year to date/i.test(r.text) && !/hours/i.test(r.text))
   if (!header) return null
   const anchor = (word: string) => {
     const token = header.tokens.find(t => t.text.trim().toLowerCase().startsWith(word))
@@ -107,6 +109,65 @@ function currentPeriodAmount(row: TextRow, cols: { current: number; ytd: number 
   return best.toCurrent < margin ? best.text : ''
 }
 
+/* ----------------------------------------------------- earnings block ----
+ * An advice may itemise its earnings above the totals, with an hours and a
+ * rate column beside the amounts:
+ *
+ *   Earnings          Hours      Rate      This pay    Year to date
+ *   Ordinary hours    38.00     28.90      1,098.20       32,946.00
+ *   Overtime           4.00     43.35        173.40        1,204.00
+ *
+ * Only the ordinary line is read. An overtime or penalty multiplier depends
+ * on the award and the roster, neither of which TaxPrep knows, so those lines
+ * are left to the gross total and never checked against an agreed rate.
+ */
+type Anchors = { hours: number; rate: number; current: number; ytd: number }
+
+function earningsColumns(rows: TextRow[]): Anchors | null {
+  const header = rows.find(r => /hours/i.test(r.text) && /rate/i.test(r.text) && /this pay/i.test(r.text))
+  if (!header) return null
+  const anchor = (word: string) => {
+    const token = header.tokens.find(t => t.text.trim().toLowerCase().startsWith(word))
+    return token ? tokenCentre(token) : null
+  }
+  const hours = anchor('hours'), rate = anchor('rate'), current = anchor('this'), ytd = anchor('year')
+  if (hours === null || rate === null || current === null || ytd === null) return null
+  const ordered = [hours, rate, current, ytd]
+  // Columns must run left to right and stay far enough apart that "nearest
+  // column" is a meaningful question for a right-aligned figure.
+  for (let i = 1; i < ordered.length; i++) if (ordered[i] - ordered[i - 1] < 30) return null
+  return { hours, rate, current, ytd }
+}
+
+/** The figure under one of several columns, or blank when it is not clearly
+ * under any of them. Same discipline as the two-column rule above. */
+function columnValue(row: TextRow, anchors: number[], index: number): string {
+  const numbers = row.tokens.filter(t => AMOUNT.test(t.text.trim()))
+  // One lone figure in a multi-column row could belong to any of them.
+  if (numbers.length < 2) return ''
+  let best: { text: string; distance: number } | null = null
+  for (const token of numbers) {
+    const centre = tokenCentre(token)
+    const distances = anchors.map(a => Math.abs(centre - a))
+    const nearest = distances.indexOf(Math.min(...distances))
+    if (nearest !== index) continue
+    if (!best || distances[index] < best.distance) best = { text: token.text.trim(), distance: distances[index] }
+  }
+  if (!best) return ''
+  const margin = Math.min(...anchors.flatMap((a, i) => i === index ? [] : [Math.abs(a - anchors[index])])) / 2
+  return best.distance < margin ? best.text : ''
+}
+
+function ordinaryLine(rows: TextRow[]): Pick<PayFacts, 'hours' | 'rate' | 'ordinary'> | null {
+  const cols = earningsColumns(rows)
+  if (!cols) return null
+  const row = rows.find(r => /^ordinary\b/i.test(r.text.trim()))
+  if (!row) return null
+  const order = [cols.hours, cols.rate, cols.current, cols.ytd]
+  const strip = (v: string) => v.replace(/^\$/, '')
+  return { hours: strip(columnValue(row, order, 0)), rate: strip(columnValue(row, order, 1)), ordinary: strip(columnValue(row, order, 2)) }
+}
+
 const PAY_ADVICE_V2: PayslipFormat = {
   id: 'pay-advice-v2',
   label: 'PAY ADVICE v2 (this pay / year to date table)',
@@ -132,11 +193,28 @@ const PAY_ADVICE_V2: PayslipFormat = {
         if (row) facts[key] = currentPeriodAmount(row, cols).replace(/^\$/, '')
       }
     }
+    // A v2 advice has no earnings block, so this reads nothing and its
+    // behaviour is unchanged. A v3 advice fills hours, rate and ordinary pay.
+    const ordinary = ordinaryLine(rows)
+    if (ordinary) Object.assign(facts, ordinary)
     return facts
   },
 }
 
-export const FORMATS: PayslipFormat[] = [SUMMARY_V1, PAY_ADVICE_V2]
+/* ---------------------------------------------------------------- v3 ----
+ * The v2 advice with an itemised earnings block. Everything else about it —
+ * the totals table, the labelled employer and dates, the untouched
+ * year-to-date column — is identical, so it shares v2's parser outright.
+ */
+const PAY_ADVICE_V3: PayslipFormat = {
+  id: 'pay-advice-v3',
+  label: 'PAY ADVICE v3 (itemised earnings with hours and rate)',
+  marker: 'PAY ADVICE v3',
+  detect: lines => lines.some(s => s === 'PAY ADVICE v3'),
+  parse: PAY_ADVICE_V2.parse,
+}
+
+export const FORMATS: PayslipFormat[] = [SUMMARY_V1, PAY_ADVICE_V2, PAY_ADVICE_V3]
 
 /** The layout this document uses, or null when none of them claims it. */
 export function detectFormat(lines: string[]): PayslipFormat | null {
