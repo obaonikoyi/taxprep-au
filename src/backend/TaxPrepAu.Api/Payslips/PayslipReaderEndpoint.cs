@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using Anthropic;
 using Anthropic.Exceptions;
@@ -98,7 +99,7 @@ public static class PayslipReaderEndpoint
 
     public static void MapPayslipReader(this WebApplication app)
     {
-        app.MapPost("/api/payslip/read", async (HttpRequest request, HttpResponse response, IConfiguration configuration) =>
+        app.MapPost("/api/payslip/read", async (HttpRequest request, HttpResponse response, IConfiguration configuration, PayslipReadLimiter limiter) =>
         {
             response.Headers.CacheControl = "no-store";
             if (!request.HasJsonContentType())
@@ -137,9 +138,25 @@ public static class PayslipReaderEndpoint
             if (text.Length < MinimumTextLength || text.Length > MaximumTextLength)
                 return Results.BadRequest(new { message = "Send the text of one payslip." });
 
+            /*
+             * Counted here, as close to the spend as the code gets: a request
+             * that is never going to reach the model should not use up anyone's
+             * allowance, or a caller could lock the reader out for the day with
+             * malformed requests that cost nothing to refuse. Reading a bounded
+             * body first is what every other endpoint here already does.
+             *
+             * See PayslipReadLimiter for what each of the two layers is worth.
+             */
+            var decision = limiter.TryRead(PayslipReadLimiter.ClientKey(request));
+            if (!decision.Allowed)
+            {
+                response.Headers["Retry-After"] = ((int)Math.Ceiling(decision.RetryAfter.TotalSeconds)).ToString(CultureInfo.InvariantCulture);
+                return Results.Json(new { available = false, message = PayslipReadLimiter.Message(decision) }, statusCode: 429);
+            }
+
             try
             {
-                var facts = await Read(text, key!);
+                var facts = await Read(text, key!, request.HttpContext.RequestAborted);
                 return Results.Ok(new { available = true, fields = facts });
             }
             catch (OperationCanceledException)
@@ -173,13 +190,11 @@ public static class PayslipReaderEndpoint
     }
 
     /*
-     * No cancellation token is passed to Create. The SDK's overloads could not be
-     * checked here — this container has no .NET — and a wrong argument costs a CI
-     * round trip against a live deploy, while an uncancelled read costs a few
-     * seconds of work nobody is waiting for. The body read above is cancelled
-     * properly, which is the part that could be made to hang by a caller.
+     * The caller's cancellation is passed all the way to the model. A browser
+     * that gave up — the reader times out after a minute — should not leave a
+     * call running that is still being billed for an answer nobody will read.
      */
-    private static async Task<Dictionary<string, string>> Read(string text, string apiKey)
+    private static async Task<Dictionary<string, string>> Read(string text, string apiKey, CancellationToken cancellationToken)
     {
         AnthropicClient client = new() { ApiKey = apiKey };
         var message = await client.Messages.Create(new MessageCreateParams
@@ -189,7 +204,7 @@ public static class PayslipReaderEndpoint
             System = SystemPrompt,
             OutputConfig = new OutputConfig { Format = new JsonOutputFormat { Schema = Schema() } },
             Messages = [new() { Role = Role.User, Content = text }],
-        });
+        }, cancellationToken);
 
         var json = string.Concat(message.Content.Select(b => b.Value).OfType<TextBlock>().Select(b => b.Text));
         return Parse(json);

@@ -63,6 +63,7 @@ Evaluate whether a new visitor can understand a sample immediately, whether supp
 - **15 — Tax outlook:** #36; confirmed tax profile, verified withholding checks and bounded annual scenarios.
 - **16 — Preparation:** #37; reconcile annual income, pay history and bank/receipt evidence into a supported year-end handover. #30 is the deferred annual-statement format.
 - **18 — Agreed pay rate:** extends #35; record the rate agreed in a contract and raise specific dated arithmetic questions where a payslip disagrees with it or with itself. Checks the payslip against the user's own record, never against an award or legal minimum; the super-guarantee check stays behind the same reviewed-source gate as #21 and #28. [Scope](MILESTONE_18_AGREED_PAY_RATE.md).
+- **19/20 — Assisted payslip reader:** extends #35; when no documented layout matches and the person asks for it, the text the browser already extracted is read by a model into a proposal they confirm. The PDF never leaves the device, the reader is off unless a key is configured, and what it can spend is bounded by limits that are on by default. [Scope](MILESTONE_19_ASSISTED_PAYSLIP_READER.md), [limits](MILESTONE_20_READ_LIMITS.md).
 - **Later:** additional payroll layouts, OCR/AI extraction where useful, explicitly designed history storage, broader reviewed tax rules, practitioner workflows and authorised integrations.
 
 The standalone prototype is authorised for publication. The portfolio website remains unchanged until Obadiah decides to showcase it.

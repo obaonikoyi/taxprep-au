@@ -65,6 +65,16 @@ describe('asking the server to read a payslip', () => {
     await expect(readWithAssistance('some payslip text', signal)).rejects.toThrow(/not configured on this deployment/)
   })
 
+  // The server limits how many payslips it will read, because each one costs
+  // whoever runs the deployment money. A person who meets that limit is told
+  // when to come back and what to do instead, not shown a generic failure.
+  it('passes a limit message through with what to do instead', async () => {
+    const message = 'You have had a lot of payslips read recently. The assisted reader is available to you again in about 12 minutes. Enter the figures from this payslip instead — that always works.'
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ available: false, message }), { status: 429, headers: { 'Retry-After': '720' } })))
+    await expect(readWithAssistance('some payslip text', signal)).rejects.toThrow(/available to you again in about 12 minutes/)
+    await expect(readWithAssistance('some payslip text', signal)).rejects.toThrow(/Enter the figures/)
+  })
+
   it('treats a reply with no figures in it as a failure to read, not a payslip of zeroes', async () => {
     vi.stubGlobal('fetch', ok({ available: true, fields: Object.fromEntries(fields.map(f => [f, ''])) }))
     await expect(readWithAssistance('some payslip text', signal)).rejects.toBeInstanceOf(AssistedReadError)
