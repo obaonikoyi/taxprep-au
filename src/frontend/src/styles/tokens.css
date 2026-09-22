@@ -179,63 +179,67 @@
  * ramp is re-pointed so mid indigos stay legible on a dark surface. The dark
  * surfaces are near-neutral with the faintest indigo cast — a tinted dark
  * background is what makes a finance screen look murky.
+ *
+ * Keyed off `data-theme` rather than `prefers-color-scheme`, so the header's
+ * light/dark switch can override the device. `lib/theme.ts` sets the
+ * attribute from the device preference before the app renders, so the device
+ * still decides by default — and the palette below stays written once.
  */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --page: #131219;
-    --surface: #1b1a23;
-    --surface-sunken: #17161f;
-    --surface-inverse: var(--brand-100);
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #131219;
+  --surface: #1b1a23;
+  --surface-sunken: #17161f;
+  --surface-inverse: var(--brand-100);
 
-    --ink: #ecebf5;
-    --ink-body: #cbc9da;
-    --ink-muted: #a4a1b6;
-    --ink-subtle: #8b889d;
-    /* Not `--brand-900`: this ink also sits on the mid-indigo `--brand` of a
-     * selected tab, where brand-900 only reaches 3.9:1. Darker clears both. */
-    --ink-inverse: #1e1840;
-    --ink-inverse-muted: var(--brand-700);
+  --ink: #ecebf5;
+  --ink-body: #cbc9da;
+  --ink-muted: #a4a1b6;
+  --ink-subtle: #8b889d;
+  /* Not `--brand-900`: this ink also sits on the mid-indigo `--brand` of a
+   * selected tab, where brand-900 only reaches 3.9:1. Darker clears both. */
+  --ink-inverse: #1e1840;
+  --ink-inverse-muted: var(--brand-700);
 
-    --line: #2c2a38;
-    --line-strong: #3d3b4d;
-    --line-soft: #232230;
+  --line: #2c2a38;
+  --line-strong: #3d3b4d;
+  --line-soft: #232230;
 
-    --brand: var(--brand-400);
-    --brand-hover: var(--brand-300);
-    --brand-deep: var(--brand-200);
-    --brand-ink: var(--brand-300);
-    --brand-tint: #201d3a;
-    --brand-tint-strong: #2a2550;
-    --brand-line: #3b3470;
+  --brand: var(--brand-400);
+  --brand-hover: var(--brand-300);
+  --brand-deep: var(--brand-200);
+  --brand-ink: var(--brand-300);
+  --brand-tint: #201d3a;
+  --brand-tint-strong: #2a2550;
+  --brand-line: #3b3470;
 
-    --ok-tint: #14261f;
-    --ok-tint-strong: #1a3228;
-    --ok-line: #2a4b3c;
-    --ok-ink: #6fc79f;
+  --ok-tint: #14261f;
+  --ok-tint-strong: #1a3228;
+  --ok-line: #2a4b3c;
+  --ok-ink: #6fc79f;
 
-    --warn-tint: #2b2214;
-    --warn-tint-strong: #3a2d18;
-    --warn-line: #4d3c1f;
-    --warn-ink: #e7c684;
+  --warn-tint: #2b2214;
+  --warn-tint-strong: #3a2d18;
+  --warn-line: #4d3c1f;
+  --warn-ink: #e7c684;
 
-    --alert-tint: #2e1c16;
-    --alert-line: #4a2b20;
-    --alert-ink: #eaa98e;
+  --alert-tint: #2e1c16;
+  --alert-line: #4a2b20;
+  --alert-ink: #eaa98e;
 
-    --info-tint: #132330;
-    --info-line: #24404f;
-    --info-ink: #8fc6e4;
+  --info-tint: #132330;
+  --info-line: #24404f;
+  --info-ink: #8fc6e4;
 
-    --focus: #e0b45e;
+  --focus: #e0b45e;
 
-    --chart-1: #1da073;
-    --chart-2: #7089d8;
-    --chart-3: #c08737;
+  --chart-1: #1da073;
+  --chart-2: #7089d8;
+  --chart-3: #c08737;
 
-    --shadow-sm: 0 1px 2px rgb(0 0 0 / 40%);
-    --shadow-md: 0 6px 18px rgb(0 0 0 / 45%);
-    --shadow-lg: 0 18px 44px rgb(0 0 0 / 55%);
-  }
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 40%);
+  --shadow-md: 0 6px 18px rgb(0 0 0 / 45%);
+  --shadow-lg: 0 18px 44px rgb(0 0 0 / 55%);
 }
 
 @media (prefers-reduced-motion: reduce) {

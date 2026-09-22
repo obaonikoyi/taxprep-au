@@ -26,6 +26,13 @@ main.shell-width { flex: 1; }
 .brand-name { font-size: var(--text-md); font-weight: 750; line-height: 1.2; }
 .brand-name small { display: block; margin-top: 3px; color: var(--ink-muted); font-size: var(--text-2xs); font-weight: 400; }
 
+.site-header-tools { display: flex; align-items: center; gap: var(--space-3); }
+
+/* Same segmented control as the chart switch, at header scale. */
+.theme-switch { display: inline-flex; gap: 2px; padding: 2px; border: 1px solid var(--line); border-radius: var(--radius-pill); background: var(--surface-sunken); }
+.theme-switch button { padding: var(--space-1) var(--space-3); border: 0; border-radius: var(--radius-pill); color: var(--ink-muted); background: transparent; font-size: var(--text-2xs); font-weight: 700; cursor: pointer; }
+.theme-switch button[aria-pressed=true] { color: var(--brand-ink); background: var(--surface); box-shadow: var(--shadow-sm); }
+
 .status { flex-shrink: 0; padding: var(--space-2) var(--space-3); border: 1px solid var(--brand-line); border-radius: var(--radius-pill); color: var(--brand-ink); background: var(--brand-tint); font-size: var(--text-2xs); font-weight: 700; }
 
 /* Tabs size to their labels and mark the current workspace with a rule along

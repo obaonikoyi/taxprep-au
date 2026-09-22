@@ -1,5 +1,6 @@
 import { lazy, Suspense, useState } from 'react'
 import ApiStatus from './components/ApiStatus'
+import ThemeSwitch from './components/ThemeSwitch'
 import GuidedDemo from './features/demo/GuidedDemo'
 
 const StatementDashboard = lazy(() => import('./features/statements/StatementDashboard'))
@@ -31,7 +32,10 @@ function App() {
             <span className="brand-mark" aria-hidden="true">T</span>
             <span className="brand-name">TaxPrep AU<small>Understand your pay. Prepare for tax time.</small></span>
           </a>
-          <span className="status">Portfolio prototype</span>
+          <div className="site-header-tools">
+            <ThemeSwitch />
+            <span className="status">Portfolio prototype</span>
+          </div>
         </div>
 
         <nav className="workspace-nav" aria-label="TaxPrep tools">

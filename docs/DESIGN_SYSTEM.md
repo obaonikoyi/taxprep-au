@@ -49,7 +49,11 @@ Space is a 4px scale (`--space-1` … `--space-10`), and type a named scale (`--
 
 ### Dark scheme
 
-`@media (prefers-color-scheme: dark)` redefines the *roles* only — the ramps stay put, and the brand ramp is re-pointed so mid indigos stay legible on a dark surface. Because every rule reads roles, the dark scheme is about forty lines rather than a second stylesheet. `prefers-reduced-motion` is honoured globally in the same file.
+`:root[data-theme="dark"]` redefines the *roles* only — the ramps stay put, and the brand ramp is re-pointed so mid indigos stay legible on a dark surface. Because every rule reads roles, the dark scheme is about forty lines rather than a second stylesheet. `prefers-reduced-motion` is honoured globally in the same file.
+
+It keys off the attribute rather than `@media (prefers-color-scheme: dark)` so the header's light/dark switch can override the device: someone on a dark laptop must be able to read a page of figures in light, and on a borrowed machine the system setting is not theirs to change. `src/lib/theme.ts` sets the attribute from the device preference before the app renders and keeps following the device until the user picks, so the default is unchanged and the palette is still written once — a media query and an attribute override cannot share a declaration block, and two copies of sixty colours drift.
+
+`npm run test:ui` renders both schemes, asserts they paint different pages, and drives the switch on a device emulated as dark.
 
 ## Primitives
 

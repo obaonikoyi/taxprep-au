@@ -27,6 +27,9 @@ async function ready(u){for(let i=0;i<150;i++){try{if((await fetch(u)).ok)return
   kids.push(vite); vite.stderr.on('data',b=>process.stderr.write(b));
   await ready('http://127.0.0.1:5202');
   const browser = await chromium.launch({headless:true,...(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {}),args:['--no-sandbox','--disable-dev-shm-usage']});
+  // What each scheme actually paints, so a dark palette that silently stops
+  // applying cannot pass as "dark: OK".
+  const painted = {};
   for (const scheme of ['light','dark']) {
     const page = await browser.newPage({viewport:{width:1440,height:1000},colorScheme:scheme});
     const errs=[]; page.on('pageerror',e=>errs.push(String(e))); page.on('console',m=>{if(m.type()==='error')errs.push(m.text())});
@@ -68,10 +71,32 @@ async function ready(u){for(let i=0;i<150;i++){try{if((await fetch(u)).ok)return
     await page.waitForTimeout(600);
     assert.equal(await page.locator('main h1').count(), 0, 'documents workspace has no duplicate hero h1');
 
+    painted[scheme] = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
     assert.deepEqual(errs, [], `console/page errors (${scheme})`);
     console.log(`  ${scheme}: OK`);
     await page.close();
   }
+  assert.notEqual(painted.light, painted.dark, `the two schemes paint different pages (both ${painted.light})`);
+
+  // The header switch overrides the device, and the choice is remembered.
+  // Emulate a device set to dark, then ask for light: a user on a dark laptop
+  // must be able to read a page of figures in light.
+  const t = await browser.newPage({viewport:{width:1440,height:1000},colorScheme:'dark'});
+  await t.goto('http://127.0.0.1:5202');
+  const scheme = () => t.locator('html').getAttribute('data-theme');
+  const pageColour = () => t.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  assert.equal(await scheme(), 'dark', 'a device set to dark opens dark');
+  const darkPage = await pageColour();
+  await t.getByRole('button',{name:'Light',exact:true}).click();
+  const lightPage = await pageColour();
+  assert.equal(await scheme(), 'light', 'choosing Light overrides the device');
+  assert.notEqual(lightPage, darkPage, `choosing Light repaints the page (still ${lightPage})`);
+  await t.reload();
+  assert.equal(await scheme(), 'light', 'the choice survives a reload on a dark device');
+  assert.equal(await pageColour(), lightPage, 'and the page comes back light');
+  console.log('  theme switch: OK');
+  await t.close();
+
   // Nav fits without horizontal page scroll at phone width.
   const m = await browser.newPage({viewport:{width:390,height:800}});
   await m.goto('http://127.0.0.1:5202'); await m.waitForTimeout(800);

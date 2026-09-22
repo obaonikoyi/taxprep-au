@@ -21,7 +21,10 @@
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: var(--ink-body);
   background: var(--page);
-  color-scheme: light dark;
+  /* One scheme at a time: `[data-theme]` in tokens.css sets `dark`, so the
+   * browser's own chrome — scrollbars, form controls — follows the switch
+   * rather than the device. */
+  color-scheme: light;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
