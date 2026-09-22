@@ -59,7 +59,7 @@ Four is not statistical significance and is not meant to be. Four people will te
 
 ## Running it
 
-**Setup (before they arrive).** Open `https://taxprep.3xoba.com` on a laptop you hand over. Have the five PDFs in one folder, named as above. A fresh browser tab — the session clears on refresh, so a previous run cannot leak in.
+**Setup (before they arrive).** Open `https://xobapaycheck.com` on a laptop you hand over. Have the five PDFs in one folder, named as above. A fresh browser tab — the session clears on refresh, so a previous run cannot leak in.
 
 **Say this, and nothing more:**
 

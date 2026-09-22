@@ -4,7 +4,7 @@ TaxPrep helps Australian workers understand their pay, track withholding and rec
 
 > **Published: Milestone 16C-3 — encrypted local preparation backup.** The year-end hub can now explicitly download and restore a user-controlled encrypted preparation backup using browser-only WebCrypto, while keeping the default session-only and excluding raw financial documents. Tax/refund results remain locked pending qualified review.
 
-**[Try the standalone app](https://taxprep.3xoba.com)** — no account needed. Choose **Try example payslips** for six fictional PDFs and an immediate pay-history dashboard. The app is published at its own address under the owner's domain; the portfolio website itself has not been changed.
+**[Try the standalone app](https://xobapaycheck.com)** — no account needed. Choose **Try example payslips** for six fictional PDFs and an immediate pay-history dashboard. The app is published at its own address under the owner's domain; the portfolio website itself has not been changed.
 
 [Product direction](docs/PRODUCT_DIRECTION.md) · [Current milestones and user cases](docs/PROJECT_PLAN.md) · [Milestone 15A pay outlook](docs/MILESTONE_15A_PAY_OUTLOOK.md) · [Milestone 15B-1 tax readiness](docs/MILESTONE_15B1_TAX_READINESS.md) · [Milestone 16A year-end reconciliation](docs/MILESTONE_16A_INCOME_RECONCILIATION.md) · [Milestone 16B annual statement extraction](docs/MILESTONE_16B_ANNUAL_STATEMENT_EXTRACTION.md) · [Milestone 16C-1 year-end preparation](docs/MILESTONE_16C1_YEAR_END_PREPARATION.md) · [Milestone 16C-2 portable handoff](docs/MILESTONE_16C2_PORTABLE_HANDOFF.md) · [Milestone 16C-3 encrypted local backup](docs/MILESTONE_16C3_ENCRYPTED_LOCAL_BACKUP.md) · [Milestone 17 second payslip layout](docs/MILESTONE_17_SECOND_PAYSLIP_LAYOUT.md) · [Design system](docs/DESIGN_SYSTEM.md) · [Development](docs/DEVELOPMENT.md)
 
@@ -44,7 +44,7 @@ Statement files are processed in the browser tab, with no document upload, model
 
 ## Document intake preview
 
-Choose **Tax documents** in the [standalone demo](https://taxprep.3xoba.com). Select **2025–26** and the employee example, then **Try sample documents**. Review both extracted records and link them to count a $45 payment once with two sources. Add the missing work details, choose **Assess phone expense**, and complete the remaining conditions. The $45 sample at 40% work use illustrates $18, with tax review explicitly pending. Download the report with evidence, questions and source versions.
+Choose **Tax documents** in the [standalone demo](https://xobapaycheck.com). Select **2025–26** and the employee example, then **Try sample documents**. Review both extracted records and link them to count a $45 payment once with two sources. Add the missing work details, choose **Assess phone expense**, and complete the remaining conditions. The $45 sample at 40% work use illustrates $18, with tax review explicitly pending. Download the report with evidence, questions and source versions.
 
 Milestone 10 adds real browser OCR for bounded fictional CSV/PDF/PNG/JPG inputs, original-source review, duplicate/refund/date flags, corrections and export. Documents stay in the tab; no external AI account is required. Refreshing clears the document session. This prepares evidence, not approved deductions or a full tax return. See [implementation and limits](docs/MILESTONE_10_DOCUMENT_INTAKE.md).
 

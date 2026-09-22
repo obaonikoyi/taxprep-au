@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       demo_url:
-        description: HTTPS URL of the published demo (taxprep.3xoba.com, or its Railway host)
+        description: HTTPS URL of the published demo (xobapaycheck.com, taxprep.3xoba.com, or its Railway host)
         required: true
         type: string
 permissions:
@@ -38,11 +38,12 @@ jobs:
           import { readFileSync } from 'node:fs';
           const u = new URL(process.env.DEMO_URL || JSON.parse(readFileSync('../../deployment.json', 'utf8')).url);
           // A rail, not a formality: this job can be dispatched with any URL, and
-          // the smoke test drives a real browser through it. Keep it to the two
-          // hosts that serve this app — the published custom domain, and the
-          // Railway origin behind it, which still answers directly.
-          const published = u.hostname === 'taxprep.3xoba.com' || u.hostname.endsWith('.up.railway.app');
-          if (u.protocol !== 'https:' || !published) throw new Error('Expected the published demo HTTPS URL: taxprep.3xoba.com or a *.up.railway.app host');
+          // the smoke test drives a real browser through it. Keep it to the
+          // hosts that serve this app — the published domain, the older
+          // subdomain kept alive so existing links work, and the Railway
+          // origin behind them, which still answers directly.
+          const published = ['xobapaycheck.com', 'taxprep.3xoba.com'].includes(u.hostname) || u.hostname.endsWith('.up.railway.app');
+          if (u.protocol !== 'https:' || !published) throw new Error('Expected the published demo HTTPS URL: xobapaycheck.com, taxprep.3xoba.com or a *.up.railway.app host');
           process.env.DEMO_URL = u.href;
           await import('./scripts/hosted-smoke.mjs');
           JS
