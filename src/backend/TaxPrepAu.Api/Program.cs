@@ -13,6 +13,18 @@ builder.Services.Configure<FormOptions>(options =>
     options.ValueLengthLimit = 1024;
     options.ValueCountLimit = 1;
 });
+/*
+ * One limiter for the whole process, because a limit that forgets between
+ * requests is not a limit. See PayslipReadLimiter for the numbers and what
+ * they cost.
+ *
+ * Built from the resolved IConfiguration rather than from builder.Configuration,
+ * which is the same configuration the endpoint reads its key from and not
+ * necessarily the same object: a host that layers configuration on after this
+ * line — a test host does exactly that — would otherwise hand the endpoint one
+ * set of settings and the limiter another.
+ */
+builder.Services.AddSingleton(provider => PayslipReadLimiter.FromConfiguration(provider.GetRequiredService<IConfiguration>()));
 var app = builder.Build();
 
 // The deployment container is reached through Railway's HTTPS edge. Its private

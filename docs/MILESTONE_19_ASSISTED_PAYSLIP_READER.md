@@ -67,6 +67,7 @@ number costs everything.
 | A proposal is not a reading | The payslip arrives `confirmed: false`, format `assisted-read-v1` |
 | Nothing else leaves the browser | The payslip journey asserts the assisted read is the **only** POST in the whole journey |
 | Off without a key | The endpoint answers 503 and the app offers manual entry |
+| Bounded in what it can spend | [Milestone 20](MILESTONE_20_READ_LIMITS.md): a global limit no caller can raise |
 
 Narrowing the answer twice — once on the server, once in the browser — is
 deliberate. Either end could change without the other, and the app validates
@@ -97,14 +98,15 @@ Set `Anthropic__ApiKey` in the deployment's environment (Railway → Variables).
 Nothing else changes; the endpoint notices the key and starts answering. Without
 it the app behaves exactly as it did before this milestone.
 
-Cost is per payslip read and falls on whoever set the key. There is no rate
-limit on the endpoint yet — see below.
+Cost is per payslip read and falls on whoever set the key. How much it can cost
+is bounded by the limits in [Milestone 20](MILESTONE_20_READ_LIMITS.md), which
+are on by default and need no configuration.
 
 ## Not done, deliberately
 
-- **No rate limiting or abuse control.** The endpoint is open to anyone who can
-  reach the site once a key is set, and each call costs the key's owner money.
-  It must not be switched on for a public deployment until this exists.
+- ~~**No rate limiting or abuse control.**~~ Built in
+  [Milestone 20](MILESTONE_20_READ_LIMITS.md). The endpoint now refuses more
+  reads than its configured limits allow, whoever asks.
 - **Scans and photographs are still not read.** Only text the browser could
   already extract is sent; an image-only PDF extracts nothing and is still
   manual entry.
