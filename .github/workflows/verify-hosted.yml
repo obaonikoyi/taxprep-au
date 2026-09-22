@@ -58,6 +58,28 @@ jobs:
       # filename because the rename had not shipped yet. So the browser run
       # waits for the push to main, where the deployment it is checking is the
       # one this workflow is named after.
+      #
+      # And on that push it waits again, because a push starts this job and
+      # the Railway deploy at the same moment — one second apart, on that same
+      # rename — so browsing straight away tests the previous release just as
+      # surely. The Dockerfile writes the commit it built from to /build.txt.
+      # Only on a push: a manual dispatch names an arbitrary URL that has no
+      # reason to serve this workflow's ref.
+      - name: Wait for the deploy to be the one we are checking
+        if: github.event_name == 'push'
+        env:
+          DEMO_URL: ${{ steps.url.outputs.href }}
+          WANT: ${{ github.sha }}
+        run: |
+          for attempt in $(seq 1 60); do
+            got=$(curl -fsS --max-time 10 "${DEMO_URL%/}/build.txt" 2>/dev/null | tr -d '[:space:]' || true)
+            if [ "$got" = "$WANT" ]; then echo "Serving $WANT after $((attempt * 10))s."; exit 0; fi
+            echo "Attempt $attempt: serving '${got:-nothing}', waiting for $WANT"
+            sleep 10
+          done
+          echo "::error::$DEMO_URL never served $WANT. The deploy may have failed, or this build predates /build.txt."
+          exit 1
+
       - name: Install browser dependencies
         if: github.event_name != 'pull_request'
         working-directory: src/frontend
