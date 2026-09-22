@@ -48,7 +48,16 @@
 .pay-start-hint { display: block; margin-top: var(--space-3); color: var(--ink-muted); font-size: var(--text-xs); line-height: var(--leading-normal); }
 .pay-upload-option { margin-top: var(--space-6); padding-top: var(--space-6); border-top: 1px solid var(--line); }
 .pay-upload-option h3 { font-size: var(--text-base); }
-.pay-upload-option > p, .pay-format p { color: var(--ink-muted); font-size: var(--text-sm); line-height: var(--leading-normal); }
+.pay-upload-option > p, /* The choice that changes what leaves the device. It sits above the file
+ * picker, not below it: a person cannot consent to something they are shown
+ * after they have already chosen the file. */
+.pay-assist { margin: var(--space-4) 0 var(--space-3); padding: var(--space-4); border: 1px solid var(--info-line); border-radius: var(--radius-md); background: var(--info-tint); }
+.pay-assist-choice { display: flex; align-items: start; gap: var(--space-3); cursor: pointer; }
+.pay-assist-choice input { margin-top: 3px; flex: 0 0 auto; }
+.pay-assist-choice strong { display: block; color: var(--ink); font-size: var(--text-sm); }
+.pay-assist-choice small { display: block; margin-top: var(--space-2); color: var(--ink-body); font-size: var(--text-xs); line-height: var(--leading-normal); }
+
+.pay-format p { color: var(--ink-muted); font-size: var(--text-sm); line-height: var(--leading-normal); }
 .pay-file-secondary { border-color: var(--line-strong); color: var(--brand-ink); background: var(--surface); }
 .pay-format { margin-top: var(--space-4); font-size: var(--text-xs); line-height: var(--leading-normal); }
 .pay-format summary { font-weight: 650; cursor: pointer; }

@@ -18,6 +18,9 @@ export default function PayslipDashboard() {
   const [rates, setRates] = useState<RateRecord[]>([])
   const [year, setYear] = useState('all'), [employer, setEmployer] = useState('all'), [grouping, setGrouping] = useState<'month' | 'payday'>('month')
   const [busy, setBusy] = useState(false), [message, setMessage] = useState(''), [error, setError] = useState('')
+  // Off until asked for, and only for this session: it decides whether an
+  // unknown layout's text may be sent to the server to be read.
+  const [assist, setAssist] = useState(false)
   const active = useRef<AbortController | null>(null), stageHeading = useRef<HTMLHeadingElement>(null), clearButton = useRef<HTMLButtonElement>(null)
   useEffect(() => () => active.current?.abort(), [])
   const confirmed = selectedPayslips(slips, year, employer)
@@ -60,7 +63,7 @@ export default function PayslipDashboard() {
       for (let i = 0; i < files.length; i++) {
         if (controller.signal.aborted) throw new Error('Reading cancelled.')
         setMessage(`Reading payslip ${i + 1} of ${files.length}…`)
-        next.push(await readPayslip(files[i], controller.signal, sample))
+        next.push(await readPayslip(files[i], controller.signal, sample, assist && !sample))
       }
       const combined = appendPayslips(slips, next)
       if (sample) {
@@ -127,7 +130,7 @@ export default function PayslipDashboard() {
     <div className="pay-status"><p role="status">{message}</p>{busy && <button className="text-button" onClick={() => active.current?.abort()}>Cancel reading</button>}</div>
     {error && <div role="alert" className="statement-error"><strong>We couldn’t add those payslips.</strong><p>{error}</p><p>You can enter the figures manually if your PDF layout is not supported.</p></div>}
 
-    {stage === 'add' && <PayslipStart headingRef={stageHeading} busy={busy} hasRecords={slips.length > 0} fictional={fictional} onManual={manual} onImport={files => void importFiles(files)} />}
+    {stage === 'add' && <PayslipStart headingRef={stageHeading} busy={busy} hasRecords={slips.length > 0} fictional={fictional} assist={assist} onAssist={setAssist} onManual={manual} onImport={files => void importFiles(files)} />}
 
     {stage === 'review' && <>
       <div className="pay-section-heading"><div><p className="eyebrow">Step 2 of 3</p><h2 ref={stageHeading} tabIndex={-1}>Check your figures</h2><p>{allConfirmed.length} of {slips.length} payslips checked. Match each amount to your original payslip.</p></div>{allConfirmed.length > 0 && <button className="secondary-button" onClick={() => setStage('summary')}>See checked totals</button>}</div>
