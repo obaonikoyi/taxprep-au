@@ -445,6 +445,21 @@ export async function verifyPayslips(context, base, artifacts) {
     // Nothing here may characterise the employer or the user's situation.
     assert.equal(/\b(underpaid|unlawful|owed|wage theft)\b/i.test(rateText), false);
 
+    // The outcome this panel exists for is a message somebody sends, so the
+    // button has to put the real thing on the clipboard — not a promise that
+    // it did. Read it back out of the clipboard rather than trusting the label.
+    const finding = ratePanel().locator('.pay-rate-finding').filter({ hasText: 'The rate on this payslip is not the rate you recorded' });
+    await finding.getByRole('button', { name: 'Copy message for payroll' }).click();
+    await finding.getByRole('button', { name: 'Copied ✓' }).waitFor();
+    const sent = await page.evaluate(() => navigator.clipboard.readText());
+    assert.match(sent, /^Hi,/, `the message starts as a message: ${sent.slice(0, 40)}`);
+    assert.ok(sent.includes('$28.90') && sent.includes('$27.50'), `both rates are in the message: ${sent}`);
+    assert.ok(sent.includes('$53.20'), `the difference is in the message: ${sent}`);
+    assert.ok(sent.trimEnd().endsWith('Thanks.'), `the message is sendable as it stands: ${sent}`);
+    // Written from the user, not to them: "your contract" here would tell the
+    // payroll officer it was their own.
+    assert.equal(/\byou recorded\b|\byour (contract|record)\b/i.test(sent), false, `the message addresses payroll: ${sent}`);
+
     const rateReport = page.waitForEvent('download'); await button('Download pay report').click();
     await (await rateReport).saveAs(artifacts + 'pay-advice-v3.html');
     const rateHtml = readFileSync(artifacts + 'pay-advice-v3.html', 'utf8');

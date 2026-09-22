@@ -292,7 +292,7 @@ describe('the safety property', () => {
     const { findings, states } = check(rows, records)
     expect(kinds(findings).sort()).toEqual(['amount-differs', 'payslip-self', 'rate-changed', 'rate-differs', 'rate-differs'])
     const strings = [
-      ...findings.flatMap(f => [f.heading, f.thePayslip, f.difference, f.limit, f.question, f.yourRecord ?? '']),
+      ...findings.flatMap(f => [f.heading, f.thePayslip, f.difference, f.limit, f.question, f.message, f.yourRecord ?? '']),
       ...states.map(s => s.detail),
     ]
     for (const text of strings) expect(text).not.toMatch(banned)
@@ -307,5 +307,79 @@ describe('the safety property', () => {
       expect(finding.limit.length).toBeGreaterThan(30)
       expect(finding.question).toContain('payroll contact')
     }
+  })
+})
+
+/* ------------------------------------------------------------------------ */
+
+/*
+ * The message someone sends.
+ *
+ * A dashboard is not the outcome — an email to payroll is. These check the
+ * thing that leaves the app: that it carries the figures, that it is written
+ * from the user rather than to them, and that it asks rather than accuses.
+ */
+describe('the message to payroll', () => {
+  const twoEmployers = { employer: 'Tallow Example Logistics' }
+  const everyKind = () => {
+    const records = addRate(addRate([], rate({ amount: '28.90', from: '2026-07-01', to: '2026-07-31' })), rate({ amount: '30.00', from: '2026-08-01', source: 'verbal' }))
+    return check([
+      slip({ hours: '38.00', rate: '27.50', ordinary: '1000.00', gross: '1045.00', withheld: '118.80', deductions: '0', net: '926.20' }),
+      slip({ periodStart: '2026-08-12', periodEnd: '2026-08-25', payDate: '2026-08-27', hours: '38.00', ordinary: '1045.00', gross: '1045.00', withheld: '118.80', deductions: '0', net: '926.20' }),
+      slip({ ...twoEmployers, hours: '38.00', rate: '40.00', ordinary: '1520.00', gross: '1520.00', withheld: '300.00', deductions: '20.00', net: '1200.00' }),
+      slip({ ...twoEmployers, periodStart: '2026-07-15', periodEnd: '2026-07-28', payDate: '2026-07-30', hours: '38.00', rate: '38.00', ordinary: '1444.00', gross: '1444.00', withheld: '244.00', deductions: '0', net: '1200.00' }),
+    ], records).findings
+  }
+
+  it('is sendable as it stands: a greeting, the figures and one question', () => {
+    for (const finding of everyKind()) {
+      expect(finding.message.startsWith('Hi,')).toBe(true)
+      expect(finding.message.endsWith('Thanks.')).toBe(true)
+      expect(finding.message).toContain('?')
+      expect(finding.message.length).toBeGreaterThan(80)
+    }
+  })
+
+  // The panel's other text addresses the user — "the rate you recorded". In a
+  // message to payroll "you" is the payroll officer, so that wording would
+  // reverse who recorded what. This is the reason the message is written
+  // separately rather than assembled from the fields above it.
+  it('never tells the reader what they themselves recorded', () => {
+    for (const finding of everyKind()) {
+      expect(finding.message).not.toMatch(/\byou recorded\b/i)
+      expect(finding.message).not.toMatch(/\byour record\b/i)
+      expect(finding.message).not.toMatch(/\byour (contract|payslip|rate)\b/i)
+    }
+  })
+
+  it('asks rather than demands: no claim of entitlement and no request for money', () => {
+    for (const finding of everyKind()) {
+      expect(finding.message).not.toMatch(/\b(entitled|entitlement|pay me|back ?pay|immediately|must|should have)\b/i)
+      expect(finding.message).toMatch(/could you/i)
+    }
+  })
+
+  it('carries the figures a payroll officer needs to look it up', () => {
+    const findings = everyKind()
+    const differs = findings.find(f => f.kind === 'rate-differs')!
+    // The period, both rates, and what the gap comes to over the hours worked.
+    expect(differs.message).toContain('2026-07-01 to 2026-07-14')
+    expect(differs.message).toContain('$27.50')
+    expect(differs.message).toContain('$28.90')
+    expect(differs.message).toContain('38.00 hours')
+    expect(differs.message).toContain('$53.20')
+
+    const self = findings.find(f => f.kind === 'payslip-self')!
+    expect(self.message).toContain('$1,045.00')
+    expect(self.message).toContain('$1,000.00')
+
+    const amount = findings.find(f => f.kind === 'amount-differs')!
+    expect(amount.message).toContain('2026-08-12 to 2026-08-25')
+    expect(amount.message).toContain('does not show an hourly rate')
+
+    const changed = findings.find(f => f.kind === 'rate-changed')!
+    expect(changed.message).toContain('$40.00')
+    expect(changed.message).toContain('$38.00')
+    expect(changed.message).toContain('2026-07-28')
   })
 })

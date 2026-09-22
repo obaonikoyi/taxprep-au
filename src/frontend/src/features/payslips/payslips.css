@@ -470,6 +470,13 @@
 .pay-rate-finding dl > div { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: var(--space-4); }
 .pay-rate-finding dt { color: var(--ink-muted); font-size: var(--text-2xs); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; padding-top: 2px; }
 .pay-rate-finding dd { margin: 0; font-size: var(--text-sm); line-height: var(--leading-normal); overflow-wrap: anywhere; }
+/* The message is the outcome the panel exists for, so the button leads and the
+ * text sits under it for anyone who wants to read before they send. */
+.pay-rate-send { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-4); }
+.pay-rate-send details { flex: 1 1 100%; }
+.pay-rate-send summary { color: var(--ink-muted); font-size: var(--text-xs); cursor: pointer; }
+.pay-rate-send pre { margin: var(--space-3) 0 0; padding: var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface-sunken); color: var(--ink-body); font: inherit; font-size: var(--text-sm); line-height: var(--leading-normal); white-space: pre-wrap; overflow-wrap: anywhere; }
+
 .pay-rate-limit, .pay-rate-question { margin: var(--space-2) 0 0; font-size: var(--text-xs); line-height: var(--leading-normal); }
 .pay-rate-limit { color: var(--ink-muted); }
 .pay-rate-question { color: var(--ink-body); font-weight: 650; }

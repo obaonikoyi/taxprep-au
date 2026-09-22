@@ -14,6 +14,7 @@ import { addRate, blankRate, MAX_RATE_RECORDS, rateChecks, rateSources, rateText
 export default function PayRatePanel({ slips, records, onRecords }: { slips: Payslip[]; records: RateRecord[]; onRecords: (records: RateRecord[]) => void }) {
   const [draft, setDraft] = useState<RateRecord | null>(null)
   const [message, setMessage] = useState('')
+  const [copied, setCopied] = useState('')
   const employers = [...new Map(slips.filter(s => s.facts.employer.trim()).map(s => [employerKey(s.facts.employer), s.facts.employer])).values()]
   const { findings, states } = rateChecks(slips, records, slip => confirmationIssues(slip, slips))
   const issues = draft ? validateRate(draft, records) : []
@@ -25,6 +26,27 @@ export default function PayRatePanel({ slips, records, onRecords }: { slips: Pay
     onRecords(addRate(records, draft))
     setDraft(null)
     setMessage(`Rate recorded for ${draft.employer.trim()}. Checked payslips in this period are now compared with it.`)
+  }
+
+  /*
+   * The point of the whole panel is the message someone actually sends, so it
+   * is one button rather than a figure to copy out by hand.
+   *
+   * The clipboard is not always available — an insecure origin, a browser that
+   * refuses without a permission, a locked-down device — and a copy that
+   * silently does nothing is worse than no button. On a failure the text is
+   * still on the page under "Read it first", so the message says to take it
+   * from there.
+   */
+  async function copyMessage(id: string, text: string) {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(id)
+      setMessage('Message copied. Paste it into an email or a text to your payroll contact, and change anything that does not sound like you.')
+    } catch {
+      setCopied('')
+      setMessage('This browser would not let the page copy for you. Open “Read it first” below the button and copy the message from there.')
+    }
   }
 
   return <section className="statement-panel pay-rate-panel" aria-label="Pay rate checks">
@@ -121,6 +143,12 @@ export default function PayRatePanel({ slips, records, onRecords }: { slips: Pay
           </dl>
           <p className="pay-rate-limit">{finding.limit}</p>
           <p className="pay-rate-question">{finding.question}</p>
+          <div className="pay-rate-send">
+            <button type="button" className="secondary-button" onClick={() => copyMessage(finding.id, finding.message)}>
+              {copied === finding.id ? 'Copied ✓' : 'Copy message for payroll'}
+            </button>
+            <details><summary>Read it first</summary><pre>{finding.message}</pre></details>
+          </div>
         </li>)}</ol>}
     </div>
 

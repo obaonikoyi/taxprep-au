@@ -12,7 +12,10 @@ assert.equal(base.username + base.password, '');
 const artifacts = new URL('../../../test-results/hosted/', import.meta.url).pathname;
 mkdirSync(artifacts, { recursive: true });
 const browser = await chromium.launch({ headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage'] });
-const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+// clipboard-read is for the payslip journey, which reads back what the
+// "Copy message for payroll" button actually put on the clipboard rather
+// than trusting the button's own label.
+const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, permissions: ['clipboard-read', 'clipboard-write'] });
 const page = await context.newPage();
 const errors = [];
 const failedRequests = [];
