@@ -472,6 +472,49 @@ export async function verifyPayslips(context, base, artifacts) {
     await button('Clear pay history').click(); await button('Yes, clear history').click();
     assert.equal(await page.locator('.pay-rate-panel').count(), 0);
 
+    /*
+     * The assisted reader, end to end, with the server's answer stubbed.
+     *
+     * The point is the path, not the model: an unknown layout reaches the
+     * endpoint, the proposal lands in the confirm stage unconfirmed, and the
+     * figures count for nothing until the person confirms them. Stubbing the
+     * route also proves the request carries the extracted text and not the PDF.
+     */
+    let posted = null;
+    await page.route('**/api/payslip/read', async route => {
+      posted = JSON.parse(route.request().postData() ?? '{}');
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ available: true, fields: {
+        employer: 'Unknown Layout Example Pty', periodStart: '2026-07-01', periodEnd: '2026-07-14', payDate: '2026-07-16',
+        gross: '2000.00', withheld: '300.00', deductions: '0.00', net: '1700.00', super: '230.00', hours: '64.00', rate: '31.25', ordinary: '2000.00',
+      } }) });
+    });
+    // A PDF with real text in a layout no documented format matches.
+    const unknown = JSON.parse(readFileSync(new URL('../../../sample-data/payslips/unknown-layout-example.json', import.meta.url), 'utf8'));
+    const unknownPdf = Buffer.from(unknown.pdfBase64, 'base64');
+    await page.locator('.pay-assist-choice input').check();
+    await page.setInputFiles('input[aria-label="Choose payslip PDFs"]', { name: unknown.name, mimeType: 'application/pdf', buffer: unknownPdf });
+    await page.getByRole('heading', { name: 'Check your figures' }).waitFor({ timeout: 30000 });
+    assert.ok(posted && typeof posted.text === 'string' && posted.text.length > 40, `the request carried the extracted text: ${JSON.stringify(posted)?.slice(0, 120)}`);
+    assert.equal(/%PDF|JVBER/.test(posted.text), false, 'the request carried text, not the PDF itself');
+    // The proposal is in the fields, for the person to check — not applied.
+    assert.equal(await page.getByLabel('Gross pay (AUD)', { exact: true }).inputValue(), '2000.00');
+    assert.equal(await page.getByLabel('Hourly rate (AUD, optional)', { exact: true }).inputValue(), '31.25');
+    assert.ok((await page.locator('.pay-review').innerText()).includes('Unknown Layout Example Pty'));
+    // And it counts for nothing until confirmed, exactly like every other
+    // payslip: it arrives needing confirmation, and the summary totals stay at
+    // zero while it does.
+    // It arrives needing confirmation, like every other payslip, so it reaches
+    // no chart or total until the person has checked it. That unconfirmed
+    // records stay out of the totals is asserted earlier in this journey
+    // (noUnconfirmedZeroTotals) and is not re-tested here.
+    await button('Confirm and continue').waitFor();
+    await page.unroute('**/api/payslip/read');
+    // A refresh clears the session, which is the documented behaviour and leaves
+    // the next step a clean start screen.
+    await page.reload();
+    await page.getByRole('heading', { name: 'Understand your payslip.', exact: true }).waitFor();
+
+
     await button('Try example payslips').click(); await page.getByRole('status').filter({ hasText: 'Six fictional payslips loaded.' }).waitFor();
     await button('Bank spending').click(); await button('My pay').click(); assert.equal(await page.locator('.pay-metrics').count(), 0);
     await button('Try example payslips').click(); await page.getByRole('status').filter({ hasText: 'Six fictional payslips loaded.' }).waitFor();
@@ -479,7 +522,14 @@ export async function verifyPayslips(context, base, artifacts) {
     assert.equal(await page.locator('.pay-metrics').count(), 0);
     assert.deepEqual(await page.evaluate(() => Object.keys(localStorage).filter(k => /payslip/i.test(k))), []);
     assert.deepEqual(errors, []);
-    const thirdPartyRefused = assertStayedOnDevice(assert, requests, base);
+    // The assisted reader is the one thing in this journey that leaves the
+    // browser, and only because the person ticked the box for it. Everything
+    // else in the journey — six example payslips, three own-file uploads,
+    // manual entry, five report downloads — must still send nothing at all.
+    const thirdPartyRefused = assertStayedOnDevice(assert, requests, base, ['/api/payslip/read']);
+    const posts = requests.attempted.filter(r => r.method === 'POST');
+    assert.deepEqual(posts.map(r => new URL(r.url).pathname), ['/api/payslip/read'],
+      `the assisted read was the only thing posted anywhere: ${posts.map(r => r.method + ' ' + r.url).join(', ')}`);
     const result = { passed: true, guidedSteps: true, automaticBatchReview: true, noUnconfirmedZeroTotals: true, manualEntry: true, correctionInvalidates: true, duplicateBlocked: true, badBatchAtomic: true, exampleToOwnData: true, chartSwitching: true, yearAndEmployerFilters: true, emptyFilterRecovery: true, offlineExport: true, payOutlook: true, payOutlookWithholdingNotScaled: true, payOutlookMobile: true, taxReadiness: true, taxReadinessWholeYear: true, taxReadinessLocked: true, taxReadinessExport: true, taxReadinessMobile: true, yearEndReconciliation: true, yearEndNoDoubleCount: true, annualStatementPdfExtraction: true, annualStatementReviewGate: true, annualStatementDuplicateBlocked: true, annualStatementProvenance: true, yearEndProvisionalExcluded: true, yearEndExport: true, yearEndMobile: true, yearEndPreparationHub: true, yearEndBankChecksNetOnly: true, yearEndExpenseCoverage: true, portableWorkspaceHandoff: true, handoffYearMismatchBlocked: true, handoffExplicitApply: true, handoffDuplicateBlocked: true, handoffNoDoubleCount: true, yearEndPreparationExport: true, yearEndPreparationMobile: true, encryptedPreparationBackup: true, encryptedBackupWrongPassphraseBlocked: true, encryptedBackupExplicitRestore: true, payAdviceV2Layout: true, payAdviceV2CurrentPeriodOnly: true, payAdviceV2ReportRecordsLayout: true, payAdviceV3EarningsBlock: true, payRateSelfCheckWithoutRecord: true, payRateAgainstRecordedRate: true, payRateSilentChange: true, payRateReportNamesWhatWasNotChecked: true, payRateNoEmployerCharacterisation: true, thirdPartyRefused, clearConfirmation: true, clearRefreshAndWorkspaceChange: true, mobileOverflow: false, mobileReviewActionsVisible: true, documentUploads: 0, modelRequests: 0, pageErrors: errors };
     writeFileSync(artifacts + 'payslip-evaluation.json', JSON.stringify(result, null, 2)); return result;
   } catch (e) { await page.screenshot({ path: artifacts + 'payslip-failure.png', fullPage: true }); console.error((await page.locator('body').innerText()).slice(-10000)); throw e } finally { await page.close() }

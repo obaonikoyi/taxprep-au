@@ -1,4 +1,5 @@
 import { PAYSLIP_VERSION, type Payslip } from './payslip'
+import { ASSISTED_FORMAT, readWithAssistance } from './assistedReader'
 import { detectFormat, FORMATS, type TextRow, type TextToken } from './payslipFormats'
 export type { TextRow, TextToken } from './payslipFormats'
 
@@ -28,7 +29,14 @@ export function parsePayslip(lines: string[], hash: string, name: string, sample
   const facts = format.parse({ lines, rows: rows ?? lines.map(text => ({ text, tokens: [] })) })
   return { id: hash, hash, name, text: lines.join('\n'), facts, original: { ...facts }, confirmed: false, sample, format: format.id }
 }
-export async function readPayslip(file: File, signal: AbortSignal, sample = false): Promise<Payslip> {
+/*
+ * `assist` decides what happens when no documented layout matches: throw, as
+ * this reader always has, or send the extracted text to the app's own server to
+ * be read. It is off unless the person asked for it, and it never changes how a
+ * layout we do understand is read — a documented parser is always preferred,
+ * because it can be held to its arithmetic and a model cannot.
+ */
+export async function readPayslip(file: File, signal: AbortSignal, sample = false, assist = false): Promise<Payslip> {
   if (!/\.pdf$/i.test(file.name) || !file.size || file.size > 2_000_000 || file.name.length > 180) throw new Error('Choose a PDF of 1 byte–2 MB with a file name of at most 180 characters.')
   const check = () => { if (signal.aborted) throw new Error('Reading cancelled. Existing payslips are unchanged.') }
   check(); const bytes = new Uint8Array(await file.arrayBuffer()); check()
@@ -48,7 +56,17 @@ export async function readPayslip(file: File, signal: AbortSignal, sample = fals
     // identifies its column far more reliably than its left edge.
     const tokens = content.items.flatMap(i => 'str' in i && i.str.trim() ? [{ text: i.str, x: i.transform[4], y: i.transform[5], width: i.width }] : [])
     const rows = textRows(tokens)
-    const result = parsePayslip(rows.map(r => r.text), hash, file.name, sample, rows)
+    const lines = rows.map(r => r.text)
+    let result: Payslip
+    try {
+      result = parsePayslip(lines, hash, file.name, sample, rows)
+    } catch (error) {
+      if (!assist || !(error instanceof Error) || !error.message.startsWith('This PDF layout is not supported')) throw error
+      const text = lines.join('\n')
+      if (text.length > 20_000) throw new Error('This payslip contains too much text.')
+      const facts = await readWithAssistance(text, signal)
+      result = { id: hash, hash, name: file.name, text, facts, original: { ...facts }, confirmed: false, sample, format: ASSISTED_FORMAT }
+    }
     page.cleanup(); return result
   } finally { signal.removeEventListener('abort', abort); await task.destroy() }
 }

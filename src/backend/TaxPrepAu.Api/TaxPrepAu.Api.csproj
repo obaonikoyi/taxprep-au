@@ -5,4 +5,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <InvariantGlobalization>true</InvariantGlobalization>
   </PropertyGroup>
+  <ItemGroup>
+    <!-- The assisted payslip reader. Used only by Payslips/PayslipReaderEndpoint.cs,
+         which stays switched off unless Anthropic:ApiKey is configured. -->
+    <PackageReference Include="Anthropic" Version="12.49.0" />
+  </ItemGroup>
 </Project>

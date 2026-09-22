@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.StaticFiles;
 using TaxPrepAu.Api.Transactions;
 using TaxPrepAu.Api.Expenses;
+using TaxPrepAu.Api.Payslips;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<FormOptions>(options =>
@@ -77,6 +78,7 @@ app.MapGet("/api/health", () => Results.Ok(new
 })).WithName("GetHealth");
 app.MapImportPreview();
 app.MapExpenseReview();
+app.MapPayslipReader();
 app.Run();
 
 public partial class Program;

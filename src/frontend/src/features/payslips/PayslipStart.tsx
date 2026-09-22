@@ -1,7 +1,7 @@
 import type { Ref } from 'react'
-type Props = { headingRef: Ref<HTMLHeadingElement>; busy: boolean; hasRecords: boolean; fictional: boolean; onManual: () => void; onImport: (files?: File[]) => void }
+type Props = { headingRef: Ref<HTMLHeadingElement>; busy: boolean; hasRecords: boolean; fictional: boolean; assist: boolean; onAssist: (assist: boolean) => void; onManual: () => void; onImport: (files?: File[]) => void }
 
-export default function PayslipStart({ headingRef, busy, hasRecords, fictional, onManual, onImport }: Props) {
+export default function PayslipStart({ headingRef, busy, hasRecords, fictional, assist, onAssist, onManual, onImport }: Props) {
   async function downloadExample(layout: 'summary' | 'advice') {
     const { default: examples } = layout === 'summary'
       ? await import('../../../../../sample-data/payslips/examples.json')
@@ -19,8 +19,21 @@ export default function PayslipStart({ headingRef, busy, hasRecords, fictional, 
       <button className="primary-button" disabled={busy || fictional} onClick={onManual}>Enter figures manually <span aria-hidden="true">→</span></button>
       <span className="pay-start-hint">Copy the figures shown on your payslip.</span>
       <div className="pay-upload-option">
-        <h3>Have a supported PDF?</h3>
-        <p>PDF upload reads two documented layouts. Use manual entry for other employer layouts or photos.</p>
+        <h3>Have a PDF?</h3>
+        <p>Three documented layouts are read here on your device. For any other employer's layout, the assisted reader below can read it for you.</p>
+        <div className="pay-assist">
+          <label className="pay-assist-choice">
+            <input type="checkbox" checked={assist} disabled={busy || fictional} onChange={e => onAssist(e.target.checked)} />
+            <span>
+              <strong>Read any layout for me</strong>
+              <small>
+                For a layout this app does not know, the text of that payslip is sent to our server to be read, and the reading comes back for you to check.
+                Your PDF never leaves this device, nothing is stored, and figures still count for nothing until you confirm them.
+                Leave this off and any unknown layout is simply not read — you enter those figures yourself, and nothing leaves your device at all.
+              </small>
+            </span>
+          </label>
+        </div>
         <label className="statement-file pay-file-secondary">Choose payslip PDFs<input aria-label="Choose payslip PDFs" type="file" accept=".pdf,application/pdf" multiple disabled={busy || fictional} onChange={e => { const files = [...(e.target.files ?? [])]; e.target.value = ''; if (files.length) onImport(files) }} /></label>
         <details className="pay-format"><summary>Which PDFs work?</summary>
           <p>One page with selectable text, up to 2 MB per file, and up to 20 PDFs at once. Scans, photos and other employer layouts are not read automatically yet — enter those figures yourself.</p>
