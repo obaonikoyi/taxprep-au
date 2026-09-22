@@ -7,6 +7,15 @@ export type PreparationStep = { kind: 'welcome' | 'income' | 'summary' } | { kin
       draft?: { amount: number; sources: ExpenseSource[] }; fields?: ExpenseDraft }
 export interface PreparationData { expenses: Expense[]; step: PreparationStep }
 export interface ProgressSnapshot { version: 1; financialYear: '2025-26'; savedAt: string; data: PreparationData }
+/*
+ * The `taxprep-` prefix below is deliberate, and outlives the rename to Xoba
+ * Paycheck (September 2026). Storage belongs to an exact origin, and
+ * taxprep.3xoba.com is still live. Renaming this key would silently discard
+ * the saved progress of anyone still arriving there. The move to
+ * xobapaycheck.com already starts everyone fresh on the new address; there is
+ * no reason to break the old one as well.
+ * See docs/RENAME_TO_XOBA_PAYCHECK.md.
+ */
 export const PROGRESS_KEY = 'taxprep-au:preparation-progress'
 export const MAX_SNAPSHOT_LENGTH = 1_000_000
 export type SavedCopy = { kind: 'empty'; raw: null } | { kind: 'saved'; raw: string; snapshot: ProgressSnapshot }

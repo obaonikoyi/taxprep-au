@@ -8,7 +8,7 @@ After checking payslips, a user can choose one financial year and compare the re
 
 The central rule is simple:
 
-**Payslips and final annual employment sources are two views of the same employment income. TaxPrep compares them; it never adds both together as extra income.**
+**Payslips and final annual employment sources are two views of the same employment income. Xoba Paycheck compares them; it never adds both together as extra income.**
 
 This milestone does not unlock final tax, a refund or a debt calculation.
 
@@ -26,7 +26,7 @@ Each source records:
 - final status: Tax ready/finalised, not final or unsure; and
 - an optional link to one employer already represented in checked pay history.
 
-TaxPrep does not ask for a TFN. Source-reference help explicitly tells users not to enter one.
+Xoba Paycheck does not ask for a TFN. Source-reference help explicitly tells users not to enter one.
 
 Up to 30 annual employment sources can be entered in one in-memory session.
 
@@ -52,7 +52,7 @@ Matching duplicates are blocked from reconciliation totals until resolved. Diffe
 
 ## Reconciliation states
 
-For each employer/source group, TaxPrep shows checked payslip totals and final annual-source totals separately.
+For each employer/source group, Xoba Paycheck shows checked payslip totals and final annual-source totals separately.
 
 Possible states:
 
@@ -62,7 +62,7 @@ Possible states:
 - **Annual source has no linked pay history** — a final annual source is present but is not linked to checked pay history.
 - **Source still provisional** — only not-final/unsure linked sources are available.
 
-For a mismatch, TaxPrep shows annual source minus payslip history for gross and withholding. The mismatch remains a review question. TaxPrep does not decide which source is legally correct.
+For a mismatch, Xoba Paycheck shows annual source minus payslip history for gross and withholding. The mismatch remains a review question. Xoba Paycheck does not decide which source is legally correct.
 
 ## Coverage statement
 
@@ -82,7 +82,7 @@ Current ATO materials used for source-status wording:
 - [Multiple income statements from one employer](https://www.ato.gov.au/api/public/content/0-9e8a6a9e-7a55-456b-8bd4-ff06ea9a2694)
 - [Finalising Single Touch Payroll data](https://www.ato.gov.au/api/public/content/0-2f417730-27cf-4825-8b51-ee53bfe00358)
 
-These references support status wording and the fact that one employer can have multiple income statements. They do not unlock TaxPrep's annual-tax calculation or satisfy the qualified rule/rounding review still open in #28.
+These references support status wording and the fact that one employer can have multiple income statements. They do not unlock Xoba Paycheck's annual-tax calculation or satisfy the qualified rule/rounding review still open in #28.
 
 ## Offline year-end pay handover
 

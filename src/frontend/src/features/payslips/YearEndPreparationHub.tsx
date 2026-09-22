@@ -115,7 +115,7 @@ export default function YearEndPreparationHub({ reconciliation }: Props) {
 
     <div className="year-end-prep-boundary">
       <strong>Bank deposits are a completeness check, not income evidence.</strong>
-      <p>TaxPrep compares a user-entered bank deposit total with checked payslip <strong>net pay</strong>. It never derives gross income, tax withheld or taxable income from a bank deposit.</p>
+      <p>Xoba Paycheck compares a user-entered bank deposit total with checked payslip <strong>net pay</strong>. It never derives gross income, tax withheld or taxable income from a bank deposit.</p>
     </div>
 
     {!open ? <button className="secondary-button" onClick={() => setOpen(true)}>Start year-end preparation hub</button> : <>
@@ -128,10 +128,10 @@ export default function YearEndPreparationHub({ reconciliation }: Props) {
 
       <section className="year-end-prep-section year-end-handoff-import" aria-labelledby="workspace-handoff-heading">
         <div className="year-end-prep-section-heading">
-          <div><p className="eyebrow">Explicit cross-workspace handoff</p><h5 id="workspace-handoff-heading">Import reviewed coverage from another TaxPrep workspace</h5></div>
+          <div><p className="eyebrow">Explicit cross-workspace handoff</p><h5 id="workspace-handoff-heading">Import reviewed coverage from another Xoba Paycheck workspace</h5></div>
           <span>{handoffs.length} applied</span>
         </div>
-        <p className="year-end-prep-help">Bank spending and Tax documents can export a small JSON summary with coverage counts and source SHA-256 references. TaxPrep checks the version and financial year first. Nothing changes until you choose <strong>Apply imported coverage</strong>.</p>
+        <p className="year-end-prep-help">Bank spending and Tax documents can export a small JSON summary with coverage counts and source SHA-256 references. Xoba Paycheck checks the version and financial year first. Nothing changes until you choose <strong>Apply imported coverage</strong>.</p>
         <p className="year-end-prep-help"><strong>Not transferred:</strong> raw bank transactions, merchant descriptions, OCR text, employer matching or an approved deduction. Rule-review coverage is never auto-completed.</p>
         <div className="year-end-handoff-actions">
           <label className="secondary-button year-end-handoff-file">Import year-end handoff
@@ -207,7 +207,7 @@ export default function YearEndPreparationHub({ reconciliation }: Props) {
           <div><p className="eyebrow">Expense and evidence coverage</p><h5 id="expense-coverage-heading">Record what you already reviewed</h5></div>
           <span>No deduction approval</span>
         </div>
-        <p className="year-end-prep-help">These answers can be copied from the Bank spending and Tax documents workflows. They are session notes only; TaxPrep does not silently move or store your statement/receipt files between tools.</p>
+        <p className="year-end-prep-help">These answers can be copied from the Bank spending and Tax documents workflows. They are session notes only; Xoba Paycheck does not silently move or store your statement/receipt files between tools.</p>
 
         <div className="year-end-expense-form">
           {coverageSelect('Bank spending review', 'bankSpending')}
@@ -258,8 +258,8 @@ export default function YearEndPreparationHub({ reconciliation }: Props) {
 
       <details className="statement-help year-end-prep-save-boundary">
         <summary>What is saved and what is not?</summary>
-        <p>TaxPrep still has no automatic browser or cloud save for this workspace. Refreshing or leaving the workflow clears the in-app preparation state.</p>
-        <p>The optional encrypted backup is a file you explicitly download and keep yourself. It contains preparation answers and applied summary handoffs, protected by your passphrase, but not raw financial documents or transactions. TaxPrep does not store the file or passphrase and cannot recover a forgotten passphrase.</p>
+        <p>Xoba Paycheck still has no automatic browser or cloud save for this workspace. Refreshing or leaving the workflow clears the in-app preparation state.</p>
+        <p>The optional encrypted backup is a file you explicitly download and keep yourself. It contains preparation answers and applied summary handoffs, protected by your passphrase, but not raw financial documents or transactions. Xoba Paycheck does not store the file or passphrase and cannot recover a forgotten passphrase.</p>
         <p>Future account-based save/resume still needs separate storage, retention, deletion, backup and recovery decisions before implementation.</p>
       </details>
     </>}

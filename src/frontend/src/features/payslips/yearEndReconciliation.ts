@@ -253,7 +253,7 @@ export function reconcileYearEndPay(
     if (sourceRow.provisional) questions.push(`${sourceRow.source.payer.trim()}: annual source is ${annualFinalStatusLabel(sourceRow.source.finalStatus, sourceRow.source.sourceType).toLowerCase()} and is excluded from final reconciliation totals.`)
   }
   for (const row of rows) {
-    if (row.state === 'differs') questions.push(`${row.label}: final annual source totals differ from checked payslip totals. Review the sources; TaxPrep does not decide which is legally correct.`)
+    if (row.state === 'differs') questions.push(`${row.label}: final annual source totals differ from checked payslip totals. Review the sources; Xoba Paycheck does not decide which is legally correct.`)
     if (row.state === 'pay-without-final-source') questions.push(`${row.label}: checked pay history has no linked final annual source.`)
     if (row.state === 'annual-without-pay-history') questions.push(`${row.label}: final annual source has no linked checked pay history.`)
   }

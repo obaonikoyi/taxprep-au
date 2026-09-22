@@ -1,4 +1,4 @@
-# TaxPrep AU — interface design system
+# Xoba Paycheck — interface design system
 
 How the four workspaces (My pay, Bank spending, Tax documents, Guided example) stay visually consistent, and where to add a style rather than inventing one.
 

@@ -118,7 +118,7 @@ function currentPeriodAmount(row: TextRow, cols: { current: number; ytd: number 
  *   Overtime           4.00     43.35        173.40        1,204.00
  *
  * Only the ordinary line is read. An overtime or penalty multiplier depends
- * on the award and the roster, neither of which TaxPrep knows, so those lines
+ * on the award and the roster, neither of which Xoba Paycheck knows, so those lines
  * are left to the gross total and never checked against an agreed rate.
  */
 type Anchors = { hours: number; rate: number; current: number; ytd: number }

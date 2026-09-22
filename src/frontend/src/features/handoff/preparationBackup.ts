@@ -8,6 +8,14 @@ import {
 } from '../payslips/yearEndPreparation'
 import { handoffConflicts, parseYearEndHandoffValue, type YearEndHandoff } from './yearEndHandoff'
 
+/*
+ * The `taxprep-` prefix below is deliberate, and outlives the rename to Xoba
+ * Paycheck (September 2026). These strings are checked when a backup is
+ * restored, so renaming them would refuse a file somebody downloaded before
+ * the rename. A version identifier names a format, not a product, which is
+ * why it carries a version suffix; it changes when the format changes.
+ * See docs/RENAME_TO_XOBA_PAYCHECK.md.
+ */
 export const PREPARATION_BACKUP_VERSION = 'taxprep-year-end-preparation-backup-v1'
 export const PREPARATION_BACKUP_PAYLOAD_VERSION = 'taxprep-year-end-preparation-payload-v1'
 export const PREPARATION_BACKUP_ITERATIONS = 210_000
@@ -269,7 +277,7 @@ export async function decryptPreparationBackup(
 }
 
 export async function readEncryptedPreparationBackup(file: File) {
-  if (!/\.json$/i.test(file.name)) throw new Error('Choose a TaxPrep encrypted preparation-backup JSON file.')
+  if (!/\.json$/i.test(file.name)) throw new Error('Choose a Xoba Paycheck encrypted preparation-backup JSON file.')
   if (!file.size || file.size > MAX_PREPARATION_BACKUP_BYTES) throw new Error('Use an encrypted preparation backup from 1 byte to 256 KB.')
   try {
     return JSON.parse(await file.text()) as unknown
@@ -282,7 +290,7 @@ export function downloadPreparationBackup(envelope: unknown, financialYear: stri
   const url = URL.createObjectURL(new Blob([JSON.stringify(envelope, null, 2) + '\n'], { type: 'application/json' }))
   const link = document.createElement('a')
   link.href = url
-  link.download = `taxprep-year-end-${financialYear.replace('–', '-')}-encrypted-backup.json`
+  link.download = `xoba-paycheck-year-end-${financialYear.replace('–', '-')}-encrypted-backup.json`
   link.click()
   setTimeout(() => URL.revokeObjectURL(url), 1000)
 }

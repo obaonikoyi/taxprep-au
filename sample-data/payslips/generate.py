@@ -34,7 +34,7 @@ result = []
 for number, spec in enumerate(specs, 1):
     stream = io.BytesIO()
     c = canvas.Canvas(stream, pagesize=(595, 842), invariant=1)
-    c.setTitle('Fictional payslip summary - TaxPrep AU')
+    c.setTitle('Fictional payslip summary - Xoba Paycheck')
     c.setFillColor(HexColor('#173f35')); c.rect(0, 708, 595, 134, fill=1, stroke=0)
     c.setFillColor(HexColor('#ffffff')); c.setFont('SampleBold', 22)
     c.drawString(44, 779, 'PAYSLIP SUMMARY v1')

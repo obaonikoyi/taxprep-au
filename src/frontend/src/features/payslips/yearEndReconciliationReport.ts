@@ -66,10 +66,10 @@ ${source.unresolvedCoverage?.length ? `<p><strong>Unresolved annual fields:</str
   const questions = result.questions.length ? result.questions.map(question => `<li>${escape(question)}</li>`).join('') : '<li>No reconciliation questions remain from the recorded sources. This is not proof that the tax return is complete.</li>'
   const guidance = annualSourceGuidance.map(source => `<li><a href="${escape(source.url)}">${escape(source.title)}</a></li>`).join('')
 
-  return `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TaxPrep AU year-end pay handover</title><style>body{max-width:1100px;margin:40px auto;padding:0 20px;font:16px/1.6 system-ui;color:#173f35}table{width:100%;border-collapse:collapse;margin:16px 0 30px}td,th{padding:8px;border-bottom:1px solid #ddd;text-align:left;vertical-align:top;overflow-wrap:anywhere}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f5f7f5;padding:12px;border-radius:8px}.notice{padding:16px;border:1px solid #dccb9d;background:#fff8e9;border-radius:10px}.question{padding:16px;border:1px solid #e1d8c3;background:#fffdf8;border-radius:10px}@media print{body{font-size:9px}}@media(max-width:700px){table{font-size:10px}td,th{padding:4px}}</style>
-<h1>TaxPrep AU year-end pay handover</h1>
+  return `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Xoba Paycheck year-end pay handover</title><style>body{max-width:1100px;margin:40px auto;padding:0 20px;font:16px/1.6 system-ui;color:#173f35}table{width:100%;border-collapse:collapse;margin:16px 0 30px}td,th{padding:8px;border-bottom:1px solid #ddd;text-align:left;vertical-align:top;overflow-wrap:anywhere}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f5f7f5;padding:12px;border-radius:8px}.notice{padding:16px;border:1px solid #dccb9d;background:#fff8e9;border-radius:10px}.question{padding:16px;border:1px solid #e1d8c3;background:#fffdf8;border-radius:10px}@media print{body{font-size:9px}}@media(max-width:700px){table{font-size:10px}td,th{padding:4px}}</style>
+<h1>Xoba Paycheck year-end pay handover</h1>
 <p><strong>Financial year:</strong> ${escape(result.year)}<br><strong>Reconciliation version:</strong> ${escape(result.version)}<br><strong>ATO terminology reference version:</strong> ${escape(ANNUAL_SOURCE_GUIDANCE_VERSION)}</p>
-<div class="notice"><strong>Two views of the same employment income — do not add them together.</strong><p>Checked payslips show period-by-period pay history. Final annual income statements/payment summaries show annual employment totals. TaxPrep compares them; it does not add both sets as separate income.</p><p>Tax/refund results remain locked. A mismatch is a review question, not a decision about which source is legally correct.</p></div>
+<div class="notice"><strong>Two views of the same employment income — do not add them together.</strong><p>Checked payslips show period-by-period pay history. Final annual income statements/payment summaries show annual employment totals. Xoba Paycheck compares them; it does not add both sets as separate income.</p><p>Tax/refund results remain locked. A mismatch is a review question, not a decision about which source is legally correct.</p></div>
 <p><strong>User annual-source coverage statement:</strong> ${escape(coverageAnswerLabel(result.coverageAnswer))}. This is a user statement, not proof of return completeness.</p>
 <h2>Employer reconciliation</h2>
 <table><thead><tr><th>Employer / source</th><th>Payslips</th><th>Payslip gross</th><th>Payslip withholding</th><th>Final annual sources</th><th>Final annual gross</th><th>Final annual withholding</th><th>Gross difference</th><th>Withholding difference</th><th>Status</th></tr></thead><tbody>${reconciliationRows}</tbody></table>
@@ -87,7 +87,7 @@ ${provenance ? `<h2>Imported annual-statement provenance</h2>${provenance}` : ''
 export function downloadYearEndReconciliationReport(html: string) {
   const url = URL.createObjectURL(new Blob([html], { type: 'text/html' })), link = document.createElement('a')
   link.href = url
-  link.download = 'taxprep-year-end-pay-handover.html'
+  link.download = 'xoba-paycheck-year-end-pay-handover.html'
   link.click()
   setTimeout(() => URL.revokeObjectURL(url), 1000)
 }

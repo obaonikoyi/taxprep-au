@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       demo_url:
-        description: HTTPS URL of the published demo (taxprep.3xoba.com, or its Railway host)
+        description: HTTPS URL of the published demo (xobapaycheck.com, taxprep.3xoba.com, or its Railway host)
         required: true
         type: string
 permissions:
@@ -24,30 +24,56 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: src/frontend/package-lock.json
+
+      # Two different questions, and only one of them can be answered before
+      # this change is deployed.
+      #
+      # Is the published URL a host we actually serve? That is a property of
+      # deployment.json alone, so it is checked on every event, pull request
+      # included — a typo there is exactly what this workflow exists to catch.
+      - name: Check the published URL
+        id: url
+        env:
+          DEMO_URL: ${{ inputs.demo_url }}
+        run: |
+          node --input-type=module <<'JS' >> "$GITHUB_OUTPUT"
+          import { readFileSync } from 'node:fs';
+          const u = new URL(process.env.DEMO_URL || JSON.parse(readFileSync('deployment.json', 'utf8')).url);
+          // A rail, not a formality: this job can be dispatched with any URL, and
+          // the smoke test drives a real browser through it. Keep it to the
+          // hosts that serve this app — the published domain, the older
+          // subdomain kept alive so existing links work, and the Railway
+          // origin behind them, which still answers directly.
+          const published = ['xobapaycheck.com', 'taxprep.3xoba.com'].includes(u.hostname) || u.hostname.endsWith('.up.railway.app');
+          if (u.protocol !== 'https:' || !published) throw new Error('Expected the published demo HTTPS URL: xobapaycheck.com, taxprep.3xoba.com or a *.up.railway.app host');
+          console.log(`href=${u.href}`);
+          JS
+
+      # Does the site at that URL still work? That one is about the *deployed*
+      # build, which on a pull request is whatever main is serving — not this
+      # branch. Running the browser journey here compares the PR's expectations
+      # against the previous release and fails whenever a PR changes both
+      # deployment.json and anything the journey asserts. It did exactly that
+      # on the rename to Xoba Paycheck: the live site offered the old report
+      # filename because the rename had not shipped yet. So the browser run
+      # waits for the push to main, where the deployment it is checking is the
+      # one this workflow is named after.
       - name: Install browser dependencies
+        if: github.event_name != 'pull_request'
         working-directory: src/frontend
         run: |
           npm ci
           npx playwright install --with-deps chromium
+
       - name: Verify public demo
+        if: github.event_name != 'pull_request'
         working-directory: src/frontend
         env:
-          DEMO_URL: ${{ inputs.demo_url }}
-        run: |
-          node --input-type=module <<'JS'
-          import { readFileSync } from 'node:fs';
-          const u = new URL(process.env.DEMO_URL || JSON.parse(readFileSync('../../deployment.json', 'utf8')).url);
-          // A rail, not a formality: this job can be dispatched with any URL, and
-          // the smoke test drives a real browser through it. Keep it to the two
-          // hosts that serve this app — the published custom domain, and the
-          // Railway origin behind it, which still answers directly.
-          const published = u.hostname === 'taxprep.3xoba.com' || u.hostname.endsWith('.up.railway.app');
-          if (u.protocol !== 'https:' || !published) throw new Error('Expected the published demo HTTPS URL: taxprep.3xoba.com or a *.up.railway.app host');
-          process.env.DEMO_URL = u.href;
-          await import('./scripts/hosted-smoke.mjs');
-          JS
+          DEMO_URL: ${{ steps.url.outputs.href }}
+        run: node ./scripts/hosted-smoke.mjs
+
       - name: Upload hosted verification
-        if: always()
+        if: always() && github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
         with:
           name: hosted-verification

@@ -1,7 +1,7 @@
 /*
  * Pay rate records, and the questions a payslip raises against them.
  *
- * TaxPrep compares a payslip against the rate the user says they agreed to.
+ * Xoba Paycheck compares a payslip against the rate the user says they agreed to.
  * It does NOT compare it against an award, a classification or a legal
  * minimum: it has no knowledge of any of those, so a rate that is itself
  * below an award would pass here unremarked. Every result is therefore a
@@ -42,15 +42,23 @@ export type RateRecord = {
   note: string
 }
 
-export const rateSources: { value: RateSource; label: string; cited: string }[] = [
-  { value: 'contract', label: 'Contract', cited: 'your contract' },
-  { value: 'offer', label: 'Letter of offer', cited: 'your letter of offer' },
-  { value: 'roster', label: 'Roster or certificate', cited: 'your roster or certificate' },
+/*
+ * `cited` is for the screen, which addresses the user, and `mine` is for the
+ * message, which the user sends. They cannot be one string: "your contract" on
+ * the panel means the reader's own, while in an email to payroll it would mean
+ * the payroll officer's.
+ */
+export const rateSources: { value: RateSource; label: string; cited: string; mine: string }[] = [
+  { value: 'contract', label: 'Contract', cited: 'your contract', mine: 'my contract' },
+  { value: 'offer', label: 'Letter of offer', cited: 'your letter of offer', mine: 'my letter of offer' },
+  { value: 'roster', label: 'Roster or certificate', cited: 'your roster or certificate', mine: 'my roster or certificate' },
   // Weaker evidence, and offered deliberately: someone told a number and never
   // given paper is exactly the person this feature exists for. Findings say so.
-  { value: 'verbal', label: 'Verbal, recorded by me', cited: 'a verbal agreement you recorded yourself' },
+  { value: 'verbal', label: 'Verbal, recorded by me', cited: 'a verbal agreement you recorded yourself', mine: 'a verbal agreement I noted at the time' },
 ]
 export const citedSource = (source: RateSource) => rateSources.find(s => s.value === source)?.cited ?? 'your record'
+/** The same source, as the user would name it writing to their employer. */
+export const myCitedSource = (source: RateSource) => rateSources.find(s => s.value === source)?.mine ?? 'my own record'
 
 export const blankRate = (): RateRecord => ({ id: '', employer: '', basis: 'hourly', amount: '', weeklyHours: '', from: '', to: '', source: 'contract', note: '' })
 
@@ -117,7 +125,26 @@ export type Finding = {
   difference: string
   limit: string
   question: string
+  /*
+   * The same finding, written to be sent.
+   *
+   * The fields above address the user — "the rate you recorded". A message to
+   * payroll is the other way round, where "you" is the payroll officer, so it
+   * cannot be assembled from them and is written separately, here, where the
+   * figures are in scope.
+   *
+   * It asks. It never asserts an entitlement, names a fault or requests money:
+   * this app knows the user's own record and a payslip's arithmetic, and
+   * nothing about what anyone is owed. The banned-word test in
+   * `payRate.test.ts` covers this field too.
+   */
+  message: string
 }
+
+const OPENING = 'Hi,'
+const CLOSING = 'Thanks.'
+/** A message the user can send as it stands: greeting, figures, one question. */
+const sendable = (...body: string[]) => [OPENING, ...body, CLOSING].join('\n\n')
 
 export type CheckState = {
   slipId: string
@@ -170,8 +197,12 @@ export function rateChecks(slips: Payslip[], records: RateRecord[], issuesFor: (
         employer: f.employer, period: periodText(slip), yourRecord: null,
         thePayslip: `${hoursText(hours)} hours at ${aud(rate)} is ${aud(expected)}, but the pay for those hours reads ${aud(ordinary)}.`,
         difference: `${aud(Math.abs(expected - ordinary))} ${expected > ordinary ? 'less than' : 'more than'} the payslip’s own hours and rate come to.`,
-        limit: 'An adjustment from another period, unpaid leave or a figure shown elsewhere on the payslip can each produce this. TaxPrep cannot tell which figure is the one to change.',
+        limit: 'An adjustment from another period, unpaid leave or a figure shown elsewhere on the payslip can each produce this. Xoba Paycheck cannot tell which figure is the one to change.',
         question: ASK,
+        message: sendable(
+          `Could you help me check my payslip for the period ${periodText(slip)}?`,
+          `It shows ${hoursText(hours)} hours at ${aud(rate)}, which comes to ${aud(expected)}, but the pay for those hours reads ${aud(ordinary)}.`,
+          'I may be reading it the wrong way. Could you let me know which figure applies, and whether anything needs adjusting?'),
       })
     }
 
@@ -190,8 +221,13 @@ export function rateChecks(slips: Payslip[], records: RateRecord[], issuesFor: (
             yourRecord: `${rateText(record)}, from ${citedSource(record.source)}${record.note.trim() ? ` (${record.note.trim()})` : ''}, effective ${record.from}.`,
             thePayslip: `${aud(rate)} an hour.${consequence}`,
             difference: `${aud(Math.abs(rate - recorded))} an hour ${rate < recorded ? 'below' : 'above'} what you recorded${hours !== null ? `, or ${aud(Math.abs(expectedCents(hours, recorded) - expectedCents(hours, rate)))} over this period` : ''}.`,
-            limit: 'TaxPrep cannot tell you which rate applies. Your recorded rate may have been superseded, your classification may have changed, or the record itself may need updating. It also does not know your award, so it cannot say whether either rate is one you are entitled to.',
+            limit: 'Xoba Paycheck cannot tell you which rate applies. Your recorded rate may have been superseded, your classification may have changed, or the record itself may need updating. It also does not know your award, so it cannot say whether either rate is one you are entitled to.',
             question: ASK,
+            message: sendable(
+              `Could you help me check my pay for the period ${periodText(slip)}?`,
+              `The payslip shows an hourly rate of ${aud(rate)}. I have ${rateText(record)} from ${record.from}, taken from ${myCitedSource(record.source)}.`
+                + (hours !== null ? ` Over ${hoursText(hours)} hours the two come to ${aud(expectedCents(hours, rate))} and ${aud(expectedCents(hours, recorded))}, a difference of ${aud(Math.abs(expectedCents(hours, recorded) - expectedCents(hours, rate)))}.` : ''),
+              'Could you let me know which rate applies for this period, and whether my record is out of date?'),
           })
         }
       } else if (hours !== null && ordinary !== null) {
@@ -206,8 +242,12 @@ export function rateChecks(slips: Payslip[], records: RateRecord[], issuesFor: (
           yourRecord: `${rateText(record)}, from ${citedSource(record.source)}. Over ${hoursText(hours)} hours that is ${aud(expected)}.`,
           thePayslip: `${aud(ordinary)} for ${hoursText(hours)} ordinary hours. This payslip does not show an hourly rate.`,
           difference: `${aud(Math.abs(expected - ordinary))} ${expected > ordinary ? 'less than' : 'more than'} your recorded rate comes to over these hours.`,
-          limit: 'This payslip states no rate, so the difference may come from the rate, the hours, or an adjustment the payslip does not itemise. TaxPrep does not know your award and cannot say which rate you are entitled to.',
+          limit: 'This payslip states no rate, so the difference may come from the rate, the hours, or an adjustment the payslip does not itemise. Xoba Paycheck does not know your award and cannot say which rate you are entitled to.',
           question: ASK,
+          message: sendable(
+            `Could you help me check my pay for the period ${periodText(slip)}?`,
+            `The payslip shows ${aud(ordinary)} for ${hoursText(hours)} ordinary hours and does not show an hourly rate. I have ${rateText(record)} from ${myCitedSource(record.source)}, which over those hours comes to ${aud(expected)} — a difference of ${aud(Math.abs(expected - ordinary))}.`,
+            'Could you let me know the hourly rate used for this period, and whether the hours are as you have them?'),
         })
       }
     }
@@ -251,6 +291,10 @@ export function rateChecks(slips: Payslip[], records: RateRecord[], issuesFor: (
         difference: `${aud(Math.abs(a - b))} an hour ${b < a ? 'lower' : 'higher'} than the previous period.`,
         limit: 'A change of classification, the end of a casual loading arrangement or a different roster can all move a rate legitimately. If you knew about this change, record it as a new rate and this question will stop being raised.',
         question: `If this change is news to you, ${ASK[0].toLowerCase()}${ASK.slice(1)}`,
+        message: sendable(
+          'Could you help me check my hourly rate?',
+          `My payslip for the period ending ${before.facts.periodEnd} shows ${aud(a)} an hour, and the one for the period ending ${after.facts.periodEnd} shows ${aud(b)}.`,
+          'I do not have a note of a rate change between those periods. Could you let me know what changed, so I can update my own records?'),
       })
     }
   }

@@ -34,7 +34,7 @@ export async function verifyReportDownload(page, artifacts, { name, total, unres
   const downloaded = page.waitForEvent('download');
   await demo.getByRole('button', { name: 'Download report (HTML)', exact: true }).click();
   const download = await downloaded;
-  assert.match(download.suggestedFilename(), /^taxprep-au-preparation-2025-26-\d{4}-\d{2}-\d{2}\.html$/);
+  assert.match(download.suggestedFilename(), /^xoba-paycheck-preparation-2025-26-\d{4}-\d{2}-\d{2}\.html$/);
   const file = artifacts + '/preparation-' + name + '.html';
   await download.saveAs(file);
   const html = readFileSync(file, 'utf8');

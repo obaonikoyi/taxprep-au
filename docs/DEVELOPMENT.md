@@ -37,7 +37,7 @@ Open `http://localhost:5173` (or Vite's printed URL). The Vite development proxy
 6. Select **Sunrise Mobile Services**, choose **Phone service** and click **Review selected spending**. Enter 40% work use, no reimbursement and missing evidence; save to see an $18 work portion.
 7. Inspect its source row in the summary and report. Upload the same sample again: that row is unavailable. Remove the expense to release it, or restart to clear the session.
 
-The upload sends the CSV to TaxPrep AU and processes it in memory. Use fictional data. Expenses and source references remain in this tab unless saved with **Save progress**. That explicit snapshot stays in the same browser; nothing is persisted on the server, classified as deductible or submitted to the ATO.
+The upload sends the CSV to Xoba Paycheck and processes it in memory. Use fictional data. Expenses and source references remain in this tab unless saved with **Save progress**. That explicit snapshot stays in the same browser; nothing is persisted on the server, classified as deductible or submitted to the ATO.
 
 ## Try the guided expense review
 

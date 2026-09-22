@@ -30,7 +30,7 @@ function ApiStatus({ endpoint }: ApiStatusProps) {
   // async lets us use await while the browser waits for the API response.
   async function checkBackend() {
     setConnectionState('loading')
-    setMessage('Contacting the TaxPrep AU API…')
+    setMessage('Contacting the Xoba Paycheck API…')
 
     try {
       const response = await fetch(endpoint)

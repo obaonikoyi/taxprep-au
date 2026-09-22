@@ -49,20 +49,20 @@ export default function TaxReadiness({ allSlips, year, employerFilter }: Props) 
 
   if (year === 'all') {
     return <section className="tax-readiness" aria-labelledby="tax-readiness-heading">
-      <div className="tax-readiness-heading"><div><p className="eyebrow">Optional tax readiness</p><h3 id="tax-readiness-heading">What would TaxPrep still need for tax?</h3><p>Choose one financial year above first. This check is whole-person and year scoped, so it cannot use a mixed-year view.</p></div><span className="tax-readiness-badge locked">No tax estimate</span></div>
+      <div className="tax-readiness-heading"><div><p className="eyebrow">Optional tax readiness</p><h3 id="tax-readiness-heading">What would Xoba Paycheck still need for tax?</h3><p>Choose one financial year above first. This check is whole-person and year scoped, so it cannot use a mixed-year view.</p></div><span className="tax-readiness-badge locked">No tax estimate</span></div>
     </section>
   }
 
   if (coverage.pendingSlips.length > 0) {
     return <section className="tax-readiness" aria-labelledby="tax-readiness-heading">
-      <div className="tax-readiness-heading"><div><p className="eyebrow">Optional tax readiness</p><h3 id="tax-readiness-heading">What would TaxPrep still need for tax?</h3><p>{year} · all employers for this year</p></div><span className="tax-readiness-badge warning">Pay records need checking</span></div>
-      <div className="tax-readiness-blocked"><strong>Check the pay records first.</strong><p>{coverage.pendingSlips.length} record{coverage.pendingSlips.length === 1 ? '' : 's'} could belong to this financial year but are unconfirmed or unresolved. TaxPrep will not silently leave them out of a whole-year readiness check.</p></div>
+      <div className="tax-readiness-heading"><div><p className="eyebrow">Optional tax readiness</p><h3 id="tax-readiness-heading">What would Xoba Paycheck still need for tax?</h3><p>{year} · all employers for this year</p></div><span className="tax-readiness-badge warning">Pay records need checking</span></div>
+      <div className="tax-readiness-blocked"><strong>Check the pay records first.</strong><p>{coverage.pendingSlips.length} record{coverage.pendingSlips.length === 1 ? '' : 's'} could belong to this financial year but are unconfirmed or unresolved. Xoba Paycheck will not silently leave them out of a whole-year readiness check.</p></div>
     </section>
   }
 
   if (!coverage.checkedSlips.length) {
     return <section className="tax-readiness" aria-labelledby="tax-readiness-heading">
-      <div className="tax-readiness-heading"><div><p className="eyebrow">Optional tax readiness</p><h3 id="tax-readiness-heading">What would TaxPrep still need for tax?</h3><p>No checked payslips are available for {year}. Add and confirm pay records first.</p></div><span className="tax-readiness-badge locked">No tax estimate</span></div>
+      <div className="tax-readiness-heading"><div><p className="eyebrow">Optional tax readiness</p><h3 id="tax-readiness-heading">What would Xoba Paycheck still need for tax?</h3><p>No checked payslips are available for {year}. Add and confirm pay records first.</p></div><span className="tax-readiness-badge locked">No tax estimate</span></div>
     </section>
   }
 
@@ -78,7 +78,7 @@ export default function TaxReadiness({ allSlips, year, employerFilter }: Props) 
     <div className="tax-readiness-heading">
       <div>
         <p className="eyebrow">Optional tax readiness</p>
-        <h3 id="tax-readiness-heading">What would TaxPrep still need for tax?</h3>
+        <h3 id="tax-readiness-heading">What would Xoba Paycheck still need for tax?</h3>
         <p>This checks profile completeness for <strong>{year}</strong>. It uses all checked employers in that financial year and does not calculate a refund or debt.</p>
       </div>
       <span className="tax-readiness-badge locked">Tax result locked</span>
@@ -132,7 +132,7 @@ export default function TaxReadiness({ allSlips, year, employerFilter }: Props) 
           <div><span>Outside current profile</span><strong>{result.outsideProfile.length}</strong></div>
         </div>
         {result.needsInformation.length > 0 && <div className="tax-readiness-list"><strong>Needs information</strong><ul>{result.needsInformation.map(question => <li key={question.key}>{question.label}</li>)}</ul></div>}
-        {result.outsideProfile.length > 0 && <div className="tax-readiness-list warning"><strong>Outside the current supported profile</strong><ul>{result.outsideProfile.map(question => <li key={question.key}>{question.label}</li>)}</ul><p>TaxPrep should not squeeze these circumstances into the narrow prototype. A later reviewed rule set would need to support them explicitly.</p></div>}
+        {result.outsideProfile.length > 0 && <div className="tax-readiness-list warning"><strong>Outside the current supported profile</strong><ul>{result.outsideProfile.map(question => <li key={question.key}>{question.label}</li>)}</ul><p>Xoba Paycheck should not squeeze these circumstances into the narrow prototype. A later reviewed rule set would need to support them explicitly.</p></div>}
         {result.needsInformation.length === 0 && result.outsideProfile.length === 0 && <div className="tax-readiness-list ready"><strong>Profile facts collected for the narrow prototype.</strong><p>The calculation is still locked because source/rule/rounding review is pending. Completing this form is not professional approval.</p></div>}
         <div className="tax-readiness-lock final"><strong>Tax result remains locked</strong><p>No refund, debt or final-tax number is produced from these answers.</p></div>
         <button className="secondary-button" onClick={() => downloadTaxReadinessReport(taxReadinessReport(coverage, answers, result, coverage.checkedSlips))}>Download readiness report</button>
@@ -140,7 +140,7 @@ export default function TaxReadiness({ allSlips, year, employerFilter }: Props) 
 
       <details className="statement-help tax-readiness-sources">
         <summary>Why these questions?</summary>
-        <p>These ATO links are terminology references only (reference version {TAX_READINESS_SOURCE_VERSION}). TaxPrep is not applying a withholding schedule or annual-tax rule in this readiness step.</p>
+        <p>These ATO links are terminology references only (reference version {TAX_READINESS_SOURCE_VERSION}). Xoba Paycheck is not applying a withholding schedule or annual-tax rule in this readiness step.</p>
         <ul>{taxReadinessSources.map(source => <li key={source.id}><a href={source.url} target="_blank" rel="noreferrer">{source.title}</a></li>)}</ul>
       </details>
     </>}

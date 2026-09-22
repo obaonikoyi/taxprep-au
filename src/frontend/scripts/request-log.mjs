@@ -1,7 +1,7 @@
 /**
  * What a page actually sent, as distinct from what it tried to send.
  *
- * TaxPrep's promise is that payslips, statements and receipts never leave the
+ * Xoba Paycheck's promise is that payslips, statements and receipts never leave the
  * browser, and these smoke tests are what hold it to that. They used to check
  * the promise by looking at every request the page *started*, which was the
  * same thing as what it sent — until the app was put behind a proxy that

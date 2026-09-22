@@ -8,7 +8,7 @@ Until now the automatic reader understood exactly one layout, `PAYSLIP SUMMARY v
 
 This milestone adds a second documented layout, `PAY ADVICE v2`, and turns the reader into a small registry of layouts rather than one hard-coded parser.
 
-This is still an explicit list of supported formats. It is **not** a claim that TaxPrep reads arbitrary employer PDFs.
+This is still an explicit list of supported formats. It is **not** a claim that Xoba Paycheck reads arbitrary employer PDFs.
 
 ## Why the second layout is tabular
 

@@ -93,7 +93,7 @@ export default function YearEndReconciliation({ allSlips, year, employerFilter }
 
     {employerFilter !== 'all' && <p className="year-end-scope-note"><strong>Whole-year scope:</strong> your chart is filtered to one employer, but this section intentionally uses all checked employers recorded for {year}.</p>}
 
-    <div className="year-end-notice"><strong>Do not add these two views together.</strong><p>Payslips are period-by-period history. A final income statement/payment summary is an annual view of that employment income. TaxPrep compares them; it does not count both as separate income.</p></div>
+    <div className="year-end-notice"><strong>Do not add these two views together.</strong><p>Payslips are period-by-period history. A final income statement/payment summary is an annual view of that employment income. Xoba Paycheck compares them; it does not count both as separate income.</p></div>
 
     <div className="year-end-coverage">
       <div><span>Checked payslips</span><strong>{coverage.checkedSlips.length}</strong></div>
@@ -145,7 +145,7 @@ export default function YearEndReconciliation({ allSlips, year, employerFilter }
 
       <YearEndPreparationHub key={scopeKey} reconciliation={result} />
 
-            <details className="statement-help year-end-sources"><summary>Why Tax ready and why can one employer have multiple sources?</summary><p>ATO wording references only · version {ANNUAL_SOURCE_GUIDANCE_VERSION}. These links support source-status wording and multiple-statement handling; they do not unlock TaxPrep tax calculations.</p><ul>{annualSourceGuidance.map(source => <li key={source.id}><a href={source.url} target="_blank" rel="noreferrer">{source.title}</a></li>)}</ul></details>
+            <details className="statement-help year-end-sources"><summary>Why Tax ready and why can one employer have multiple sources?</summary><p>ATO wording references only · version {ANNUAL_SOURCE_GUIDANCE_VERSION}. These links support source-status wording and multiple-statement handling; they do not unlock Xoba Paycheck tax calculations.</p><ul>{annualSourceGuidance.map(source => <li key={source.id}><a href={source.url} target="_blank" rel="noreferrer">{source.title}</a></li>)}</ul></details>
     </>}
   </section>
 }

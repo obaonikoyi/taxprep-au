@@ -4,21 +4,21 @@ Status: engineering implemented, minus the two parts held back below. Extends th
 
 ## User outcome
 
-Today TaxPrep can tell a user what their payslip *says*. It cannot tell them whether the payslip says the right thing, because it has never been told what the user was promised.
+Today Xoba Paycheck can tell a user what their payslip *says*. It cannot tell them whether the payslip says the right thing, because it has never been told what the user was promised.
 
-This milestone records the pay rate the user agreed to — from a contract, letter of offer, or roster certificate — and then checks every confirmed payslip against it. Where a payslip disagrees with the agreed rate, or disagrees with its own arithmetic, TaxPrep shows the calculation side by side and states the difference in dollars.
+This milestone records the pay rate the user agreed to — from a contract, letter of offer, or roster certificate — and then checks every confirmed payslip against it. Where a payslip disagrees with the agreed rate, or disagrees with its own arithmetic, Xoba Paycheck shows the calculation side by side and states the difference in dollars.
 
 > **Pay rate on this payslip**
 > Your record says **$28.90/hour** (contract, from 1 July 2026).
 > This payslip shows **38.00 hours at $27.50** = $1,045.00.
 > At the rate you recorded, 38.00 hours is **$1,098.20** — a difference of **$53.20** for this period.
-> TaxPrep cannot tell you which figure is correct. Ask your employer's payroll contact about this period, and keep this payslip.
+> Xoba Paycheck cannot tell you which figure is correct. Ask your employer's payroll contact about this period, and keep this payslip.
 
 That is the whole feature: a specific, dated, arithmetic question the user can take to someone. It is not a verdict.
 
 ## Why this one
 
-Every other part of TaxPrep helps a person *record* what happened. This is the first part that helps them *challenge* it, and it is the only part that pays for itself before tax time — an underpayment caught in August is worth more than a tidier return in October.
+Every other part of Xoba Paycheck helps a person *record* what happened. This is the first part that helps them *challenge* it, and it is the only part that pays for itself before tax time — an underpayment caught in August is worth more than a tidier return in October.
 
 It is also the sharpest differentiator the product has. Payroll software checks pay from the employer's side. The Fair Work pay calculator answers "what does my award pay?" but never sees a payslip. Income trackers such as TaxTank record what arrived. Nothing in the surveyed set closes the loop the worker actually cares about: *the thing I signed, versus the thing I was paid.*
 
@@ -26,11 +26,11 @@ Consistent with [product direction](PRODUCT_DIRECTION.md), that is stated here a
 
 ## The distinction this milestone lives or dies on
 
-TaxPrep checks the payslip against **what the user says they agreed to**. It does not check the payslip against **what the law requires**.
+Xoba Paycheck checks the payslip against **what the user says they agreed to**. It does not check the payslip against **what the law requires**.
 
 Those are different questions and only the first one is answerable from documents on the user's device:
 
-| Question | Who can answer it | TaxPrep |
+| Question | Who can answer it | Xoba Paycheck |
 |---|---|---|
 | Does this payslip match the rate in my contract? | arithmetic | **yes, this milestone** |
 | Does this payslip add up on its own terms? | arithmetic | **yes, this milestone** |
@@ -38,7 +38,7 @@ Those are different questions and only the first one is answerable from document
 | Am I legally being underpaid? | Fair Work Ombudsman, a union, a lawyer | **no** |
 | Did my super actually reach my fund? | the fund, the ATO | **no** ([Milestone 14](MILESTONE_14_PAYSLIP_DASHBOARD.md) already says so) |
 
-A contract can be below an award minimum and TaxPrep would see nothing wrong, because TaxPrep has no award, classification, age, hours-band or penalty-rate knowledge and this milestone does not add any. The product direction's existing rule applies in full: *"a payslip's arithmetic can be checked without proving wage entitlement or employer compliance … use specific questions and checks, not a blanket green 'correct payslip' verdict."*
+A contract can be below an award minimum and Xoba Paycheck would see nothing wrong, because Xoba Paycheck has no award, classification, age, hours-band or penalty-rate knowledge and this milestone does not add any. The product direction's existing rule applies in full: *"a payslip's arithmetic can be checked without proving wage entitlement or employer compliance … use specific questions and checks, not a blanket green 'correct payslip' verdict."*
 
 Every finding therefore carries the same three-part shape — **what your record says · what the payslip says · the difference** — and ends in a question, never a conclusion. The words "underpaid", "unlawful", "owed" and "wage theft" do not appear in any generated string. The findings panel is headed **Questions to ask**, and it names the Fair Work Ombudsman as where to take them, without characterising the user's situation.
 
@@ -63,7 +63,7 @@ Several records per employer are allowed and are the normal case — a pay rise 
 
 ## What a payslip has to say for a check to run
 
-The two layouts TaxPrep reads today ([v1 labelled summary](MILESTONE_14_PAYSLIP_DASHBOARD.md), [v2 tabular pay advice](MILESTONE_17_SECOND_PAYSLIP_LAYOUT.md)) carry gross, withheld, deductions, net and super. **Neither carries hours or an hourly rate.** Without those, three of the five checks below cannot run at all.
+The two layouts Xoba Paycheck reads today ([v1 labelled summary](MILESTONE_14_PAYSLIP_DASHBOARD.md), [v2 tabular pay advice](MILESTONE_17_SECOND_PAYSLIP_LAYOUT.md)) carry gross, withheld, deductions, net and super. **Neither carries hours or an hourly rate.** Without those, three of the five checks below cannot run at all.
 
 This milestone therefore adds:
 
@@ -82,7 +82,7 @@ This milestone therefore adds:
 
 The example payslips in the guided journey now state their hours and rate too, so the checks can be seen without uploading anything. The fourth Harbour payslip drops from $30.00 to $28.50 an hour with nothing recorded to explain it — a payslip that is perfectly consistent with itself and still worth a question.
 
-A payslip with several earnings lines — ordinary, overtime, penalty, allowance — has **only its ordinary-hours line** checked against the agreed rate. Overtime and penalty multipliers depend on the award and the roster, which TaxPrep does not know. The other lines are displayed, totalled and explicitly excluded from the check, with the reason shown.
+A payslip with several earnings lines — ordinary, overtime, penalty, allowance — has **only its ordinary-hours line** checked against the agreed rate. Overtime and penalty multipliers depend on the award and the roster, which Xoba Paycheck does not know. The other lines are displayed, totalled and explicitly excluded from the check, with the reason shown.
 
 ## The checks
 
@@ -147,14 +147,14 @@ A silent check is worse than no check: a user who sees no findings will conclude
 | Payslip not yet confirmed | "Check this payslip's figures first." |
 | Everything present, nothing found | "Checked the hours and rate on this payslip against each other, and this payslip's rate against $28.90 an hour from your contract." — never a tick, never the word "correct" |
 
-The last row is the one to get right. TaxPrep names *what it compared*, and nothing beyond it. A payslip can be partly checked: one that states hours and a rate but falls outside every rate record still has its own arithmetic tested, and the note says so.
+The last row is the one to get right. Xoba Paycheck names *what it compared*, and nothing beyond it. A payslip can be partly checked: one that states hours and a rate but falls outside every rate record still has its own arithmetic tested, and the note says so.
 
 ## Privacy
 
 A contract is a more sensitive document than a payslip: it carries salary, signature, address and often a name that is not the user's. The existing rules apply without exception, and one is added:
 
 - Reading happens in the browser; nothing is uploaded and no model sees a contract.
-- **TaxPrep stores the extracted rate, not the contract.** The file is read, the fields are offered for confirmation, and the document is dropped. A rate record holds numbers, dates and the user's own source note.
+- **Xoba Paycheck stores the extracted rate, not the contract.** The file is read, the fields are offered for confirmation, and the document is dropped. A rate record holds numbers, dates and the user's own source note.
 - No real contract, payslip or certificate enters the repository, fixtures, CI, telemetry or the published examples. Every test fixture is invented, as all existing ones are.
 - Rate records leave the device only through the paths that already exist and already require an explicit user action: the downloaded report, the [portable handoff](MILESTONE_16C2_PORTABLE_HANDOFF.md) and the [encrypted local backup](MILESTONE_16C3_ENCRYPTED_LOCAL_BACKUP.md).
 
@@ -184,7 +184,7 @@ Thirty tests in `payRate.test.ts`, on top of the 364 already passing.
 ## Not included
 
 - **Award, classification, penalty and overtime rates.** No lookup, no inference, no "your award says". Overtime and penalty lines are displayed and excluded from the check.
-- **Any legal characterisation.** TaxPrep points at the Fair Work Ombudsman; it does not describe the user's situation.
+- **Any legal characterisation.** Xoba Paycheck points at the Fair Work Ombudsman; it does not describe the user's situation.
 - **AI contract reading.** The user-facing ask is real and it is the natural next step, but it is deliberately not in this milestone — see below.
 - **The hours log** (check 4), deferred as above.
 - **The super check**, until a reviewed SG percentage and a reviewed OTE definition exist.
@@ -195,7 +195,7 @@ Thirty tests in `payRate.test.ts`, on top of the 364 already passing.
 
 Typing a rate from a contract takes fifteen seconds; getting it wrong quietly poisons every check built on top of it. So the deterministic path ships first and the assisted path follows, once it can be built to the same standard as the rest of the product:
 
-- Extraction happens on-device, or the operating-model work in [product direction](PRODUCT_DIRECTION.md) — provider handling, access control, encryption, retention, deletion and log redaction — is done first. A contract must not be the first document TaxPrep ever uploads.
+- Extraction happens on-device, or the operating-model work in [product direction](PRODUCT_DIRECTION.md) — provider handling, access control, encryption, retention, deletion and log redaction — is done first. A contract must not be the first document Xoba Paycheck ever uploads.
 - A contract is **untrusted data**, exactly as the product direction requires of document content. Text inside it never becomes an instruction.
 - Every extracted field arrives as a **candidate** next to the clause it came from, and the user confirms it. This is the same discipline the payslip reader already follows, and it is what makes a wrong read visible instead of silent.
 - A confidence score is not a substitute for confirmation, and no extracted rate is ever used unconfirmed.

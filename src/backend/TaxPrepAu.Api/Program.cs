@@ -20,7 +20,13 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment() && !builder.Configuration.GetValue<bool>("Hosting:HttpsHandledByProxy"))
     app.UseHttpsRedirection();
 
-// TaxPrep reads payslips, bank statements and receipts in the browser and
+// The assembly, namespaces and directories are still named TaxPrepAu.Api after
+// the September 2026 rename to Xoba Paycheck. No user sees an assembly name,
+// and renaming one means moving directories and rewriting the solution, both
+// .csproj files, every namespace and using, the Dockerfile paths and the build
+// workflow — a clean separate change, not a side effect of a rebrand.
+// See docs/RENAME_TO_XOBA_PAYCHECK.md.
+// Xoba Paycheck reads payslips, bank statements and receipts in the browser and
 // sends none of them anywhere. That promise cannot rest on every proxy in
 // front of this app leaving the page alone: Cloudflare's analytics feature,
 // for one, injects a third-party script into HTML responses that look like
@@ -67,7 +73,7 @@ app.UseStaticFiles(new StaticFileOptions { ContentTypeProvider = assetTypes });
 app.MapGet("/api/health", () => Results.Ok(new
 {
     status = "healthy",
-    service = "TaxPrep AU API"
+    service = "Xoba Paycheck API"
 })).WithName("GetHealth");
 app.MapImportPreview();
 app.MapExpenseReview();
