@@ -6,6 +6,11 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
+import { startTheme } from './lib/theme.ts'
+
+// Light or dark goes on before the first paint, so the page never renders in
+// one scheme and then flips to the other.
+startTheme()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
