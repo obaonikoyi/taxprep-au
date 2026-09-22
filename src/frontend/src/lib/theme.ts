@@ -2,7 +2,7 @@
  * Light or dark, and who gets to decide.
  *
  * The scheme used to come straight from `prefers-color-scheme`, so a user
- * whose laptop is set to dark had no way to read TaxPrep in light. People
+ * whose laptop is set to dark had no way to read Xoba Paycheck in light. People
  * reading columns of figures often want the opposite of their system default,
  * and on a shared or borrowed laptop they cannot change the system setting
  * anyway.
@@ -20,6 +20,10 @@
 
 export type Theme = 'light' | 'dark'
 
+// The `taxprep.` prefix outlives the rename to Xoba Paycheck: a storage key
+// belongs to an exact origin, and renaming it would throw away the choice of
+// anyone still arriving at taxprep.3xoba.com, which is still live.
+// See docs/RENAME_TO_XOBA_PAYCHECK.md.
 const KEY = 'taxprep.theme'
 const DARK = '(prefers-color-scheme: dark)'
 const watchers = new Set<(theme: Theme) => void>()

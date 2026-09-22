@@ -4,7 +4,7 @@ import { assessmentHtml, sourceRegisterHtml } from '../assessment/assessmentRepo
 import type { DocumentSource } from './documentReader'
 const escape = (value: unknown) => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]!)
 const factDetails = (facts: Facts) => `Merchant: ${escape(facts.merchant || 'Unresolved')}<br>Date: ${escape(facts.date || 'Unresolved')}<br>Description: ${escape(facts.description || 'Unresolved')}<br>Amount: ${facts.cents === null ? 'Unresolved' : money(facts.cents)}`
-export function evidenceReport(records: Evidence[], links: EvidenceLink[], separate: string[], sources: DocumentSource[], context: string, importIssues: string[], layout: { title: string; introduction: string } = { title: 'TaxPrep AU evidence report', introduction: '' }) {
+export function evidenceReport(records: Evidence[], links: EvidenceLink[], separate: string[], sources: DocumentSource[], context: string, importIssues: string[], layout: { title: string; introduction: string } = { title: 'Xoba Paycheck evidence report', introduction: '' }) {
   const now = new Date()
   const { groups } = reconcile(records, links, separate)
   const total = groups.filter(group => group.counted).reduce((sum, group) => sum + group.item.facts.cents!, 0)

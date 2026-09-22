@@ -9,7 +9,7 @@ A visitor can keep a copy of the expense review using **Download report (HTML)**
 ## User stories delivered
 
 1. Download the successful review currently on screen as a portable report.
-2. Read the expense totals, work portions, evidence references and next actions without reopening TaxPrep AU.
+2. Read the expense totals, work portions, evidence references and next actions without reopening Xoba Paycheck.
 3. Preview the report before printing or downloading.
 4. Open the browser's print dialog for just the report, with an A4 print layout and PDF output where the browser supports it.
 5. Export incomplete preparation honestly: unresolved work portions remain unknown and the subtotal is marked partial.
@@ -36,7 +36,7 @@ The report is previewed in a sandboxed iframe with same-origin access and modal 
 
 There is no new endpoint. Export uses the successful `/api/expenses/review` response and the matching saved expense list.
 
-`createPreparationReport(expenses, review, profile, generatedAt)` returns an immutable HTML string and a filename such as `taxprep-au-preparation-2025-26-2026-09-15.html`.
+`createPreparationReport(expenses, review, profile, generatedAt)` returns an immutable HTML string and a filename such as `xoba-paycheck-preparation-2025-26-2026-09-15.html`.
 
 - Require a nonempty, matching review.
 - Reconcile supplied per-item cent amounts and counts with the supplied totals before export.

@@ -2,11 +2,11 @@
 
 ## Objective
 
-Create a five-minute, portfolio-friendly demonstration of TaxPrep AU using fictional data. A visitor should understand the problem, complete a short guided flow and reach a useful preparation summary without creating an account or entering sensitive information.
+Create a five-minute, portfolio-friendly demonstration of Xoba Paycheck using fictional data. A visitor should understand the problem, complete a short guided flow and reach a useful preparation summary without creating an account or entering sensitive information.
 
 ## User story
 
-> As a portfolio visitor, I want to try a ready-made tax-preparation scenario so that I can understand TaxPrep AU quickly and safely.
+> As a portfolio visitor, I want to try a ready-made tax-preparation scenario so that I can understand Xoba Paycheck quickly and safely.
 
 ## First vertical slice
 

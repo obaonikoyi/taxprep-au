@@ -1,7 +1,7 @@
 /*
  * Pay rate records, and the questions a payslip raises against them.
  *
- * TaxPrep compares a payslip against the rate the user says they agreed to.
+ * Xoba Paycheck compares a payslip against the rate the user says they agreed to.
  * It does NOT compare it against an award, a classification or a legal
  * minimum: it has no knowledge of any of those, so a rate that is itself
  * below an award would pass here unremarked. Every result is therefore a
@@ -170,7 +170,7 @@ export function rateChecks(slips: Payslip[], records: RateRecord[], issuesFor: (
         employer: f.employer, period: periodText(slip), yourRecord: null,
         thePayslip: `${hoursText(hours)} hours at ${aud(rate)} is ${aud(expected)}, but the pay for those hours reads ${aud(ordinary)}.`,
         difference: `${aud(Math.abs(expected - ordinary))} ${expected > ordinary ? 'less than' : 'more than'} the payslip’s own hours and rate come to.`,
-        limit: 'An adjustment from another period, unpaid leave or a figure shown elsewhere on the payslip can each produce this. TaxPrep cannot tell which figure is the one to change.',
+        limit: 'An adjustment from another period, unpaid leave or a figure shown elsewhere on the payslip can each produce this. Xoba Paycheck cannot tell which figure is the one to change.',
         question: ASK,
       })
     }
@@ -190,7 +190,7 @@ export function rateChecks(slips: Payslip[], records: RateRecord[], issuesFor: (
             yourRecord: `${rateText(record)}, from ${citedSource(record.source)}${record.note.trim() ? ` (${record.note.trim()})` : ''}, effective ${record.from}.`,
             thePayslip: `${aud(rate)} an hour.${consequence}`,
             difference: `${aud(Math.abs(rate - recorded))} an hour ${rate < recorded ? 'below' : 'above'} what you recorded${hours !== null ? `, or ${aud(Math.abs(expectedCents(hours, recorded) - expectedCents(hours, rate)))} over this period` : ''}.`,
-            limit: 'TaxPrep cannot tell you which rate applies. Your recorded rate may have been superseded, your classification may have changed, or the record itself may need updating. It also does not know your award, so it cannot say whether either rate is one you are entitled to.',
+            limit: 'Xoba Paycheck cannot tell you which rate applies. Your recorded rate may have been superseded, your classification may have changed, or the record itself may need updating. It also does not know your award, so it cannot say whether either rate is one you are entitled to.',
             question: ASK,
           })
         }
@@ -206,7 +206,7 @@ export function rateChecks(slips: Payslip[], records: RateRecord[], issuesFor: (
           yourRecord: `${rateText(record)}, from ${citedSource(record.source)}. Over ${hoursText(hours)} hours that is ${aud(expected)}.`,
           thePayslip: `${aud(ordinary)} for ${hoursText(hours)} ordinary hours. This payslip does not show an hourly rate.`,
           difference: `${aud(Math.abs(expected - ordinary))} ${expected > ordinary ? 'less than' : 'more than'} your recorded rate comes to over these hours.`,
-          limit: 'This payslip states no rate, so the difference may come from the rate, the hours, or an adjustment the payslip does not itemise. TaxPrep does not know your award and cannot say which rate you are entitled to.',
+          limit: 'This payslip states no rate, so the difference may come from the rate, the hours, or an adjustment the payslip does not itemise. Xoba Paycheck does not know your award and cannot say which rate you are entitled to.',
           question: ASK,
         })
       }

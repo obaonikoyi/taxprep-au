@@ -435,7 +435,7 @@
 /* ------------------------------------------------- agreed pay rate -------
  * A finding is always the same three parts, then what it cannot establish.
  * It is styled as a question, not an alert: amber would tell the user
- * something is wrong, which is precisely what TaxPrep cannot know.
+ * something is wrong, which is precisely what Xoba Paycheck cannot know.
  */
 .pay-rate-panel { margin-top: var(--space-6); }
 .pay-rate-heading h3 { margin: 0 0 var(--space-2); font-size: var(--text-xl); letter-spacing: -.02em; }

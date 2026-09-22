@@ -53,7 +53,7 @@ No new dependency, backend service, account, storage, document upload, model cal
 
 ## Remaining professional and product work
 
-Before real-user tax conclusions, obtain qualified review of the phone rules and this calculation (including all rounding and boundary expectations), define the real-data/paid-service operating model, and expand verified deduction coverage. Income-statement extraction remains a useful next engineering stage: turn a bounded document into reviewable income fields without inferring gross salary from bank deposits. This stage does not make TaxPrep a replacement tax agent or a complete myTax guide.
+Before real-user tax conclusions, obtain qualified review of the phone rules and this calculation (including all rounding and boundary expectations), define the real-data/paid-service operating model, and expand verified deduction coverage. Income-statement extraction remains a useful next engineering stage: turn a bounded document into reviewable income fields without inferring gross salary from bank deposits. This stage does not make Xoba Paycheck a replacement tax agent or a complete myTax guide.
 
 ## Publication record
 

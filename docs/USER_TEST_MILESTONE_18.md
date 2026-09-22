@@ -10,7 +10,7 @@ This document turns that sentence into something you can run on a Saturday.
 
 ## The claim under test
 
-That TaxPrep closes a loop nothing else does: **the thing I signed, versus the thing I was paid.** Everything written about that so far is a hypothesis. Until four people who did not build it can get from *"something feels off"* to *"on the fortnight ending 25 August I was paid $30.75 an hour instead of the $32.50 in my contract — that's $108.50"*, the claim is unverified and should not be published.
+That Xoba Paycheck closes a loop nothing else does: **the thing I signed, versus the thing I was paid.** Everything written about that so far is a hypothesis. Until four people who did not build it can get from *"something feels off"* to *"on the fortnight ending 25 August I was paid $30.75 an hour instead of the $32.50 in my contract — that's $108.50"*, the claim is unverified and should not be published.
 
 ## Materials
 
@@ -38,7 +38,7 @@ If a participant cannot get there, that is a finding about the product, not abou
 
 ## There are two routes, and which one they take is the result
 
-The pilot turned up something the test has to account for. **Before the contract is entered at all**, TaxPrep already raises the silent rate change between payslips 3 and 4 — the rate moved and nothing recorded a reason.
+The pilot turned up something the test has to account for. **Before the contract is entered at all**, Xoba Paycheck already raises the silent rate change between payslips 3 and 4 — the rate moved and nothing recorded a reason.
 
 So there are two paths to the answer:
 
@@ -51,7 +51,7 @@ Both end at a usable question, so both count as a pass for *"can they produce it
 
 ## Recruiting
 
-Four people. Not developers, not accountants, not anyone who has seen TaxPrep.
+Four people. Not developers, not accountants, not anyone who has seen Xoba Paycheck.
 
 Skew toward people the product is for: casual or shift work, variable hours, hospitality or retail or care work, someone who has actually looked at a payslip and wondered. Adelaide is convenient, not required.
 

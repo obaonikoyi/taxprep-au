@@ -9,7 +9,7 @@ Carry reviewed summary facts from **Bank spending** and **Tax documents** into t
 The handoff is explicit:
 
 1. review a source workspace;
-2. download a small TaxPrep JSON handoff;
+2. download a small Xoba Paycheck JSON handoff;
 3. open the matching financial year in the year-end hub;
 4. import the JSON;
 5. review the candidate summary; and
@@ -107,7 +107,7 @@ Applicable-rule review is never auto-completed. Qualified gates #21 and #28 rema
 
 ## Duplicate and year controls
 
-TaxPrep rejects:
+Xoba Paycheck rejects:
 
 - unsupported versions;
 - malformed JSON;

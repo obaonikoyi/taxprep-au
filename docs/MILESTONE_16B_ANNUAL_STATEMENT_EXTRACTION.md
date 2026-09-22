@@ -48,7 +48,7 @@ Limits:
 - images up to 12 megapixels;
 - one statement per PDF.
 
-The browser calculates SHA-256 from the source bytes. PDF.js and Tesseract run locally in the tab. The document is not uploaded to the TaxPrep API or an external model.
+The browser calculates SHA-256 from the source bytes. PDF.js and Tesseract run locally in the tab. The document is not uploaded to the Xoba Paycheck API or an external model.
 
 Parser version: `annual-income-statement-v1`.
 
@@ -80,7 +80,7 @@ Discarding the candidate transfers nothing.
 
 ## Missing and ambiguous facts
 
-TaxPrep does not guess missing values.
+Xoba Paycheck does not guess missing values.
 
 Examples:
 

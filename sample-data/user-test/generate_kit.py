@@ -59,7 +59,7 @@ def banner(c, title, subtitle):
 def contract():
     stream = io.BytesIO()
     c = canvas.Canvas(stream, pagesize=(595, 842), invariant=1)
-    c.setTitle("Fictional employment contract - TaxPrep AU user test")
+    c.setTitle("Fictional employment contract - Xoba Paycheck user test")
     banner(c, "EMPLOYMENT CONTRACT", "FICTIONAL - created for a usability test. No real employer, employee or agreement.")
 
     c.setFillColor(INK); c.setFont("KitBold", 13)
@@ -96,7 +96,7 @@ def contract():
 def advice(number, start, end, paid, hours, rate, gross, withheld, net, ytd_ordinary, ytd_gross, ytd_withheld, ytd_net):
     stream = io.BytesIO()
     c = canvas.Canvas(stream, pagesize=(595, 842), invariant=1)
-    c.setTitle("Fictional pay advice - TaxPrep AU user test")
+    c.setTitle("Fictional pay advice - Xoba Paycheck user test")
     banner(c, "PAY ADVICE v3", "FICTIONAL - created for a usability test. No real employer or employee.")
 
     c.setFillColor(INK); c.setFont("KitSans", 12)

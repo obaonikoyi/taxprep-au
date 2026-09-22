@@ -1,10 +1,10 @@
-# TaxPrep AU — product direction
+# Xoba Paycheck — product direction
 
 Decision updated 19 September 2026 after the payslip and year-round dashboard discussion. This document and [delivery plan](PROJECT_PLAN.md) supersede the earlier organiser-only roadmap.
 
-## What TaxPrep is
+## What Xoba Paycheck is
 
-**TaxPrep helps Australian workers understand their pay, track their tax and super, and prepare for tax time with fewer surprises.**
+**Xoba Paycheck helps Australian workers understand their pay, track their tax and super, and prepare for tax time with fewer surprises.**
 
 The original motivation remains: reduce the effort and expense of preparing a straightforward return, whether the person finishes through myTax or takes an organised report to an accountant. The year-round pay experience creates a reason to return before tax season.
 
@@ -22,7 +22,7 @@ A person uploads a payslip, checks unclear facts and sees what was earned, withh
 | Where am I heading? | Later: actual figures plus separately labelled projections, assumptions and supported circumstances. |
 | How do I get ready for tax time? | Later: reconcile income and expense evidence, resolve questions and produce a preparation handover. |
 
-Design charts with solid actuals and clearly distinct projections when forecasts exist. Payment dates, pay periods and financial years have different roles. Users paid weekly, fortnightly or monthly should not be compared as if their pay periods were identical. TaxPrep must not create earnings for missing periods.
+Design charts with solid actuals and clearly distinct projections when forecasts exist. Payment dates, pay periods and financial years have different roles. Users paid weekly, fortnightly or monthly should not be compared as if their pay periods were identical. Xoba Paycheck must not create earnings for missing periods.
 
 ## What is implemented
 

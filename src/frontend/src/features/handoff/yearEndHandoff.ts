@@ -1,3 +1,10 @@
+/*
+ * The `taxprep-` prefix below is deliberate, and outlives the rename to Xoba
+ * Paycheck (September 2026). This string is checked when a handoff file is
+ * applied, so renaming it would refuse a file exported before the rename. It
+ * names the format, not the product, and changes when the format changes.
+ * See docs/RENAME_TO_XOBA_PAYCHECK.md.
+ */
 export const YEAR_END_HANDOFF_VERSION = 'taxprep-year-end-handoff-v1'
 export const MAX_YEAR_END_HANDOFF_BYTES = 65_536
 
@@ -163,7 +170,7 @@ export function parseYearEndHandoffValue(input: unknown): YearEndHandoff {
 }
 
 export async function readYearEndHandoff(file: File, selectedYear: string) {
-  if (!/\.json$/i.test(file.name)) throw new Error('Choose a TaxPrep year-end handoff JSON file.')
+  if (!/\.json$/i.test(file.name)) throw new Error('Choose a Xoba Paycheck year-end handoff JSON file.')
   if (!file.size || file.size > MAX_YEAR_END_HANDOFF_BYTES) throw new Error('Use a year-end handoff file from 1 byte to 64 KB.')
   let value: unknown
   try {

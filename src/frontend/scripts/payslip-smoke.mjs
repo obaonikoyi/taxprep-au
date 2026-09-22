@@ -52,7 +52,8 @@ export async function verifyPayslips(context, base, artifacts) {
     assert.ok((await outlook.innerText()).includes('Not estimated'));
     assert.ok((await outlook.innerText()).includes('Partial recorded history'));
     const outlookDownload = page.waitForEvent('download'); await button('Download outlook report').click();
-    await (await outlookDownload).saveAs(artifacts + 'pay-outlook.html');
+    const outlookFile = await outlookDownload; assert.equal(outlookFile.suggestedFilename(), 'xoba-paycheck-pay-outlook.html');
+    await outlookFile.saveAs(artifacts + 'pay-outlook.html');
     const outlookReport = readFileSync(artifacts + 'pay-outlook.html', 'utf8');
     assert.ok(outlookReport.includes('pay-outlook-arithmetic-v1'));
     assert.ok(outlookReport.includes('Partial recorded history'));
@@ -86,7 +87,8 @@ export async function verifyPayslips(context, base, artifacts) {
     assert.ok((await taxReadiness.innerText()).includes('Tax result remains locked'));
     assert.ok((await taxReadiness.innerText()).includes('No refund, debt or final-tax number'));
     const readinessDownload = page.waitForEvent('download'); await button('Download readiness report').click();
-    await (await readinessDownload).saveAs(artifacts + 'tax-readiness.html');
+    const readinessFile = await readinessDownload; assert.equal(readinessFile.suggestedFilename(), 'xoba-paycheck-tax-readiness.html');
+    await readinessFile.saveAs(artifacts + 'tax-readiness.html');
     const readinessReport = readFileSync(artifacts + 'tax-readiness.html', 'utf8');
     assert.ok(readinessReport.includes('tax-readiness-profile-v1'));
     assert.ok(readinessReport.includes('Tax result locked'));
@@ -160,7 +162,8 @@ export async function verifyPayslips(context, base, artifacts) {
     reconciliation = page.getByLabel('Year-end pay reconciliation result', { exact: true });
     assert.equal((await reconciliation.getByText('Matches checked pay history', { exact: true }).count()), 2);
     const reconciliationDownload = page.waitForEvent('download'); await button('Download year-end pay handover').click();
-    await (await reconciliationDownload).saveAs(artifacts + 'year-end-pay-handover.html');
+    const reconciliationFile = await reconciliationDownload; assert.equal(reconciliationFile.suggestedFilename(), 'xoba-paycheck-year-end-pay-handover.html');
+    await reconciliationFile.saveAs(artifacts + 'year-end-pay-handover.html');
     const reconciliationReport = readFileSync(artifacts + 'year-end-pay-handover.html', 'utf8');
     assert.ok(reconciliationReport.includes('year-end-pay-reconciliation-v2'));
     assert.ok(reconciliationReport.includes('do not add them together'));
@@ -263,7 +266,7 @@ export async function verifyPayslips(context, base, artifacts) {
     const backupText = readFileSync(backupPath, 'utf8');
     assert.ok(backupText.includes('taxprep-year-end-preparation-backup-v1'));
     for (const privateText of ['Phone rule review remains separate and pending.', 'Harbour Example Services', 'Two deposits made up the checked net pay.']) assert.ok(!backupText.includes(privateText), privateText);
-    assert.ok((await prepHub.innerText()).includes('TaxPrep cannot recover the passphrase'));
+    assert.ok((await prepHub.innerText()).includes('Xoba Paycheck cannot recover the passphrase'));
 
     // Change the live preparation state after backup so restore has something meaningful to recover.
     await page.getByLabel('Year-end prep: expenseNote', { exact: true }).fill('Changed after local backup.');

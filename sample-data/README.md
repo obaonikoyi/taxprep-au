@@ -1,6 +1,6 @@
 # Synthetic transaction data
 
-`transactions.csv` contains 20 completely fictional transactions for developing and testing the TaxPrep AU import workflow.
+`transactions.csv` contains 20 completely fictional transactions for developing and testing the Xoba Paycheck import workflow.
 
 ## What each column means
 

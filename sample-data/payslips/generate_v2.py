@@ -41,7 +41,7 @@ for number, spec in enumerate(specs, 1):
     employer, start, end, pay_date, gross, withheld, deductions, net, superann = spec
     stream = io.BytesIO()
     c = canvas.Canvas(stream, pagesize=(595, 842), invariant=1)
-    c.setTitle('Fictional pay advice - TaxPrep AU')
+    c.setTitle('Fictional pay advice - Xoba Paycheck')
 
     c.setFillColor(HexColor('#173f35')); c.rect(0, 730, 595, 112, fill=1, stroke=0)
     c.setFillColor(HexColor('#ffffff')); c.setFont('SampleBold', 22)

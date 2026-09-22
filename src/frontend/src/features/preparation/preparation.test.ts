@@ -97,7 +97,7 @@ describe('preparation coverage and evidence', () => {
     const prep = reviewedSample(); prep.notes = '<script>alert(1)</script>'; prep.situation.otherIncome = 'yes'
     prep.income[0].payer = '<img src=x onerror=steal()>'; prep.income.push(newIncome('blank', 'salary'))
     const html = preparationReport(prep, [], [], [], [], ['Unreadable file'])
-    for (const value of ['TaxPrep AU preparation handover', '$82,150.00', '$17,100.00', 'preparation-2025-26.v1', 'Other income sections remain unprepared', 'Original sample values', 'Blank (unresolved)', 'Unreadable file', 'ato.gov.au', '&lt;script&gt;', '&lt;img']) expect(html).toContain(value)
+    for (const value of ['Xoba Paycheck preparation handover', '$82,150.00', '$17,100.00', 'preparation-2025-26.v1', 'Other income sections remain unprepared', 'Original sample values', 'Blank (unresolved)', 'Unreadable file', 'ato.gov.au', '&lt;script&gt;', '&lt;img']) expect(html).toContain(value)
     expect(html).not.toContain('<script>'); expect(html).not.toContain('<img src=x')
     expect(html).toContain('not ready to lodge')
   })

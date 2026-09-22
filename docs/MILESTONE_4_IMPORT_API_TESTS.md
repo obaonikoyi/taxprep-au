@@ -42,7 +42,7 @@ Dates must be real calendar dates in `YYYY-MM-DD` form. Descriptions must contai
 
 ## Data handling and design decisions
 
-Uploads are sent to TaxPrep AU, buffered and processed in bounded memory, and discarded after preview. No database, file persistence, transaction-body logging, localStorage or external bank/ATO calls. A memory-buffer threshold above the request limit avoids normal multipart buffering to temporary disk. See [Microsoft upload documentation](https://learn.microsoft.com/en-us/aspnet/core/mvc/models/file-uploads?view=aspnetcore-8.0) for the framework's buffering behavior.
+Uploads are sent to Xoba Paycheck, buffered and processed in bounded memory, and discarded after preview. No database, file persistence, transaction-body logging, localStorage or external bank/ATO calls. A memory-buffer threshold above the request limit avoids normal multipart buffering to temporary disk. See [Microsoft upload documentation](https://learn.microsoft.com/en-us/aspnet/core/mvc/models/file-uploads?view=aspnetcore-8.0) for the framework's buffering behavior.
 
 The unauthenticated preview endpoint is stateless; antiforgery is disabled deliberately. Adding cookie authentication or storage requires revisiting CSRF protection. Production hosting must provide HTTPS and route `/api` to ASP.NET Core; this milestone does not configure a public deployment.
 

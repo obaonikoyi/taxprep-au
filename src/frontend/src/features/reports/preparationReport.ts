@@ -19,6 +19,11 @@ function sourceRows(sources: ExpenseSource[] | undefined, amount: number): strin
   <p class="help">Source rows are references, not receipts or proof of work use. These rows share the recorded percentage and reimbursement status.</p></div>`
 }
 
+// `data-report="taxprep-expenses-v1"` below names the report format, not the
+// product. The export preview checks it before it will show a report, and
+// reports downloaded before the rename to Xoba Paycheck still carry it, so it
+// changes when the format changes rather than when the name does.
+// See docs/RENAME_TO_XOBA_PAYCHECK.md.
 export function createPreparationReport(expenses: Expense[], review: ExpenseReviewResult,
   profile: Pick<DemoProfile, 'name' | 'occupation' | 'financialYear'>, generatedAt = new Date()): PreparationReport {
   if (!expenses.length || !isExpenseReview(review, expenses)) throw new Error('A current expense review is required to export.')
@@ -46,11 +51,11 @@ export function createPreparationReport(expenses: Expense[], review: ExpenseRevi
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
-<title>TaxPrep AU - ${text(profile.name)} - Preparation report ${text(year)}</title>
+<title>Xoba Paycheck - ${text(profile.name)} - Preparation report ${text(year)}</title>
 <style>${reportStyles}</style>
 </head>
 <body><main>
-<header class="report-header"><span class="brand">TaxPrep AU</span><span class="badge">Fictional data</span></header>
+<header class="report-header"><span class="brand">Xoba Paycheck</span><span class="badge">Fictional data</span></header>
 <p class="eyebrow">Expense preparation report</p>
 <h1>${text(profile.name)}'s expense summary</h1>
 <p class="profile">${text(profile.occupation)} <span aria-hidden="true">|</span> Financial year ${text(year)}</p>
@@ -74,9 +79,9 @@ ${rows.map(({ item, expense }) => `<article class="expense${expense.sources?.len
 <dl class="notes"><div><dt>Work purpose</dt><dd>${text(expense.purpose)}</dd></div><div><dt>Percentage basis</dt><dd>${text(expense.workUseBasis)}</dd></div><div><dt>Reimbursement</dt><dd>${reimbursementLabels[expense.reimbursement]}</dd></div><div><dt>Evidence status</dt><dd>${evidenceLabels[expense.evidence]}</dd></div><div><dt>Evidence reference</dt><dd>${text(expense.evidenceReference)}</dd></div></dl>
 ${item.actions.length ? `<ul class="item-actions">${item.actions.map(action => `<li>${text(action)}</li>`).join('')}</ul>` : ''}${sourceRows(expense.sources, expense.amount)}</article>`).join('')}
 </section>
-<footer><strong>About this copy</strong><p>This is a snapshot of ${rows.length} recorded expense(s) in Sarah's fictional demo. Only CSV rows saved into an expense are included. Skipped categories and unselected preview rows are not included. It is not a complete tax return.</p><p>Later edits or restarting the app do not update or remove this downloaded file. TaxPrep AU is independent of the Australian Taxation Office.</p><p class="version">Report format v1 | ${text(year)} | ${text(displayedTime)}</p></footer>
+<footer><strong>About this copy</strong><p>This is a snapshot of ${rows.length} recorded expense(s) in Sarah's fictional demo. Only CSV rows saved into an expense are included. Skipped categories and unselected preview rows are not included. It is not a complete tax return.</p><p>Later edits or restarting the app do not update or remove this downloaded file. Xoba Paycheck is independent of the Australian Taxation Office.</p><p class="version">Report format v1 | ${text(year)} | ${text(displayedTime)}</p></footer>
 </main></body></html>`
-  return { html, filename: `taxprep-au-preparation-${year.replace(/[^0-9-]/g, '')}-${timestamp.slice(0, 10)}.html` }
+  return { html, filename: `xoba-paycheck-preparation-${year.replace(/[^0-9-]/g, '')}-${timestamp.slice(0, 10)}.html` }
 }
 
 export function downloadPreparationReport(report: PreparationReport) {

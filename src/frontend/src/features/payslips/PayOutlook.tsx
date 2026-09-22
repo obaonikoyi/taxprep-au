@@ -61,7 +61,7 @@ export default function PayOutlook({ allSlips, slips, year, employer, employerNa
 
   if (year === 'all' || employer === 'all') {
     return <section className="pay-outlook" aria-labelledby="pay-outlook-heading">
-      <div className="pay-outlook-heading"><div><p className="eyebrow">Optional outlook</p><h3 id="pay-outlook-heading">Explore the rest of the year</h3><p>Choose <strong>one financial year</strong> and <strong>one employer</strong> above first. TaxPrep keeps each outlook to one job so the numbers are not mistaken for your whole income.</p></div><span className="pay-outlook-status locked">Choose a year and employer</span></div>
+      <div className="pay-outlook-heading"><div><p className="eyebrow">Optional outlook</p><h3 id="pay-outlook-heading">Explore the rest of the year</h3><p>Choose <strong>one financial year</strong> and <strong>one employer</strong> above first. Xoba Paycheck keeps each outlook to one job so the numbers are not mistaken for your whole income.</p></div><span className="pay-outlook-status locked">Choose a year and employer</span></div>
     </section>
   }
 
@@ -127,7 +127,7 @@ export default function PayOutlook({ allSlips, slips, year, employer, employerNa
       <div className="pay-outlook-table-wrap"><table className="pay-outlook-table"><thead><tr><th>Scenario</th><th>Recorded gross</th><th>Assumed future gross</th><th>Combined employer gross</th><th>Recorded withholding</th><th>Assumed future withholding</th></tr></thead><tbody>
         {result.scenarios.map(scenario => <tr key={scenario.key}><th scope="row">{scenario.label}</th><td>{aud(result.recordedGross)}</td><td>{aud(scenario.futureGross)}</td><td>{aud(scenario.combinedGross)}</td><td>{aud(result.recordedWithheld)}</td><td>{scenario.futureWithheld === null ? 'Not estimated' : aud(scenario.futureWithheld)}</td></tr>)}
       </tbody></table></div>
-      <p className="pay-outlook-note"><strong>Important:</strong> the ±20% rows change gross pay only. TaxPrep does not scale withholding for them. None of these rows is final tax, a refund estimate or whole-person income.</p>
+      <p className="pay-outlook-note"><strong>Important:</strong> the ±20% rows change gross pay only. Xoba Paycheck does not scale withholding for them. None of these rows is final tax, a refund estimate or whole-person income.</p>
       <details className="statement-help pay-outlook-dates"><summary>View assumed future pay dates</summary><ol>{result.futurePayDates.map(date => <li key={date}>{date}</li>)}</ol></details>
       <button className="secondary-button" onClick={() => downloadPayOutlookReport(payOutlookReport(result, slips))}>Download outlook report</button>
     </div>}

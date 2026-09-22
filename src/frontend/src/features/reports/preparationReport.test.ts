@@ -18,7 +18,7 @@ afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.useRealTimers(
 it('exports a dated, self-contained snapshot with all totals, notes and evidence', () => {
   const report = createPreparationReport(sampleExpenses, review, demoProfile, generatedAt)
   const doc = parse(report.html)
-  expect(report.filename).toBe('taxprep-au-preparation-2025-26-2026-09-15.html')
+  expect(report.filename).toBe('xoba-paycheck-preparation-2025-26-2026-09-15.html')
   expect(doc.querySelector('time')?.getAttribute('datetime')).toBe('2026-09-15T09:30:00.000Z')
   expect(doc.querySelectorAll('tbody tr')).toHaveLength(3)
   expect([...doc.querySelectorAll('.totals dd')].map(el => el.textContent)).toEqual(['$792.60', '$312.60', '1'])

@@ -2,7 +2,7 @@
 
 v3 is the v2 tabular advice with an itemised earnings block above the totals,
 so each line carries hours and a rate beside its amount. That block is the
-only place TaxPrep can learn what rate a payslip claims to have paid.
+only place Xoba Paycheck can learn what rate a payslip claims to have paid.
 
 The three files are built to exercise the three outcomes that matter:
 
@@ -65,7 +65,7 @@ result = []
 for number, spec in enumerate(specs, 1):
     stream = io.BytesIO()
     c = canvas.Canvas(stream, pagesize=(595, 842), invariant=1)
-    c.setTitle('Fictional pay advice - TaxPrep AU')
+    c.setTitle('Fictional pay advice - Xoba Paycheck')
 
     c.setFillColor(HexColor('#2f2673')); c.rect(0, 730, 595, 112, fill=1, stroke=0)
     c.setFillColor(HexColor('#ffffff')); c.setFont('SampleBold', 22)

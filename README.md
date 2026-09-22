@@ -1,6 +1,6 @@
-# TaxPrep AU
+# Xoba Paycheck
 
-TaxPrep helps Australian workers understand their pay, track withholding and recorded super, and prepare for tax time with fewer surprises. The longer-term goal remains supported self-preparation or a useful accountant handover.
+Xoba Paycheck helps Australian workers understand their pay, track withholding and recorded super, and prepare for tax time with fewer surprises. The longer-term goal remains supported self-preparation or a useful accountant handover.
 
 > **Published: Milestone 16C-3 — encrypted local preparation backup.** The year-end hub can now explicitly download and restore a user-controlled encrypted preparation backup using browser-only WebCrypto, while keeping the default session-only and excluding raw financial documents. Tax/refund results remain locked pending qualified review.
 
@@ -16,7 +16,7 @@ Upload supported labelled summary PDFs or enter figures manually, review their s
 
 The automatic reader supports two documented layouts: **PAYSLIP SUMMARY v1** (one labelled line per figure) and **PAY ADVICE v2** (a table with *This pay* and *Year to date* columns, of which only *This pay* is ever read). It does not read arbitrary employer PDFs. Limits: 20 files per batch, 2 MB and one native-text page each, 100 records per session. Other layouts and scans need manual entry. Required missing values are not zero; super can stay unknown. User files need confirmation before charts, edits invalidate it, repeated files/pay identities are blocked and cumulative YTD fields are excluded.
 
-Files are processed in the browser tab with no model requests, uploads or saved pay history. Refreshing or switching workspaces clears the session; download a report first. Example and personal records cannot be mixed. Super means **recorded on the payslip**, not confirmed fund receipt. This release checks arithmetic and data consistency, not award compliance, employer remittances, final tax or refund entitlement. TaxPrep does not lodge returns.
+Files are processed in the browser tab with no model requests, uploads or saved pay history. Refreshing or switching workspaces clears the session; download a report first. Example and personal records cannot be mixed. Super means **recorded on the payslip**, not confirmed fund receipt. This release checks arithmetic and data consistency, not award compliance, employer remittances, final tax or refund entitlement. Xoba Paycheck does not lodge returns.
 
 Published: [Milestone 15A — pay outlook](docs/MILESTONE_15A_PAY_OUTLOOK.md) adds an optional one-employer scenario after the checked pay summary. It asks for the next payday, regular frequency and editable normal pay, then shows entered gross, 20% less and 20% more through 30 June. Future withholding is carried forward only for the unchanged entered-pay pattern; changed-gross rows deliberately say **Not estimated**. This is pay arithmetic, not final tax or a refund estimate.
 
@@ -69,7 +69,7 @@ Preparing an Australian individual tax return can be confusing and time-consumin
 - understand which items require further review; and
 - prepare an accurate summary for myTax or a registered tax agent.
 
-Generic spreadsheets can store transactions, but they do not guide the user through the preparation process. TaxPrep AU aims to provide a simpler, structured workflow designed for Australian individual taxpayers.
+Generic spreadsheets can store transactions, but they do not guide the user through the preparation process. Xoba Paycheck aims to provide a simpler, structured workflow designed for Australian individual taxpayers.
 
 ## Original organiser foundation (historical scope)
 
@@ -236,11 +236,11 @@ Current: [Milestone 15B-1 — tax readiness](docs/MILESTONE_15B1_TAX_READINESS.m
 
 ## Disclaimer
 
-TaxPrep AU is an independent software project and is not affiliated with or endorsed by the Australian Taxation Office. Tax rules depend on individual circumstances and can change. Users remain responsible for verifying their information and should consult current ATO guidance or a registered tax agent when needed.
+Xoba Paycheck is an independent software project and is not affiliated with or endorsed by the Australian Taxation Office. Tax rules depend on individual circumstances and can change. Users remain responsible for verifying their information and should consult current ATO guidance or a registered tax agent when needed.
 
 ## Repository
 
-This repository will contain the application source code, product documentation, tests, and technical decisions for TaxPrep AU.
+This repository will contain the application source code, product documentation, tests, and technical decisions for Xoba Paycheck.
 
 ## Licence
 

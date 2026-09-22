@@ -28,9 +28,9 @@ function App() {
     <div className="app-shell">
       <header className="site-header">
         <div className="shell-width site-header-bar">
-          <a className="brand" href="/" aria-label="TaxPrep AU home">
-            <span className="brand-mark" aria-hidden="true">T</span>
-            <span className="brand-name">TaxPrep AU<small>Understand your pay. Prepare for tax time.</small></span>
+          <a className="brand" href="/" aria-label="Xoba Paycheck home">
+            <span className="brand-mark" aria-hidden="true">X</span>
+            <span className="brand-name">Xoba Paycheck<small>Understand your pay. Prepare for tax time.</small></span>
           </a>
           <div className="site-header-tools">
             <ThemeSwitch />
@@ -38,7 +38,7 @@ function App() {
           </div>
         </div>
 
-        <nav className="workspace-nav" aria-label="TaxPrep tools">
+        <nav className="workspace-nav" aria-label="Xoba Paycheck tools">
           <div className="shell-width workspace-nav-list">
             {WORKSPACES.map(([key, title, description]) => <button key={key} type="button" aria-label={title} aria-pressed={view === key} onClick={() => setView(key)}><strong>{title}</strong><small>{description}</small></button>)}
           </div>
@@ -75,7 +75,7 @@ function App() {
       <footer className="site-footer">
         <div className="shell-width">
           <p>
-            TaxPrep AU is an independent prototype. It is not affiliated with the Australian Taxation Office,
+            Xoba Paycheck is an independent prototype. It is not affiliated with the Australian Taxation Office,
             does not lodge returns and does not give personal tax advice.
           </p>
           <details className="developer-details">

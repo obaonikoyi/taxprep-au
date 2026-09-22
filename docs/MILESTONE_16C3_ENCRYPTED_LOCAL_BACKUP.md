@@ -4,7 +4,7 @@ Status: published for [issue #60](https://github.com/obaonikoyi/taxprep-au/issue
 
 ## User outcome
 
-Allow a user to keep and later restore the **year-end preparation layer** without introducing TaxPrep cloud storage, browser persistence or a document vault.
+Allow a user to keep and later restore the **year-end preparation layer** without introducing Xoba Paycheck cloud storage, browser persistence or a document vault.
 
 The user explicitly downloads one encrypted JSON file, keeps it themselves, reloads the matching financial-year reconciliation later, explicitly imports the encrypted file, enters the passphrase locally, reviews the decrypted candidate and chooses **Restore preparation answers**.
 
@@ -53,9 +53,9 @@ The passphrase:
 - must be at least 12 characters;
 - never leaves the browser tab;
 - is not written to localStorage/sessionStorage;
-- is not sent to the TaxPrep API;
+- is not sent to the Xoba Paycheck API;
 - is not included in the backup;
-- is not recoverable by TaxPrep.
+- is not recoverable by Xoba Paycheck.
 
 A forgotten passphrase means the encrypted file cannot be restored.
 
@@ -63,9 +63,9 @@ A forgotten passphrase means the encrypted file cannot be restored.
 
 A selected encrypted file is not a restore.
 
-TaxPrep first checks the encrypted envelope. After the user provides the passphrase, decryption must authenticate successfully and the plaintext payload must pass bounded schema validation.
+Xoba Paycheck first checks the encrypted envelope. After the user provides the passphrase, decryption must authenticate successfully and the plaintext payload must pass bounded schema validation.
 
-TaxPrep then requires:
+Xoba Paycheck then requires:
 
 1. matching financial year; and
 2. exact matching reconciliation fingerprint.
@@ -95,12 +95,12 @@ Milestone 16C-3 does **not** use:
 - sessionStorage;
 - IndexedDB;
 - cookies for workspace storage;
-- the TaxPrep API;
+- the Xoba Paycheck API;
 - a server-side database;
 - object storage;
 - an external model.
 
-The downloaded encrypted file is user-controlled portability, not TaxPrep persistence.
+The downloaded encrypted file is user-controlled portability, not Xoba Paycheck persistence.
 
 Future account-based save/resume remains blocked on explicit decisions for server storage, encryption/key management, retention, deletion coverage, backups and account recovery.
 

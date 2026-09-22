@@ -1,4 +1,4 @@
-# TaxPrep AU code walkthrough
+# Xoba Paycheck code walkthrough
 
 This is a beginner-friendly tour of the current application. The frontend handles the screen, current entries and an optional browser progress snapshot. The backend validates requests and calculates organising amounts. Neither application saves a return or lodges with the ATO.
 

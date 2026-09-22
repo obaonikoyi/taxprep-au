@@ -8,6 +8,9 @@ RUN npm run build
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS backend
 WORKDIR /source
+# TaxPrepAu.Api is the .NET project name, kept after the September 2026 rename
+# to Xoba Paycheck: it is invisible to users and renaming it is its own change.
+# See docs/RENAME_TO_XOBA_PAYCHECK.md.
 COPY src/backend/TaxPrepAu.Api/TaxPrepAu.Api.csproj src/backend/TaxPrepAu.Api/
 RUN dotnet restore src/backend/TaxPrepAu.Api/TaxPrepAu.Api.csproj
 COPY src/backend/ src/backend/

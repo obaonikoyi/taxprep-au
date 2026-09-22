@@ -47,7 +47,7 @@ export default function PreparationBackupPanel({ reconciliation, answers, handof
       downloadPreparationBackup(envelope, reconciliation.year)
       setCreatePassphrase('')
       setConfirmPassphrase('')
-      setCreateMessage('Encrypted backup downloaded. Keep the file and passphrase separately; TaxPrep cannot recover the passphrase.')
+      setCreateMessage('Encrypted backup downloaded. Keep the file and passphrase separately; Xoba Paycheck cannot recover the passphrase.')
     } catch (error) {
       setCreateError(error instanceof Error ? error.message : 'The encrypted preparation backup could not be created.')
     } finally {
@@ -116,7 +116,7 @@ export default function PreparationBackupPanel({ reconciliation, answers, handof
       <span>No cloud storage</span>
     </div>
     <p className="year-end-prep-help">This optional backup contains preparation answers and applied workspace-summary handoffs only. It does not include raw payslip PDFs, annual-statement files, bank transactions, receipt/OCR text, TFNs or a tax/refund result.</p>
-    <p className="year-end-prep-help"><strong>Important:</strong> TaxPrep does not receive or store the backup passphrase and cannot recover it. Restore is allowed only after you load the same financial year and matching checked-pay/annual-source reconciliation.</p>
+    <p className="year-end-prep-help"><strong>Important:</strong> Xoba Paycheck does not receive or store the backup passphrase and cannot recover it. Restore is allowed only after you load the same financial year and matching checked-pay/annual-source reconciliation.</p>
 
     <div className="year-end-backup-grid">
       <article className="year-end-backup-card">

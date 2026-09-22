@@ -6,7 +6,7 @@ Milestone 15A can project explicit one-employer gross-pay scenarios. 15B-1 chang
 
 ## Why there is no tax number
 
-The existing bounded 2025–26 tax-position prototype in [issue #28](https://github.com/obaonikoyi/taxprep-au/issues/28) still has an open qualified-review criterion for sources, boundary examples and filing/settlement rounding. TaxPrep must not turn a profile questionnaire into apparent approval.
+The existing bounded 2025–26 tax-position prototype in [issue #28](https://github.com/obaonikoyi/taxprep-au/issues/28) still has an open qualified-review criterion for sources, boundary examples and filing/settlement rounding. Xoba Paycheck must not turn a profile questionnaire into apparent approval.
 
 This increment therefore has a permanent engineering gate:
 
@@ -50,7 +50,7 @@ The initial profile asks whether:
 9. deductions, offsets or other annual adjustments need to change the calculation; and
 10. bonuses, commissions, back pay, termination payments or other irregular employment payments occurred.
 
-TaxPrep never asks for the user's TFN in this profile.
+Xoba Paycheck never asks for the user's TFN in this profile.
 
 ## Readiness classification
 

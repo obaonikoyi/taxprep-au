@@ -69,7 +69,7 @@ export async function verifyPreparation(page, artifacts) {
   await workspace.locator('.preparation-totals').screenshot({ path: artifacts + 'preparation-totals-mobile.png' });
   await first.screenshot({ path: artifacts + 'preparation-income-mobile.png' });
   const downloadEvent = page.waitForEvent('download'); await button('Download preparation handover').click();
-  const download = await downloadEvent; assert.equal(download.suggestedFilename(), 'taxprep-preparation-2025-26.html');
+  const download = await downloadEvent; assert.equal(download.suggestedFilename(), 'xoba-paycheck-preparation-2025-26.html');
   await download.saveAs(artifacts + 'combined-preparation-handover.html');
   const html = readFileSync(artifacts + 'combined-preparation-handover.html', 'utf8');
   for (const value of ['$83,150.00', '$17,100.00', '$18.00', '$64,000.00', 'Original sample values', 'Other income sections remain unprepared', 'Unsure', 'sample-bank.csv', 'sample-phone-receipt.pdf', 'employee-phone-2025-26.v1-draft', 'preparation-2025-26.v1', 'not ready to lodge', '&lt;script&gt;']) assert.ok(html.includes(value), value);
@@ -77,7 +77,7 @@ export async function verifyPreparation(page, artifacts) {
   const offline = await page.context().newPage(); const network = [];
   offline.on('request', request => { if (/^https?:/.test(request.url())) network.push(request.url()); });
   await offline.goto('file://' + artifacts + 'combined-preparation-handover.html');
-  await offline.getByRole('heading', { name: 'TaxPrep AU preparation handover', exact: true }).waitFor();
+  await offline.getByRole('heading', { name: 'Xoba Paycheck preparation handover', exact: true }).waitFor();
   assert.equal(await offline.locator('script').count(), 0); assert.deepEqual(network, []);
   await offline.close();
   await page.setViewportSize({ width: 1440, height: 1000 });

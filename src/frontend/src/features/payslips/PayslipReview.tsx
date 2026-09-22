@@ -20,7 +20,7 @@ export default function PayslipReview({ slip, all, onChange, onConfirm, onClose,
   return <section className="statement-panel pay-review" aria-label="Review payslip">
     <div className="panel-heading"><div><p className="eyebrow">{slip.hash ? 'Read from your PDF' : 'Enter from your payslip'}</p><h3>{slip.facts.employer || 'New payslip'}</h3><p className="pay-source-name">{slip.name}{formatLabel(slip.format) ? <> · read as <strong>{formatLabel(slip.format)}</strong></> : null}</p></div><button className="text-button" onClick={onClose}>Close review</button></div>
     <p className="pay-review-tip">Use the amounts for <strong>this pay period</strong>, not the year-to-date (YTD) totals.</p>
-    <p className="pay-review-tip">Hours and rate are optional. Filling them in lets TaxPrep compare this payslip with the rate you agreed to, and with its own arithmetic.</p>
+    <p className="pay-review-tip">Hours and rate are optional. Filling them in lets Xoba Paycheck compare this payslip with the rate you agreed to, and with its own arithmetic.</p>
     {slip.hash && <details className="statement-help pay-source"><summary>Compare with text from your PDF</summary><pre>{slip.text}</pre><details><summary>File reference</summary><p>Page 1 · SHA-256 {slip.hash}</p></details></details>}
     <form onSubmit={event => { event.preventDefault(); if (!issues.length) onConfirm() }}>
       {groups.map(group => <fieldset key={group.title}><legend>{group.title}</legend><div className="pay-fields">{group.fields.map(key => {

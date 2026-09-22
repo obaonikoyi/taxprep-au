@@ -269,7 +269,7 @@ describe('the downloaded report', () => {
 
 describe('the safety property', () => {
   // A wrong claim about an employer is worse than no claim. These words are
-  // conclusions TaxPrep is in no position to reach: it knows the user's own
+  // conclusions Xoba Paycheck is in no position to reach: it knows the user's own
   // record and the payslip's arithmetic, and nothing about entitlement.
   const banned = /\b(underpaid|underpayment|unlawful|illegal|owed|owes|stolen|wage theft|correct|incorrect|fraud)\b/i
 

@@ -77,7 +77,7 @@ function TransactionUpload({ selection }: { selection?: SelectionProps }) {
         <p className="eyebrow">Transaction preparation</p>
         <h2 id="transaction-upload-title">Review your transactions</h2>
         <p className="upload-description">Try the fictional sample or choose a fictional CSV with date, description and amount columns. Up to 1 MB and 5,000 data rows.</p>
-        <p className="upload-description">The file is sent to TaxPrep AU for validation and processed in memory. It is not saved. Use fictional data for this prototype.</p>
+        <p className="upload-description">The file is sent to Xoba Paycheck for validation and processed in memory. It is not saved. Use fictional data for this prototype.</p>
         <button className="secondary-button" type="button" disabled={isLoading} onClick={() => {
           if (fileInput.current) fileInput.current.value = ''
           void upload(new File([sampleCsv], 'sample-transactions.csv', { type: 'text/csv' }))

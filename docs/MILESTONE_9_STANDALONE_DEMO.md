@@ -4,7 +4,7 @@
 
 ## Published demo
 
-**[Open TaxPrep AU](https://xobapaycheck.com)**
+**[Open Xoba Paycheck](https://xobapaycheck.com)**
 
 Since 22 September 2026 the demo answers at `xobapaycheck.com`, its own domain rather than a subdomain of the owner's artist name: a tool people trust with pay documents should not be addressed at a stage name. `taxprep.3xoba.com` stays attached to the same Railway service, so older links keep working. The Railway address `taxprep-au-production.up.railway.app` still serves both and stays recorded in [`deployment.json`](../deployment.json) as the origin behind them.
 
@@ -55,8 +55,8 @@ Official references: [Railway Dockerfiles](https://docs.railway.com/builds/docke
 ## Verify
 
 ```bash
-docker build -t taxprep-demo .
-docker run --rm -p 8080:8080 taxprep-demo
+docker build -t xoba-paycheck-demo .
+docker run --rm -p 8080:8080 xoba-paycheck-demo
 # In another terminal:
 cd src/frontend
 npm ci

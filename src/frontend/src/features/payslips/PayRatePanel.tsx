@@ -32,11 +32,11 @@ export default function PayRatePanel({ slips, records, onRecords }: { slips: Pay
       <div>
         <p className="eyebrow">Your agreed rate</p>
         <h3>Questions to ask</h3>
-        <p>Record the rate you agreed to, and TaxPrep will compare every checked payslip with it — and with the payslip’s own arithmetic. This covers every payslip in this session, whatever filters are set above.</p>
+        <p>Record the rate you agreed to, and Xoba Paycheck will compare every checked payslip with it — and with the payslip’s own arithmetic. This covers every payslip in this session, whatever filters are set above.</p>
       </div>
     </div>
 
-    <p className="pay-rate-scope">TaxPrep compares your payslip with <strong>your own record</strong>. It does not know your award or classification, so it cannot tell you whether a rate is one you are entitled to. Findings here are questions to put to your employer, not conclusions about them. For entitlements, see the <a href="https://www.fairwork.gov.au/pay-and-wages" target="_blank" rel="noreferrer">Fair Work Ombudsman</a>.</p>
+    <p className="pay-rate-scope">Xoba Paycheck compares your payslip with <strong>your own record</strong>. It does not know your award or classification, so it cannot tell you whether a rate is one you are entitled to. Findings here are questions to put to your employer, not conclusions about them. For entitlements, see the <a href="https://www.fairwork.gov.au/pay-and-wages" target="_blank" rel="noreferrer">Fair Work Ombudsman</a>.</p>
 
     <div className="pay-rate-records">
       <div className="pay-rate-records-heading"><h4>Rates you have recorded</h4>{!draft && records.length < MAX_RATE_RECORDS && <button className="secondary-button" onClick={() => { setDraft({ ...blankRate(), id: crypto.randomUUID(), employer: employers.length === 1 ? employers[0] : '' }); setMessage('') }}>Add a pay rate</button>}</div>
@@ -73,7 +73,7 @@ export default function PayRatePanel({ slips, records, onRecords }: { slips: Pay
           {draft.basis === 'annual' && <div className="pay-field">
             <label htmlFor="rate-weekly">Ordinary hours a week</label>
             <input id="rate-weekly" inputMode="decimal" maxLength={10} value={draft.weeklyHours} onChange={e => set({ weeklyHours: e.target.value })} />
-            <small>TaxPrep divides the salary by {WEEKS_PER_YEAR} weeks and then by these hours. A different number of weeks gives a different rate.</small>
+            <small>Xoba Paycheck divides the salary by {WEEKS_PER_YEAR} weeks and then by these hours. A different number of weeks gives a different rate.</small>
           </div>}
           <div className="pay-field">
             <label htmlFor="rate-from">This rate started</label>
@@ -95,7 +95,7 @@ export default function PayRatePanel({ slips, records, onRecords }: { slips: Pay
           <div className="pay-field pay-field-wide">
             <label htmlFor="rate-note">Source note (optional)</label>
             <input id="rate-note" maxLength={200} value={draft.note} onChange={e => set({ note: e.target.value })} />
-            <small>A reminder of where to find it, such as “clause 4.1, signed 12 June 2026”. TaxPrep stores this note and the figures — never the document itself.</small>
+            <small>A reminder of where to find it, such as “clause 4.1, signed 12 June 2026”. Xoba Paycheck stores this note and the figures — never the document itself.</small>
           </div>
         </div>
       </fieldset>
@@ -111,7 +111,7 @@ export default function PayRatePanel({ slips, records, onRecords }: { slips: Pay
     <div className="pay-rate-findings">
       <h4>{findings.length ? `${findings.length} question${findings.length === 1 ? '' : 's'} to ask` : 'Nothing to ask so far'}</h4>
       {findings.length === 0
-        ? <p className="pay-rate-empty">Nothing was found in what TaxPrep compared. That is not a statement that your pay is right — see what was checked below, and what was not.</p>
+        ? <p className="pay-rate-empty">Nothing was found in what Xoba Paycheck compared. That is not a statement that your pay is right — see what was checked below, and what was not.</p>
         : <ol>{findings.map(finding => <li key={finding.id} className="pay-rate-finding">
           <div className="pay-rate-finding-heading"><strong>{finding.heading}</strong><small>{finding.employer} · {finding.period}</small></div>
           <dl>
@@ -130,7 +130,7 @@ export default function PayRatePanel({ slips, records, onRecords }: { slips: Pay
         <strong>{state.employer || state.name} · {state.period}</strong>
         <span>{state.detail}</span>
       </li>)}</ul>
-      <p>Every payslip in this session is listed above with what TaxPrep compared, or why it compared nothing. Nothing here confirms that a figure is right — only which figures were set beside each other.</p>
+      <p>Every payslip in this session is listed above with what Xoba Paycheck compared, or why it compared nothing. Nothing here confirms that a figure is right — only which figures were set beside each other.</p>
     </details>
   </section>
 }

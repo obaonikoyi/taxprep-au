@@ -2,12 +2,12 @@
 
 Status: design gate only. No save/resume implementation is authorised by this document.
 
-TaxPrep year-end preparation can contain pay history, annual income-source facts, bank checks and expense/evidence summaries. These are sensitive financial records and must not be persisted simply for convenience.
+Xoba Paycheck year-end preparation can contain pay history, annual income-source facts, bank checks and expense/evidence summaries. These are sensitive financial records and must not be persisted simply for convenience.
 
 ## Decisions required before implementation
 
 ### Storage location
-- Decide whether derived facts are stored locally, in a TaxPrep account, or both.
+- Decide whether derived facts are stored locally, in a Xoba Paycheck account, or both.
 - Original PDFs/images must be separated from derived facts and must not be retained by default without an explicit product decision.
 
 ### Encryption
@@ -38,7 +38,7 @@ Keep the preparation hub session-only. Do not write pay, bank, receipt or prepar
 
 ## Milestone 16C-2 interim portability
 
-Before cloud save/resume exists, TaxPrep may use an explicit downloaded/imported `taxprep-year-end-handoff-v1` JSON summary between local workspaces. This is not hidden persistence:
+Before cloud save/resume exists, Xoba Paycheck may use an explicit downloaded/imported `taxprep-year-end-handoff-v1` JSON summary between local workspaces. This is not hidden persistence:
 
 - the user must explicitly download the summary;
 - the user must explicitly select it for import;
@@ -53,7 +53,7 @@ This portable summary does not change the storage, retention, deletion or accoun
 
 The first save/resume implementation may be an explicit **encrypted file download/import** for the year-end preparation layer only.
 
-This does not authorise TaxPrep cloud persistence or hidden browser persistence.
+This does not authorise Xoba Paycheck cloud persistence or hidden browser persistence.
 
 Allowed:
 
@@ -68,7 +68,7 @@ Not allowed in this milestone:
 - raw financial documents or OCR text in the backup;
 - raw transactions/descriptions in the backup;
 - localStorage/sessionStorage/IndexedDB workspace persistence;
-- TaxPrep API/database/object-storage persistence;
+- Xoba Paycheck API/database/object-storage persistence;
 - passphrase recovery service;
 - restore onto a different financial year or reconciliation fingerprint.
 
