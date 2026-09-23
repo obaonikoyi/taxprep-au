@@ -96,6 +96,7 @@ app.MapImportPreview();
 app.MapExpenseReview();
 app.MapPayslipReader();
 app.MapPayslipReadUsage();
+app.MapContractReader();
 app.Run();
 
 public partial class Program;

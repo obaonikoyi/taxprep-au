@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync, writeFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { assertStayedOnDevice, watchRequests } from './request-log.mjs';
 export async function verifyPayslips(context, base, artifacts) {
   const page = await context.newPage(), errors = [];
@@ -566,6 +567,64 @@ export async function verifyPayslips(context, base, artifacts) {
     await page.getByRole('heading', { name: 'Understand your payslip.', exact: true }).waitFor();
 
     /*
+     * Reading the agreed rate out of the contract rather than typing it.
+     *
+     * Two things are being proved. That only the words go — the contract file
+     * itself never leaves the device, and the count of non-GET requests for the
+     * whole journey is asserted at the end. And that the reading is a proposal:
+     * it fills the form in, shows the sentence it came from, and saves nothing
+     * until the person presses save.
+     */
+    let contractSent = null;
+    await page.route('**/api/contract/read', async route => {
+      contractSent = JSON.parse(route.request().postData() ?? '{}');
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ available: true, fields: {
+        employer: 'Kestrel Example Hospitality', basis: 'hourly', amount: '32.50', weeklyHours: '',
+        from: '2026-07-01', quote: '4.1  The ordinary hourly rate is $32.50 per hour, effective 1 July 2026.', why: '',
+      } }) });
+    });
+    const kit = name => fileURLToPath(new URL(`../../../sample-data/user-test/files/${name}`, import.meta.url));
+    await page.getByLabel('Choose payslips or photos', { exact: true }).setInputFiles([kit('payslip-1.pdf'), kit('payslip-2.pdf')]);
+    await page.getByRole('heading', { name: 'Check your figures' }).waitFor({ timeout: 60000 });
+    for (let i = 0; i < 2; i++) { await button('Confirm and continue').click(); await page.waitForTimeout(250); }
+    const contractPanel = page.getByRole('region', { name: 'Pay rate checks' });
+    await button('Add a pay rate').click();
+    await contractPanel.getByLabel('Read the rate from my contract').setInputFiles(kit('contract.pdf'));
+    await page.locator('.pay-rate-quote').waitFor({ timeout: 60000 });
+    assert.ok(contractSent && typeof contractSent.text === 'string' && contractSent.text.length > 200, 'the request carried the contract text');
+    assert.equal(/%PDF|JVBER/.test(contractSent.text), false, 'the request carried text, not the contract itself');
+    assert.equal(await contractPanel.getByLabel('Hourly rate (AUD)').inputValue(), '32.50', 'the rate reached the form');
+    assert.equal(await contractPanel.getByLabel('This rate started').inputValue(), '2026-07-01');
+    assert.match(await page.locator('.pay-rate-quote blockquote').innerText(), /ordinary hourly rate is \$32\.50/, 'the sentence it was read from is shown');
+    assert.equal(await contractPanel.locator('.pay-rate-records li').count(), 0, 'a reading saves nothing on its own');
+    // Change a figure and the sentence stops being shown: it no longer describes
+    // what is in the form.
+    await contractPanel.getByLabel('Hourly rate (AUD)').fill('40.00');
+    await page.waitForTimeout(200);
+    assert.equal(await page.locator('.pay-rate-quote').count(), 0, 'the sentence is retracted once the figure it supported is changed');
+
+    /*
+     * And the answer this is built to give often: a contract whose rate carries
+     * a loading, or depends on a classification, is refused rather than guessed
+     * at — because a wrong rate here is compared against every payslip.
+     */
+    await page.unroute('**/api/contract/read');
+    await page.route('**/api/contract/read', async route => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ available: true, fields: {
+        employer: '', basis: '', amount: '', weeklyHours: '', from: '', quote: '',
+        why: 'This contract states a base rate plus a 25% casual loading, so it does not state one ordinary rate.',
+      } }) });
+    });
+    await contractPanel.getByLabel('Read the rate from my contract').setInputFiles(kit('contract.pdf'));
+    const refusal = page.locator('.pay-rate-read-problem');
+    await refusal.waitFor({ timeout: 60000 });
+    assert.match(await refusal.innerText(), /casual loading/, 'the reason for refusing reaches the person');
+    assert.equal(await contractPanel.getByLabel('Hourly rate (AUD)').inputValue(), '40.00', 'a refusal leaves the form exactly as it was');
+    await page.unroute('**/api/contract/read');
+    await page.reload();
+    await page.getByRole('heading', { name: 'Understand your payslip.', exact: true }).waitFor();
+
+    /*
      * A payslip that is a picture — which is what is actually on people's
      * phones. Deliberately a documented layout, so this proves the recognised
      * words reach the same parser a PDF would and produce the same figures,
@@ -617,11 +676,12 @@ export async function verifyPayslips(context, base, artifacts) {
     // reading matches the payslip and once where it proposes a figure the
     // payslip never stated. Counted exactly rather than allowed freely, so a
     // third request appearing from anywhere still fails this.
-    const thirdPartyRefused = assertStayedOnDevice(assert, requests, base, ['/api/payslip/read']);
+    const thirdPartyRefused = assertStayedOnDevice(assert, requests, base, ['/api/payslip/read', '/api/contract/read']);
     const posts = requests.attempted.filter(r => r.method === 'POST');
-    assert.deepEqual(posts.map(r => new URL(r.url).pathname), ['/api/payslip/read', '/api/payslip/read'],
-      `the two assisted reads were the only things posted anywhere: ${posts.map(r => r.method + ' ' + r.url).join(', ')}`);
-    const result = { passed: true, guidedSteps: true, automaticBatchReview: true, noUnconfirmedZeroTotals: true, manualEntry: true, correctionInvalidates: true, duplicateBlocked: true, unreadableBatchAddsNothing: true, batchKeepsWhatItRead: true, payslipFromPhoto: true, readingCheckedAgainstDocument: true, exampleToOwnData: true, chartSwitching: true, yearAndEmployerFilters: true, emptyFilterRecovery: true, offlineExport: true, payOutlook: true, payOutlookWithholdingNotScaled: true, payOutlookMobile: true, taxReadiness: true, taxReadinessWholeYear: true, taxReadinessLocked: true, taxReadinessExport: true, taxReadinessMobile: true, yearEndReconciliation: true, yearEndNoDoubleCount: true, annualStatementPdfExtraction: true, annualStatementReviewGate: true, annualStatementDuplicateBlocked: true, annualStatementProvenance: true, yearEndProvisionalExcluded: true, yearEndExport: true, yearEndMobile: true, yearEndPreparationHub: true, yearEndBankChecksNetOnly: true, yearEndExpenseCoverage: true, portableWorkspaceHandoff: true, handoffYearMismatchBlocked: true, handoffExplicitApply: true, handoffDuplicateBlocked: true, handoffNoDoubleCount: true, yearEndPreparationExport: true, yearEndPreparationMobile: true, encryptedPreparationBackup: true, encryptedBackupWrongPassphraseBlocked: true, encryptedBackupExplicitRestore: true, payAdviceV2Layout: true, payAdviceV2CurrentPeriodOnly: true, payAdviceV2ReportRecordsLayout: true, payAdviceV3EarningsBlock: true, payRateSelfCheckWithoutRecord: true, payRateAgainstRecordedRate: true, payRateSilentChange: true, payRateReportNamesWhatWasNotChecked: true, payRateNoEmployerCharacterisation: true, thirdPartyRefused, clearConfirmation: true, clearRefreshAndWorkspaceChange: true, mobileOverflow: false, mobileReviewActionsVisible: true, documentUploads: 0, modelRequests: 0, pageErrors: errors };
+    assert.deepEqual(posts.map(r => new URL(r.url).pathname),
+      ['/api/payslip/read', '/api/payslip/read', '/api/contract/read', '/api/contract/read'],
+      `only the readings the person asked for were posted anywhere: ${posts.map(r => r.method + ' ' + r.url).join(', ')}`);
+    const result = { passed: true, guidedSteps: true, automaticBatchReview: true, noUnconfirmedZeroTotals: true, manualEntry: true, correctionInvalidates: true, duplicateBlocked: true, unreadableBatchAddsNothing: true, batchKeepsWhatItRead: true, payslipFromPhoto: true, readingCheckedAgainstDocument: true, rateReadFromContract: true, contractRefusalRespected: true, exampleToOwnData: true, chartSwitching: true, yearAndEmployerFilters: true, emptyFilterRecovery: true, offlineExport: true, payOutlook: true, payOutlookWithholdingNotScaled: true, payOutlookMobile: true, taxReadiness: true, taxReadinessWholeYear: true, taxReadinessLocked: true, taxReadinessExport: true, taxReadinessMobile: true, yearEndReconciliation: true, yearEndNoDoubleCount: true, annualStatementPdfExtraction: true, annualStatementReviewGate: true, annualStatementDuplicateBlocked: true, annualStatementProvenance: true, yearEndProvisionalExcluded: true, yearEndExport: true, yearEndMobile: true, yearEndPreparationHub: true, yearEndBankChecksNetOnly: true, yearEndExpenseCoverage: true, portableWorkspaceHandoff: true, handoffYearMismatchBlocked: true, handoffExplicitApply: true, handoffDuplicateBlocked: true, handoffNoDoubleCount: true, yearEndPreparationExport: true, yearEndPreparationMobile: true, encryptedPreparationBackup: true, encryptedBackupWrongPassphraseBlocked: true, encryptedBackupExplicitRestore: true, payAdviceV2Layout: true, payAdviceV2CurrentPeriodOnly: true, payAdviceV2ReportRecordsLayout: true, payAdviceV3EarningsBlock: true, payRateSelfCheckWithoutRecord: true, payRateAgainstRecordedRate: true, payRateSilentChange: true, payRateReportNamesWhatWasNotChecked: true, payRateNoEmployerCharacterisation: true, thirdPartyRefused, clearConfirmation: true, clearRefreshAndWorkspaceChange: true, mobileOverflow: false, mobileReviewActionsVisible: true, documentUploads: 0, modelRequests: 0, pageErrors: errors };
     writeFileSync(artifacts + 'payslip-evaluation.json', JSON.stringify(result, null, 2)); return result;
   } catch (e) { await page.screenshot({ path: artifacts + 'payslip-failure.png', fullPage: true }); console.error((await page.locator('body').innerText()).slice(-10000)); throw e } finally { await page.close() }
 }

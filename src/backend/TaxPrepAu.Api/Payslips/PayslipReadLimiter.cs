@@ -176,8 +176,15 @@ public sealed class PayslipReadLimiter
      * budget on the way to being refused, which is precisely the person the
      * global budget exists to stop.
      */
-    public ReadLimitDecision TryRead(string client)
+    /*
+     * `cost` is how many reads this one counts as. A contract is several pages
+     * where a payslip is one, so it costs several times as much to read, and
+     * charging it as a single read would make the budget a number that no
+     * longer means what it says.
+     */
+    public ReadLimitDecision TryRead(string client, int cost = 1)
     {
+        cost = Math.Max(1, cost);
         var now = clock();
         lock (gate)
         {
@@ -189,7 +196,7 @@ public sealed class PayslipReadLimiter
             foreach (var limit in limits)
             {
                 var window = Active(limit, client, now);
-                if ((window?.Count ?? 0) < limit.Limit) continue;
+                if ((window?.Count ?? 0) + cost <= limit.Limit) continue;
                 // Report the longest wait, so a caller told to come back in a
                 // minute is not refused again a minute later by a daily limit.
                 var wait = window is null ? limit.Window : window.Ends - now;
@@ -201,8 +208,8 @@ public sealed class PayslipReadLimiter
             {
                 var key = Key(limit, client);
                 var window = Active(limit, client, now);
-                if (window is null) counted[key] = new Counted { Ends = now + limit.Window, Count = 1 };
-                else window.Count++;
+                if (window is null) counted[key] = new Counted { Ends = now + limit.Window, Count = cost };
+                else window.Count += cost;
                 if (!limit.PerClient) Announce(limit, counted[key], now);
             }
             return ReadLimitDecision.Pass;
