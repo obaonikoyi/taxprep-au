@@ -105,10 +105,57 @@ not be checked without a compiler; it has been checked, and it takes one.
 that was *allowed*, and allowed reads are capped by the global limit, so someone
 inventing a new address per request creates nothing after the budget is gone.
 
+## Seeing where the budget is up to
+
+A ceiling nobody can see is a hope. `GET /api/payslip/read/usage` answers with
+the day's position:
+
+```json
+{
+  "reader": "on",
+  "windows": [
+    { "name": "all reads this hour", "limit": 60,  "used": 1, "left": 59,  "resets": "2026-09-23T01:36:35Z" },
+    { "name": "all reads today",     "limit": 150, "used": 1, "left": 149, "resets": "2026-09-24T00:36:35Z" }
+  ],
+  "callers": { "counted": 1, "busiest": 1 },
+  "estimatedSpend": {
+    "soFarUsd": 0.08,
+    "ifFullyUsedUsd": 12.00,
+    "note": "An estimate at 8c per read, which is this endpoint's own ceiling rather than what a payslip usually costs. It is not a bill."
+  }
+}
+```
+
+Set `Payslips:ReadLimits:UsageKey` to switch it on, then open
+`…/api/payslip/read/usage?key=<the key>` in a browser, or send
+`Authorization: Bearer <the key>`. `Payslips:ReadLimits:MaxCostCentsPerRead`
+moves the estimate if the price does.
+
+**Off until that key is set, and a wrong key gets the same 404 as an
+unconfigured one** — nothing advertises that the path is there. Not because the
+limits are secret, since they are written down in a public repository, but
+because a live readout of how much budget is left is useful to somebody trying
+to use it up. The key is compared as a SHA-256 digest, so the comparison takes
+the same time whatever is sent; a plain string comparison returns sooner the
+earlier two keys differ, which over enough attempts gives the key away a
+character at a time.
+
+**It never names a caller.** Global windows are reported in full; per-client
+windows are counted and reported as two numbers — how many callers are being
+counted, and the most any one of them has used. That answers the question an
+operator actually has (*is one person taking an unusual share?*) without this
+app being able to answer *who has been reading payslips here*, which it has no
+business answering. An address is personal data. Two tests hold that line: one
+serialises a snapshot taken after seven reads from a known address and asserts
+the address is absent, and one walks every property name in the response and
+fails on any that would carry where a request came from.
+
 ## Verification
 
-- 42 backend tests: the counting itself, both layers and how they interact, the
-  client key, the message, the configuration, and the endpoint's 429.
+- 62 backend tests: the counting itself, both layers and how they interact, the
+  client key, the message, the configuration, the endpoint's 429, and the usage
+  readout — its key, its shape, and the two assertions that keep an address out
+  of it.
 - Time is injected, not waited on. A limiter tested by sleeping is a suite that
   takes an hour, or one that fails on a slow runner.
 - The endpoint test runs with a key configured and a limit of `0`, so it proves
@@ -124,9 +171,15 @@ inventing a new address per request creates nothing after the budget is gone.
   read resolved configuration, so a host that layers settings on later handed
   the two different numbers; and one test passed for the wrong reason, because
   every refusal this endpoint gives offers manual entry.
-- The two decisions above that could be mutated were mutated: charging each
-  limit as it is checked, rather than only once all of them pass, fails both the
-  "a refused read is free" test and the memory-bound test.
+- Four mutations were tried and all four were caught: charging each limit as it
+  is checked rather than once all of them pass fails both the "a refused read is
+  free" test and the memory-bound one; putting an address into the usage answer
+  fails both privacy tests; and accepting a prefix of the usage key instead of
+  comparing digests fails the near-miss key case.
+- The usage readout was also driven against the running app rather than only
+  through the test host: no key gives 404, a wrong key gives 404, the right key
+  answers, and a read attempt moved every number in it — `used` 0 → 1 on both
+  windows, `callers.counted` 0 → 1, and the estimate 0 → $0.08.
 
 ## Not done, deliberately
 
@@ -135,8 +188,8 @@ inventing a new address per request creates nothing after the budget is gone.
 - **The limits are per process.** Two instances of this app mean two budgets.
   Railway runs one; a second would need shared state, which is a database this
   project does not have and should not acquire for this.
-- **Nothing tells the operator they are being used up.** There is no counter to
-  look at and no alert at 80%. The bill is the current feedback loop.
+- **Nothing alerts anyone.** There is a readout (below) but no alert at 80% and
+  nothing that goes looking for you. Somebody still has to open the page.
 - **A batch that meets a limit part way through loses the payslips already read
   in it.** The per-client limits are set so an ordinary batch cannot trip one,
   but someone who has already read 21 payslips this hour and starts a batch of
