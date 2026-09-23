@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { confirmationIssues, employerKey, type Payslip } from './payslip'
 import { addRate, blankRate, MAX_RATE_RECORDS, rateChecks, rateSources, rateText, validateRate, WEEKS_PER_YEAR, type RateRecord } from './payRate'
+import { contractText, readContract } from './contractReader'
 
 /**
  * The agreed rate, and the questions the payslips raise against it.
@@ -15,16 +16,71 @@ export default function PayRatePanel({ slips, records, onRecords }: { slips: Pay
   const [draft, setDraft] = useState<RateRecord | null>(null)
   const [message, setMessage] = useState('')
   const [copied, setCopied] = useState('')
+  /*
+   * Reading the rate out of the contract rather than typing it. Everything
+   * about this is a proposal: it fills the form in, it never saves, and the
+   * sentence it was read from is shown beside it so the person can check the
+   * one thing that matters before they confirm.
+   */
+  const [reading, setReading] = useState('')
+  const [readProblem, setReadProblem] = useState('')
+  const [quote, setQuote] = useState('')
+  const contractInput = useRef<HTMLInputElement>(null)
+  const readingNow = useRef<AbortController | null>(null)
+
+  async function readTheContract(file: File) {
+    if (readingNow.current) return
+    const controller = new AbortController()
+    readingNow.current = controller
+    setReadProblem(''); setQuote(''); setReading('Opening your contract…')
+    // Three minutes: a contract is several pages and a scanned one is several
+    // pages of recognising, as a photographed payslip is.
+    const timer = setTimeout(() => controller.abort(), 180_000)
+    try {
+      const text = await contractText(file, controller.signal, note => { if (!controller.signal.aborted) setReading(note) })
+      setReading('Reading the rate from your contract…')
+      const found = await readContract(text, controller.signal)
+      if (controller.signal.aborted) return
+      if (!found.amount) {
+        // A refusal is the expected answer often enough that it gets the same
+        // care as a reading: say why, and leave the form alone.
+        setReadProblem(found.why || 'No single ordinary rate could be read from this contract. Enter it yourself.')
+        return
+      }
+      setDraft(current => ({
+        ...(current ?? { ...blankRate(), id: crypto.randomUUID() }),
+        employer: found.employer || current?.employer || (employers.length === 1 ? employers[0] : ''),
+        basis: found.basis === 'annual' ? 'annual' : 'hourly',
+        amount: found.amount,
+        weeklyHours: found.weeklyHours || current?.weeklyHours || '',
+        from: found.from || current?.from || '',
+        source: 'contract',
+      }))
+      setQuote(found.quote)
+      setMessage('')
+    } catch (error) {
+      if (!controller.signal.aborted || readingNow.current === controller)
+        setReadProblem(error instanceof Error ? error.message : 'The contract could not be read. Enter the rate yourself.')
+    } finally {
+      clearTimeout(timer)
+      if (readingNow.current === controller) { readingNow.current = null; setReading('') }
+    }
+  }
   const employers = [...new Map(slips.filter(s => s.facts.employer.trim()).map(s => [employerKey(s.facts.employer), s.facts.employer])).values()]
   const { findings, states } = rateChecks(slips, records, slip => confirmationIssues(slip, slips))
   const issues = draft ? validateRate(draft, records) : []
   const checked = states.filter(s => s.checked).length
-  const set = (patch: Partial<RateRecord>) => setDraft(current => current && { ...current, ...patch })
+  const set = (patch: Partial<RateRecord>) => {
+    // Once they change a figure, the sentence it was read from no longer
+    // describes what is in the form, so it stops being shown.
+    if (quote && ('amount' in patch || 'basis' in patch || 'from' in patch)) setQuote('')
+    setDraft(current => current && { ...current, ...patch })
+  }
 
   function save() {
     if (!draft || issues.length) return
     onRecords(addRate(records, draft))
-    setDraft(null)
+    setDraft(null); setQuote(''); setReadProblem('')
     setMessage(`Rate recorded for ${draft.employer.trim()}. Checked payslips in this period are now compared with it.`)
   }
 
@@ -72,6 +128,25 @@ export default function PayRatePanel({ slips, records, onRecords }: { slips: Pay
 
     {draft && <form className="pay-rate-form" onSubmit={event => { event.preventDefault(); save() }}>
       <fieldset><legend>Add the rate you agreed to</legend>
+        <div className="pay-rate-read">
+          <label className="statement-file">
+            {reading ? 'Reading…' : 'Read it from my contract'}
+            <input ref={contractInput} type="file" aria-label="Read the rate from my contract" accept=".pdf,application/pdf,.png,.jpg,.jpeg,image/png,image/jpeg" disabled={!!reading}
+              onChange={event => { const file = event.target.files?.[0]; event.target.value = ''; if (file) void readTheContract(file) }} />
+          </label>
+          <small>
+            Optional, and it only fills this form in — nothing is saved until you check it and press save below.
+            The words in your contract are sent to our server to be read; the file itself never leaves this device, and neither the file nor its words are stored.
+            A contract that states a rate with a loading, or a rate that depends on a classification, is refused rather than guessed at.
+          </small>
+          {reading && <p role="status" className="pay-rate-reading">{reading}</p>}
+          {readProblem && <div role="alert" className="statement-error pay-rate-read-problem"><strong>The rate was not taken from your contract.</strong><p>{readProblem}</p></div>}
+          {quote && <div className="pay-rate-quote">
+            <strong>Read from this sentence in your contract:</strong>
+            <blockquote>{quote}</blockquote>
+            <p>Check it says what the figures below say. If it does not, change them — nothing is saved until you press save.</p>
+          </div>}
+        </div>
         <div className="pay-fields">
           <div className="pay-field">
             <label htmlFor="rate-employer">Employer</label>
@@ -124,7 +199,7 @@ export default function PayRatePanel({ slips, records, onRecords }: { slips: Pay
       {issues.length > 0 && <div className="pay-checks" role="alert"><ul>{issues.map(issue => <li key={issue}>{issue}</li>)}</ul></div>}
       <div className="pay-confirm-row">
         <button className="primary-button" type="submit" disabled={issues.length > 0}>Save this rate</button>
-        <button className="text-button" type="button" onClick={() => { setDraft(null); setMessage('') }}>Cancel</button>
+        <button className="text-button" type="button" onClick={() => { setDraft(null); setMessage(''); setQuote(''); setReadProblem('') }}>Cancel</button>
       </div>
     </form>}
 

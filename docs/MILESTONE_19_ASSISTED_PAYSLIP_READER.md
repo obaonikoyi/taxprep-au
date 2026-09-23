@@ -113,6 +113,8 @@ are on by default and need no configuration.
 - **The reading is not checked against the document.** The person is the check,
   as they always have been. A second pass that verifies proposed figures against
   the extracted text would be a real improvement and is not here.
-- **Contracts are still not read by a model.** That waits on the same operating
-  model work it always has: a contract carries a salary, a signature and third
-  parties, and it is a different decision from a payslip's figures.
+- ~~**Contracts are still not read by a model.**~~ Built in
+  [Milestone 25](MILESTONE_25_READING_THE_CONTRACT.md). Every reason given here
+  still stands, so the reading must quote the sentence it came from, that quote
+  is checked against the contract before anything is believed, and a rate that
+  is conditional is refused rather than resolved.
