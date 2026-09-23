@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { appendPayslips, blankFacts, changedFacts, confirmationIssues, employerKey, financialYear, MAX_PAYSLIPS, selectedPayslips, type Payslip } from './payslip'
+import { appendPayslips, blankFacts, changedFacts, confirmationIssues, employerKey, financialYear, MAX_PAYSLIPS, selectedPayslips, type Payslip, type SkippedFile } from './payslip'
 import { readPayslip } from './payslipReader'
 import { downloadPayReport, payslipReport } from './payslipReport'
 import PayslipStart from './PayslipStart'
@@ -18,6 +18,9 @@ export default function PayslipDashboard() {
   const [rates, setRates] = useState<RateRecord[]>([])
   const [year, setYear] = useState('all'), [employer, setEmployer] = useState('all'), [grouping, setGrouping] = useState<'month' | 'payday'>('month')
   const [busy, setBusy] = useState(false), [message, setMessage] = useState(''), [error, setError] = useState('')
+  // Files this batch could not add. Named rather than dropped quietly: the
+  // person chose them, and they need to know which ones to deal with by hand.
+  const [skipped, setSkipped] = useState<SkippedFile[]>([])
   // Off until asked for, and only for this session: it decides whether an
   // unknown layout's text may be sent to the server to be read.
   const [assist, setAssist] = useState(false)
@@ -46,13 +49,33 @@ export default function PayslipDashboard() {
     const sample = !files
     if (slips.length && fictional !== sample) { setError('Clear the current history before switching between example and your own payslips. Download a report first if you need it.'); return }
     const controller = new AbortController(); active.current = controller
-    setBusy(true); setError(''); setMessage('Opening payslips…')
+    setBusy(true); setError(''); setSkipped([]); setMessage('Opening payslips…')
     let cancelListener: (() => void) | undefined
     const cancelled = new Promise<never>((_, reject) => {
-      cancelListener = () => reject(new Error('Reading cancelled or timed out. Existing payslips are unchanged.'))
+      cancelListener = () => reject(new Error('Reading cancelled. Existing payslips are unchanged.'))
       controller.signal.addEventListener('abort', cancelListener, { once: true })
     })
-    const timer = setTimeout(() => controller.abort(), 60_000)
+    /*
+     * A minute per file, not per batch. One deadline across a batch was already
+     * tight for twenty PDFs and is wrong now that an unknown layout is read by
+     * asking a server: twenty of those take longer than a minute between them,
+     * so the batch would have been cut off mid-way through work that was going
+     * fine. A file that stalls now fails on its own and the rest carry on.
+     */
+    const readOne = async (file: File) => {
+      const perFile = new AbortController()
+      const stop = () => perFile.abort()
+      controller.signal.addEventListener('abort', stop, { once: true })
+      const timer = setTimeout(stop, 60_000)
+      try { return await readPayslip(file, perFile.signal, sample, assist && !sample) }
+      finally { clearTimeout(timer); controller.signal.removeEventListener('abort', stop) }
+    }
+    const reasonFor = (e: unknown) => {
+      if (!(e instanceof Error)) return 'It could not be read.'
+      // Inside the reader a deadline looks like a cancellation. Nobody cancelled
+      // this one, and saying so would be a lie about what just happened.
+      return /Reading cancelled/.test(e.message) ? 'It took more than a minute to read. Try it on its own.' : e.message
+    }
     const work = async () => {
       if (!files) {
         const { default: examples } = await import('../../../../../sample-data/payslips/examples.json')
@@ -60,32 +83,43 @@ export default function PayslipDashboard() {
       }
       if (!files.length || files.length > 20 || slips.length + files.length > MAX_PAYSLIPS) throw new Error('Choose 1–20 PDFs at a time, with no more than 100 payslips in this session.')
       const next: Payslip[] = []
+      const unread: SkippedFile[] = []
       for (let i = 0; i < files.length; i++) {
         if (controller.signal.aborted) throw new Error('Reading cancelled.')
         setMessage(`Reading payslip ${i + 1} of ${files.length}…`)
-        next.push(await readPayslip(files[i], controller.signal, sample, assist && !sample))
+        try {
+          next.push(await readOne(files[i]))
+        } catch (e) {
+          // A shipped example failing is a fault in this app, not in a file
+          // somebody chose, and a half-loaded example is not an example.
+          if (sample || controller.signal.aborted) throw e
+          unread.push({ name: files[i].name, reason: reasonFor(e) })
+        }
       }
-      const combined = appendPayslips(slips, next)
+      const { kept, skipped: notAdded } = appendPayslips(slips, next)
+      const skipped = [...unread, ...notAdded]
+      // Nothing was added, so this is simply a failure and reads like one.
+      if (kept.length === slips.length) throw new Error(skipped[0]?.reason ?? 'Could not read these payslips.')
       if (sample) {
-        if (next.some(s => confirmationIssues(s, combined).length)) throw new Error('The example could not be verified.')
+        if (next.some(s => confirmationIssues(s, kept).length)) throw new Error('The example could not be verified.')
         // Only shipped fictional examples are pre-reviewed. Every user file starts unconfirmed.
-        return combined.map(s => ({ ...s, confirmed: true }))
+        return { combined: kept.map(s => ({ ...s, confirmed: true })), skipped }
       }
-      return combined
+      return { combined: kept, skipped }
     }
     try {
-      const combined = await Promise.race([work(), cancelled])
+      const { combined, skipped } = await Promise.race([work(), cancelled])
       if (!controller.signal.aborted) {
-        setSlips(combined); setYear('all'); setEmployer('all')
+        setSlips(combined); setYear('all'); setEmployer('all'); setSkipped(skipped)
         setSelected(sample ? null : combined[slips.length].id)
         setStage(sample ? 'summary' : 'review')
         setMessage(sample ? 'Six fictional payslips loaded. Example figures are pre-reviewed.' : `${combined.length - slips.length} payslip(s) read. Confirm their figures before they appear in charts.`)
       }
     } catch (e) { if (active.current === controller) { setError(e instanceof Error ? e.message : 'Could not read these payslips.'); setMessage('') } }
-    finally { clearTimeout(timer); if (cancelListener) controller.signal.removeEventListener('abort', cancelListener); if (active.current === controller) { active.current = null; setBusy(false) } }
+    finally { if (cancelListener) controller.signal.removeEventListener('abort', cancelListener); if (active.current === controller) { active.current = null; setBusy(false) } }
   }
   function focusStart() { requestAnimationFrame(() => { stageHeading.current?.focus({ preventScroll: true }); stageHeading.current?.scrollIntoView({ block: 'start' }) }) }
-  function clear() { setStage('add'); setClearRequested(false); setSlips([]); setRates([]); setSelected(null); setYear('all'); setEmployer('all'); setMessage('Pay history cleared.'); setError(''); focusStart() }
+  function clear() { setStage('add'); setClearRequested(false); setSlips([]); setRates([]); setSelected(null); setYear('all'); setEmployer('all'); setMessage('Pay history cleared.'); setError(''); setSkipped([]); focusStart() }
   function manual() {
     if (fictional) { setError('Clear the example history before adding your own figures.'); return }
     if (slips.length >= MAX_PAYSLIPS) { setError('This session already has 100 payslips.'); return }
@@ -93,7 +127,7 @@ export default function PayslipDashboard() {
     setSlips([...slips, { id, name: 'Manual payslip', hash: null, text: '', facts, original: { ...facts }, confirmed: false, sample: false }])
     setSelected(id); setStage('review'); setYear('all'); setEmployer('all'); setError(''); setMessage('Enter the period figures from your payslip, then confirm them.')
   }
-  function openReview(id: string) { setSelected(id); setStage('review'); setYear('all'); setEmployer('all'); setError('') }
+  function openReview(id: string) { setSelected(id); setStage('review'); setYear('all'); setEmployer('all'); setError(''); setSkipped([]) }
   function confirmCurrent() {
     if (!current || confirmationIssues(current, slips).length) return
     const updated = slips.map(s => s.id === current.id ? { ...s, confirmed: true } : s)
@@ -120,7 +154,7 @@ export default function PayslipDashboard() {
         aria-label={['Add payslips', 'Check figures', 'View summary'][i]}
         aria-current={stage === step ? 'step' : undefined}
         disabled={busy || (step !== 'add' && !slips.length)}
-        onClick={() => { setStage(step); setError(''); setMessage(''); setClearRequested(false); if (step === 'add') focusStart(); if (step === 'review') setSelected(selected ?? pending[0]?.id ?? slips[0]?.id ?? null) }}>
+        onClick={() => { setStage(step); setError(''); setSkipped([]); setMessage(''); setClearRequested(false); if (step === 'add') focusStart(); if (step === 'review') setSelected(selected ?? pending[0]?.id ?? slips[0]?.id ?? null) }}>
         <span className="pay-step-number" aria-hidden="true">{i + 1}</span>
         <span><strong>{['Add payslips', 'Check figures', 'View summary'][i]}</strong><small>{['Start with a file or your figures', pending.length ? `${pending.length} to check` : 'Make sure the amounts match', 'Understand and download your pay'][i]}</small></span>
       </button>)}
@@ -129,6 +163,11 @@ export default function PayslipDashboard() {
     {fictional && <aside className="pay-example-banner"><div><strong>You’re exploring an example</strong><p>These six fictional payslips show how the dashboard works.</p></div><button className="secondary-button" disabled={busy} onClick={clear}>Use my own payslips</button></aside>}
     <div className="pay-status"><p role="status">{message}</p>{busy && <button className="text-button" onClick={() => active.current?.abort()}>Cancel reading</button>}</div>
     {error && <div role="alert" className="statement-error"><strong>We couldn’t add those payslips.</strong><p>{error}</p><p>You can enter the figures manually if your PDF layout is not supported.</p></div>}
+    {skipped.length > 0 && <div role="alert" className="statement-error">
+      <strong>{skipped.length} of those files {skipped.length === 1 ? 'was' : 'were'} not added.</strong>
+      <p>The rest were read and are waiting for you to check them. Add these again on their own, or enter their figures by hand.</p>
+      <ul>{skipped.map((file, i) => <li key={`${file.name}-${i}`}>{file.name} — {file.reason}</li>)}</ul>
+    </div>}
 
     {stage === 'add' && <PayslipStart headingRef={stageHeading} busy={busy} hasRecords={slips.length > 0} fictional={fictional} assist={assist} onAssist={setAssist} onManual={manual} onImport={files => void importFiles(files)} />}
 

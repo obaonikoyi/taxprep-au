@@ -19,3 +19,7 @@ TestResults/
 test-results/
 
 src/frontend/public/document-engine/
+
+# The frontend build, copied here by the Dockerfile and by anyone running
+# the hosted journey against a local API.
+src/backend/TaxPrepAu.Api/wwwroot/

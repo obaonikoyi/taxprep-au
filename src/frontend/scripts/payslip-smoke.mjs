@@ -348,10 +348,15 @@ export async function verifyPayslips(context, base, artifacts) {
     // Duplicates and failed batches preserve the existing history.
     await button('Add payslips').click();
     await page.getByLabel('Choose payslip PDFs', { exact: true }).setInputFiles(file(0, 'renamed.pdf'));
-    await page.getByRole('alert').filter({ hasText: 'already added' }).waitFor();
+    await page.getByRole('alert').filter({ hasText: 'already been added' }).waitFor();
     await button('Check figures').click(); assert.equal(await reviewCount(), 2);
+    // A batch where nothing could be read leaves the history exactly as it was.
+    // A batch where something could is the block near the end of this journey.
     await button('Add payslips').click();
-    await page.getByLabel('Choose payslip PDFs', { exact: true }).setInputFiles([{ name: 'bad.pdf', mimeType: 'application/pdf', buffer: Buffer.from('not a pdf') }, file(2)]);
+    await page.getByLabel('Choose payslip PDFs', { exact: true }).setInputFiles([
+      { name: 'bad.pdf', mimeType: 'application/pdf', buffer: Buffer.from('not a pdf') },
+      { name: 'also-bad.pdf', mimeType: 'application/pdf', buffer: Buffer.from('nor is this') },
+    ]);
     await page.getByRole('alert').filter({ hasText: 'not a PDF' }).waitFor();
     await button('Check figures').click(); assert.equal(await reviewCount(), 2);
     await button('Review example-pay-1.pdf 2026-07-16').click();
@@ -492,8 +497,23 @@ export async function verifyPayslips(context, base, artifacts) {
     const unknown = JSON.parse(readFileSync(new URL('../../../sample-data/payslips/unknown-layout-example.json', import.meta.url), 'utf8'));
     const unknownPdf = Buffer.from(unknown.pdfBase64, 'base64');
     await page.locator('.pay-assist-choice input').check();
-    await page.setInputFiles('input[aria-label="Choose payslip PDFs"]', { name: unknown.name, mimeType: 'application/pdf', buffer: unknownPdf });
+    /*
+     * Two files, and one of them cannot be read at all. This used to cost the
+     * other one: a batch was all or nothing, so a single bad file threw away
+     * every payslip already read beside it. Now the unreadable one is named and
+     * the rest are kept.
+     */
+    await page.setInputFiles('input[aria-label="Choose payslip PDFs"]', [
+      { name: 'torn.pdf', mimeType: 'application/pdf', buffer: Buffer.from('not a pdf at all') },
+      { name: unknown.name, mimeType: 'application/pdf', buffer: unknownPdf },
+    ]);
     await page.getByRole('heading', { name: 'Check your figures' }).waitFor({ timeout: 30000 });
+    const notAdded = page.getByRole('alert').filter({ hasText: 'not added' });
+    await notAdded.waitFor();
+    const notAddedText = await notAdded.innerText();
+    assert.match(notAddedText, /torn\.pdf/, `the file that failed is named: ${notAddedText}`);
+    assert.match(notAddedText, /not a PDF/, `and why: ${notAddedText}`);
+    assert.equal(await reviewCount(), 1, 'the payslip beside it was kept');
     assert.ok(posted && typeof posted.text === 'string' && posted.text.length > 40, `the request carried the extracted text: ${JSON.stringify(posted)?.slice(0, 120)}`);
     assert.equal(/%PDF|JVBER/.test(posted.text), false, 'the request carried text, not the PDF itself');
     // The proposal is in the fields, for the person to check — not applied.
@@ -530,7 +550,7 @@ export async function verifyPayslips(context, base, artifacts) {
     const posts = requests.attempted.filter(r => r.method === 'POST');
     assert.deepEqual(posts.map(r => new URL(r.url).pathname), ['/api/payslip/read'],
       `the assisted read was the only thing posted anywhere: ${posts.map(r => r.method + ' ' + r.url).join(', ')}`);
-    const result = { passed: true, guidedSteps: true, automaticBatchReview: true, noUnconfirmedZeroTotals: true, manualEntry: true, correctionInvalidates: true, duplicateBlocked: true, badBatchAtomic: true, exampleToOwnData: true, chartSwitching: true, yearAndEmployerFilters: true, emptyFilterRecovery: true, offlineExport: true, payOutlook: true, payOutlookWithholdingNotScaled: true, payOutlookMobile: true, taxReadiness: true, taxReadinessWholeYear: true, taxReadinessLocked: true, taxReadinessExport: true, taxReadinessMobile: true, yearEndReconciliation: true, yearEndNoDoubleCount: true, annualStatementPdfExtraction: true, annualStatementReviewGate: true, annualStatementDuplicateBlocked: true, annualStatementProvenance: true, yearEndProvisionalExcluded: true, yearEndExport: true, yearEndMobile: true, yearEndPreparationHub: true, yearEndBankChecksNetOnly: true, yearEndExpenseCoverage: true, portableWorkspaceHandoff: true, handoffYearMismatchBlocked: true, handoffExplicitApply: true, handoffDuplicateBlocked: true, handoffNoDoubleCount: true, yearEndPreparationExport: true, yearEndPreparationMobile: true, encryptedPreparationBackup: true, encryptedBackupWrongPassphraseBlocked: true, encryptedBackupExplicitRestore: true, payAdviceV2Layout: true, payAdviceV2CurrentPeriodOnly: true, payAdviceV2ReportRecordsLayout: true, payAdviceV3EarningsBlock: true, payRateSelfCheckWithoutRecord: true, payRateAgainstRecordedRate: true, payRateSilentChange: true, payRateReportNamesWhatWasNotChecked: true, payRateNoEmployerCharacterisation: true, thirdPartyRefused, clearConfirmation: true, clearRefreshAndWorkspaceChange: true, mobileOverflow: false, mobileReviewActionsVisible: true, documentUploads: 0, modelRequests: 0, pageErrors: errors };
+    const result = { passed: true, guidedSteps: true, automaticBatchReview: true, noUnconfirmedZeroTotals: true, manualEntry: true, correctionInvalidates: true, duplicateBlocked: true, unreadableBatchAddsNothing: true, batchKeepsWhatItRead: true, exampleToOwnData: true, chartSwitching: true, yearAndEmployerFilters: true, emptyFilterRecovery: true, offlineExport: true, payOutlook: true, payOutlookWithholdingNotScaled: true, payOutlookMobile: true, taxReadiness: true, taxReadinessWholeYear: true, taxReadinessLocked: true, taxReadinessExport: true, taxReadinessMobile: true, yearEndReconciliation: true, yearEndNoDoubleCount: true, annualStatementPdfExtraction: true, annualStatementReviewGate: true, annualStatementDuplicateBlocked: true, annualStatementProvenance: true, yearEndProvisionalExcluded: true, yearEndExport: true, yearEndMobile: true, yearEndPreparationHub: true, yearEndBankChecksNetOnly: true, yearEndExpenseCoverage: true, portableWorkspaceHandoff: true, handoffYearMismatchBlocked: true, handoffExplicitApply: true, handoffDuplicateBlocked: true, handoffNoDoubleCount: true, yearEndPreparationExport: true, yearEndPreparationMobile: true, encryptedPreparationBackup: true, encryptedBackupWrongPassphraseBlocked: true, encryptedBackupExplicitRestore: true, payAdviceV2Layout: true, payAdviceV2CurrentPeriodOnly: true, payAdviceV2ReportRecordsLayout: true, payAdviceV3EarningsBlock: true, payRateSelfCheckWithoutRecord: true, payRateAgainstRecordedRate: true, payRateSilentChange: true, payRateReportNamesWhatWasNotChecked: true, payRateNoEmployerCharacterisation: true, thirdPartyRefused, clearConfirmation: true, clearRefreshAndWorkspaceChange: true, mobileOverflow: false, mobileReviewActionsVisible: true, documentUploads: 0, modelRequests: 0, pageErrors: errors };
     writeFileSync(artifacts + 'payslip-evaluation.json', JSON.stringify(result, null, 2)); return result;
   } catch (e) { await page.screenshot({ path: artifacts + 'payslip-failure.png', fullPage: true }); console.error((await page.locator('body').innerText()).slice(-10000)); throw e } finally { await page.close() }
 }

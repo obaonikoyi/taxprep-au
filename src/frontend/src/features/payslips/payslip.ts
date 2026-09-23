@@ -79,15 +79,26 @@ export function confirmationIssues(slip: Payslip, all: Payslip[]): string[] {
 export function changedFacts(slip: Payslip, facts: PayFacts): Payslip {
   return { ...slip, facts, confirmed: false }
 }
-export function appendPayslips(existing: Payslip[], incoming: Payslip[]): Payslip[] {
-  if (existing.length + incoming.length > MAX_PAYSLIPS) throw new Error(`Keep no more than ${MAX_PAYSLIPS} payslips in this session.`)
-  const result = [...existing]
+/** A file that was not added, and the reason in words the person can act on. */
+export type SkippedFile = { name: string; reason: string }
+
+/*
+ * Adding a batch used to be all or nothing: one repeat and the whole batch was
+ * refused, including the nineteen files that were fine. That is a bad trade
+ * when reading twenty payslips takes a while — and worse now that an unknown
+ * layout is read one call at a time. Each file is judged on its own, and the
+ * ones that cannot be added are named rather than silently dropped.
+ */
+export function appendPayslips(existing: Payslip[], incoming: Payslip[]): { kept: Payslip[]; skipped: SkippedFile[] } {
+  const kept = [...existing]
+  const skipped: SkippedFile[] = []
   for (const slip of incoming) {
-    if (slip.hash && result.some(s => s.hash === slip.hash)) throw new Error('This batch includes a file already added. No files from this batch were added.')
-    if (result.some(s => samePay(s.facts, slip.facts))) throw new Error('This batch repeats an employer, pay date and period. Remove the duplicate or superseded entry first. No files from this batch were added.')
-    result.push(slip)
+    if (kept.length >= MAX_PAYSLIPS) skipped.push({ name: slip.name, reason: `This session already holds ${MAX_PAYSLIPS} payslips.` })
+    else if (slip.hash && kept.some(s => s.hash === slip.hash)) skipped.push({ name: slip.name, reason: 'This file has already been added.' })
+    else if (kept.some(s => samePay(s.facts, slip.facts))) skipped.push({ name: slip.name, reason: 'Another entry already has this employer, pay date and period.' })
+    else kept.push(slip)
   }
-  return result
+  return { kept, skipped }
 }
 export function selectedPayslips(all: Payslip[], year: string, employer: string): Payslip[] {
   return all.filter(s => s.confirmed && !confirmationIssues(s, all).length && (year === 'all' || financialYear(s.facts.payDate) === year) && (employer === 'all' || employerKey(s.facts.employer) === employer)).sort((a, b) => a.facts.payDate.localeCompare(b.facts.payDate) || a.facts.employer.localeCompare(b.facts.employer))
