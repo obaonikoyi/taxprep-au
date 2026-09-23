@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest'
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs'
 import examples from '../../../../../sample-data/payslips/examples.json'
-import { appendPayslips, buckets, changedFacts, confirmationIssues, dateValue, financialYear, money, observations, selectedPayslips, totals, validateFacts, type Payslip } from './payslip'
+import { appendPayslips, MAX_PAYSLIPS, buckets, changedFacts, confirmationIssues, dateValue, financialYear, money, observations, selectedPayslips, totals, validateFacts, type Payslip } from './payslip'
 import { parsePayslip, textLines } from './payslipReader'
 import { payslipReport } from './payslipReport'
 let slips: Payslip[]
@@ -51,10 +51,31 @@ describe('review, duplication and honest totals', () => {
     const a = reviewed(); a[0] = changedFacts(a[0], { ...a[0].facts, super: '' })
     expect(selectedPayslips(a, 'all', 'all')).toHaveLength(5); expect(a[0].original.super).toBe('216.00')
   })
-  it('rejects same bytes and same pay identity atomically, including renamed files', () => {
-    expect(() => appendPayslips(slips, [{ ...slips[0], name: 'renamed.pdf' }])).toThrow('already added')
-    expect(() => appendPayslips([slips[0]], [{ ...slips[1] }, { ...slips[0], id: 'new', hash: 'new' }])).toThrow('repeats')
+  it('refuses the same bytes and the same pay identity, including renamed files', () => {
+    const renamed = appendPayslips(slips, [{ ...slips[0], name: 'renamed.pdf' }])
+    expect(renamed.kept).toHaveLength(6)
+    expect(renamed.skipped).toEqual([{ name: 'renamed.pdf', reason: 'This file has already been added.' }])
+
+    // Different bytes, same employer, pay date and period.
+    const repeated = appendPayslips([slips[0]], [{ ...slips[0], id: 'new', hash: 'new', name: 'again.pdf' }])
+    expect(repeated.kept).toHaveLength(1)
+    expect(repeated.skipped[0].reason).toContain('employer, pay date and period')
+  })
+  it('keeps the files it can add rather than refusing the whole batch for one repeat', () => {
+    // The point of the change: nineteen good files are not thrown away because
+    // the twentieth was already added.
+    const { kept, skipped } = appendPayslips([slips[0]], [
+      { ...slips[1] }, { ...slips[0], name: 'repeat.pdf' }, { ...slips[2] },
+    ])
+    expect(kept.map(s => s.id)).toEqual([slips[0].id, slips[1].id, slips[2].id])
+    expect(skipped.map(f => f.name)).toEqual(['repeat.pdf'])
     expect(slips).toHaveLength(6)
+  })
+  it('stops at the session limit and says which files that cost', () => {
+    const full = Array.from({ length: MAX_PAYSLIPS }, (_, i) => ({ ...slips[0], id: `f${i}`, hash: `f${i}`, facts: { ...slips[0].facts, payDate: '' } }))
+    const { kept, skipped } = appendPayslips(full, [{ ...slips[0], id: 'x', hash: 'x', name: 'one-too-many.pdf' }])
+    expect(kept).toHaveLength(MAX_PAYSLIPS)
+    expect(skipped).toEqual([{ name: 'one-too-many.pdf', reason: `This session already holds ${MAX_PAYSLIPS} payslips.` }])
   })
   it('does not allow edited duplicates to inflate confirmed totals', () => {
     const a = reviewed(); a[1].facts = { ...a[0].facts, employer: ' HARBOUR   EXAMPLE SERVICES ' }

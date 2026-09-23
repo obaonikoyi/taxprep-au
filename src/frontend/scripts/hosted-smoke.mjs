@@ -11,7 +11,9 @@ assert.ok(base.protocol === 'https:' || (base.protocol === 'http:' && ['localhos
 assert.equal(base.username + base.password, '');
 const artifacts = new URL('../../../test-results/hosted/', import.meta.url).pathname;
 mkdirSync(artifacts, { recursive: true });
-const browser = await chromium.launch({ headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage'] });
+// CHROMIUM_PATH uses a browser that is already installed, as ui-smoke.mjs does.
+// CI leaves it unset and Playwright uses the one it downloaded.
+const browser = await chromium.launch({ headless: true, ...(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {}), args: ['--no-sandbox', '--disable-dev-shm-usage'] });
 // clipboard-read is for the payslip journey, which reads back what the
 // "Copy message for payroll" button actually put on the clipboard rather
 // than trusting the button's own label.
