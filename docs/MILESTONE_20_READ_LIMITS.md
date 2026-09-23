@@ -183,13 +183,16 @@ fails on any that would carry where a request came from.
 
 ## Not done, deliberately
 
-- **Cloudflare's address ranges are not pinned,** so `CF-Connecting-IP` is still
-  trusted as sent. See above for why that is a decision and not an oversight.
+- ~~**Cloudflare's address ranges are not pinned.**~~ Addressed differently in
+  [Milestone 24](MILESTONE_24_KNOWING_AND_TRUSTING.md): pinning them cannot work
+  behind Railway's edge, so the header is believed only from a request carrying
+  a shared secret instead. Off until configured.
 - **The limits are per process.** Two instances of this app mean two budgets.
   Railway runs one; a second would need shared state, which is a database this
   project does not have and should not acquire for this.
-- **Nothing alerts anyone.** There is a readout (below) but no alert at 80% and
-  nothing that goes looking for you. Somebody still has to open the page.
+- ~~**Nothing alerts anyone.**~~ [Milestone 24](MILESTONE_24_KNOWING_AND_TRUSTING.md)
+  writes a warning to the log at 80% and again when a budget is gone. It is
+  still a log line, so something has to read it.
 - **A batch that meets a limit part way through loses the payslips already read
   in it.** The per-client limits are set so an ordinary batch cannot trip one,
   but someone who has already read 21 payslips this hour and starts a batch of
