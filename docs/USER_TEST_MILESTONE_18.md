@@ -6,7 +6,10 @@ Status: materials built and piloted. **The test itself has not been run**, becau
 
 > Give a user a contract and four payslips, one of which is short. Can they produce the specific dated question within one session, unaided? Measure it before any claim about this feature is published.
 
-This document turns that sentence into something you can run on a Saturday.
+This document turns that sentence into something you can run on a Saturday. It
+covers what is being tested and what the answer means. **[The runbook](USER_TEST_RUNBOOK.md)
+is what you carry on the day**: the message to send, the words to say, the sheet
+to write on.
 
 ## The claim under test
 
@@ -30,6 +33,15 @@ Everything is invented. No real employer, employee or agreement.
 
 ### Piloted, so you are not debugging in front of a participant
 
+**Re-checked on 23 September 2026** against a local build of the current `main`,
+five milestones after this was written — the assisted reader, its limits, the photograph reader and the
+document cross-check have all shipped since. Nothing about the kit changed: all
+four payslips are still read as `PAY ADVICE v3` with no corrections, route A
+still fires unprompted, and recording $32.50 still produces the sentence below.
+The check is a script — `npm run test:user-kit` — so re-running it before the
+next participant costs a minute. Do it against the live site, which is the one a
+participant will use.
+
 Driven end to end before this was written: all four PDFs are recognised as `PAY ADVICE v3`, hours and rate are filled in automatically, all four confirm with **no corrections needed**, and recording the $32.50 rate produces exactly:
 
 > **$1.75 an hour below what you recorded, or $108.50 over this period.** — Kestrel Example Hospitality · 2026-08-12 to 2026-08-25
@@ -48,6 +60,19 @@ So there are two paths to the answer:
 Both end at a usable question, so both count as a pass for *"can they produce it"*. But they say completely different things about the differentiator. If everyone succeeds via Route A, the contract feature — the part that is supposedly unique — was not what did the work, and that is worth knowing before anyone builds more of it.
 
 **Record the route for every participant.** It is the most interesting number this test produces.
+
+## A second question the app has never been asked
+
+Since this test was designed, Xoba Paycheck learned to read a payslip from a
+**photograph**, on the device. Everything proving that works was measured on an
+image drawn by a computer. Nobody has ever pointed a phone at a piece of paper
+and handed the result to this app.
+
+So the runbook adds a five-minute second task: photograph the printed payslip 4
+and see whether the site reads it. It is scored separately and does not touch
+the pass bar below — the claim under test is still the contract one. But it is
+the cheapest chance to find out whether the most realistic way anyone would use
+this actually works.
 
 ## Recruiting
 
