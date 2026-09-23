@@ -70,6 +70,57 @@ export function validateFacts(f: PayFacts): string[] {
   if (gross !== null && ordinary !== null && ordinary > gross) issues.push('Pay for those hours is more than gross pay. Ordinary pay is part of gross, so check both figures.')
   return issues
 }
+/*
+ * Checking a reading against the document it came from.
+ *
+ * Every reading in this app is a proposal the person confirms, and until now
+ * the person was the only thing standing between a wrong figure and a total.
+ * That is a lot to ask of someone looking at twelve fields, and it asks most
+ * where it should ask least: a documented parser takes its figures out of the
+ * text, so its numbers are in the document by construction — but a payslip read
+ * by asking a model is only as good as the model, and a model can return a
+ * figure that is nowhere on the payslip. It can also calculate one, which it is
+ * told not to do and cannot be stopped from doing.
+ *
+ * So every figure the reading proposed is looked for in the text that was read.
+ * A figure that is not there is not necessarily wrong — a payslip can print
+ * "1 840,00", and a reading can be right in a way this cannot see — so it is
+ * never a refusal. It says which figures to look at hardest, which is exactly
+ * the help someone checking twelve fields needs.
+ *
+ * Deliberately not checked: dates, because turning "16 Jul 2026" into
+ * 2026-07-16 is the reading doing its job; the employer name, which wraps and
+ * abbreviates; and any figure of zero, because a payslip showing no deductions
+ * prints nothing at all and a reading of 0.00 is the correct answer.
+ */
+const CHECKED_FIGURES = ['gross', 'withheld', 'deductions', 'net', 'super', 'hours', 'rate', 'ordinary'] as const
+
+/** Every number in the document, as hundredths, however it was punctuated. */
+function figuresIn(text: string): Set<number> {
+  const found = new Set<number>()
+  for (const match of text.matchAll(/\d[\d,]*(?:\.\d{1,2})?/g)) {
+    const value = money(match[0])
+    if (value !== null) found.add(value)
+  }
+  return found
+}
+
+/**
+ * Figures the reading proposed that are not in the document, and that the
+ * person has not already changed — once they have typed their own value, this
+ * has nothing left to say about it.
+ */
+export function figuresNotInDocument(slip: Payslip): PayField[] {
+  if (!slip.text.trim()) return []
+  const inDocument = figuresIn(slip.text)
+  return CHECKED_FIGURES.filter(key => {
+    const value = slip.facts[key]
+    if (!value.trim() || value !== slip.original[key]) return false
+    const amount = money(value)
+    return amount !== null && amount !== 0 && !inDocument.has(amount)
+  })
+}
+
 export function samePay(a: PayFacts, b: PayFacts): boolean {
   return !!a.employer.trim() && employerKey(a.employer) === employerKey(b.employer) && !!dateValue(a.payDate) && a.payDate === b.payDate && a.periodStart === b.periodStart && a.periodEnd === b.periodEnd
 }

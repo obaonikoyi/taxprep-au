@@ -1,4 +1,4 @@
-import { labels, confirmationIssues, optionalFields, type Payslip, type PayFacts, type PayField } from './payslip'
+import { labels, confirmationIssues, figuresNotInDocument, optionalFields, type Payslip, type PayFacts, type PayField } from './payslip'
 import { formatLabel } from './payslipFormats'
 
 const groups: { title: string; fields: PayField[] }[] = [
@@ -17,11 +17,22 @@ const help: Record<PayField, string> = {
 }
 export default function PayslipReview({ slip, all, onChange, onConfirm, onClose, onRemove }: { slip: Payslip; all: Payslip[]; onChange: (facts: PayFacts) => void; onConfirm: () => void; onClose: () => void; onRemove: () => void }) {
   const issues = confirmationIssues(slip, all)
+  // Figures the reading proposed that are not in the text it read. Never a
+  // refusal — a reading can be right in a way this cannot see — but it is the
+  // difference between checking twelve fields and checking the two that matter.
+  const unfound = figuresNotInDocument(slip)
   return <section className="statement-panel pay-review" aria-label="Review payslip">
     <div className="panel-heading"><div><p className="eyebrow">{!slip.hash ? 'Enter from your payslip' : slip.fromPicture ? 'Recognised from your picture — check every figure' : 'Read from your PDF'}</p><h3>{slip.facts.employer || 'New payslip'}</h3><p className="pay-source-name">{slip.name}{formatLabel(slip.format) ? <> · read as <strong>{formatLabel(slip.format)}</strong></> : null}</p></div><button className="text-button" onClick={onClose}>Close review</button></div>
     <p className="pay-review-tip">Use the amounts for <strong>this pay period</strong>, not the year-to-date (YTD) totals.</p>
     <p className="pay-review-tip">Hours and rate are optional. Filling them in lets Xoba Paycheck compare this payslip with the rate you agreed to, and with its own arithmetic.</p>
-    {slip.hash && <details className="statement-help pay-source"><summary>Compare with text from your PDF</summary><pre>{slip.text}</pre><details><summary>File reference</summary><p>Page 1 · SHA-256 {slip.hash}</p></details></details>}
+    {unfound.length > 0 && <div role="alert" className="statement-error pay-unfound">
+      <strong>{unfound.length === 1 ? 'One figure was not' : `${unfound.length} figures were not`} found in what we read.</strong>
+      <p>
+        {unfound.map(key => labels[key].toLowerCase()).join(', ')} {unfound.length === 1 ? 'does' : 'do'} not appear in the text below.
+        That does not make {unfound.length === 1 ? 'it' : 'them'} wrong — a payslip can print a figure in a way this check cannot match — but check {unfound.length === 1 ? 'it' : 'them'} against your payslip before you confirm.
+      </p>
+    </div>}
+    {slip.hash && <details className="statement-help pay-source" open={unfound.length > 0}><summary>Compare with text from your PDF</summary><pre>{slip.text}</pre><details><summary>File reference</summary><p>Page 1 · SHA-256 {slip.hash}</p></details></details>}
     <form onSubmit={event => { event.preventDefault(); if (!issues.length) onConfirm() }}>
       {groups.map(group => <fieldset key={group.title}><legend>{group.title}</legend><div className="pay-fields">{group.fields.map(key => {
         const monetary = ['gross', 'withheld', 'deductions', 'net', 'super', 'rate', 'ordinary'].includes(key)
@@ -32,6 +43,7 @@ export default function PayslipReview({ slip, all, onChange, onConfirm, onClose,
           <input id={`pay-${key}`} aria-describedby={`pay-help-${key}`} value={slip.facts[key]} maxLength={key === 'employer' ? 120 : 30} type={['periodStart', 'periodEnd', 'payDate'].includes(key) ? 'date' : 'text'} inputMode={monetary || key === 'hours' ? 'decimal' : undefined} onChange={event => onChange({ ...slip.facts, [key]: event.target.value })} />
           <small id={`pay-help-${key}`}>{help[key]}</small>
           {slip.hash && slip.original[key] !== slip.facts[key] && <small className="pay-original">Read from PDF: {slip.original[key] || 'not shown'}</small>}
+          {unfound.includes(key) && <small className="pay-unfound-field">Not found in the text we read — check this one.</small>}
         </div>
       })}</div></fieldset>)}
       {issues.length > 0 && <details className="pay-checks" open={!!slip.hash}><summary>{issues.length} thing{issues.length === 1 ? '' : 's'} to check before continuing</summary><ul>{issues.map(issue => <li key={issue}>{issue}</li>)}</ul></details>}
