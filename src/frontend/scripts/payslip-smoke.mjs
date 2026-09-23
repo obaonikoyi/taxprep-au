@@ -330,7 +330,7 @@ export async function verifyPayslips(context, base, artifacts) {
     // Own files open their review immediately. No misleading zero summary is shown.
     await button('Use my own payslips').click();
     assert.equal(await button('Add payslips').getAttribute('aria-current'), 'step');
-    await page.getByLabel('Choose payslip PDFs', { exact: true }).setInputFiles([file(0), file(1)]);
+    await page.getByLabel('Choose payslips or photos', { exact: true }).setInputFiles([file(0), file(1)]);
     await page.getByRole('status').filter({ hasText: '2 payslip(s) read.' }).waitFor();
     assert.equal(await button('Check figures').getAttribute('aria-current'), 'step');
     assert.deepEqual(await totals(), []); assert.equal(await reviewCount(), 2);
@@ -347,13 +347,13 @@ export async function verifyPayslips(context, base, artifacts) {
 
     // Duplicates and failed batches preserve the existing history.
     await button('Add payslips').click();
-    await page.getByLabel('Choose payslip PDFs', { exact: true }).setInputFiles(file(0, 'renamed.pdf'));
+    await page.getByLabel('Choose payslips or photos', { exact: true }).setInputFiles(file(0, 'renamed.pdf'));
     await page.getByRole('alert').filter({ hasText: 'already been added' }).waitFor();
     await button('Check figures').click(); assert.equal(await reviewCount(), 2);
     // A batch where nothing could be read leaves the history exactly as it was.
     // A batch where something could is the block near the end of this journey.
     await button('Add payslips').click();
-    await page.getByLabel('Choose payslip PDFs', { exact: true }).setInputFiles([
+    await page.getByLabel('Choose payslips or photos', { exact: true }).setInputFiles([
       { name: 'bad.pdf', mimeType: 'application/pdf', buffer: Buffer.from('not a pdf') },
       { name: 'also-bad.pdf', mimeType: 'application/pdf', buffer: Buffer.from('nor is this') },
     ]);
@@ -401,7 +401,7 @@ export async function verifyPayslips(context, base, artifacts) {
     // current-period figure beside a cumulative year-to-date figure. Only the
     // current column may ever be read, so the fixtures carry large unrelated
     // YTD values that would be obvious in the totals if a column were confused.
-    await page.getByLabel('Choose payslip PDFs', { exact: true }).setInputFiles([advice(0), advice(1)]);
+    await page.getByLabel('Choose payslips or photos', { exact: true }).setInputFiles([advice(0), advice(1)]);
     await page.getByRole('heading', { name: 'Check your figures' }).waitFor();
     assert.ok((await page.locator('.pay-source-name').first().innerText()).includes('PAY ADVICE v2'));
     assert.equal(await page.getByLabel('Gross pay (AUD)', { exact: true }).inputValue(), '1,640.00');
@@ -422,7 +422,7 @@ export async function verifyPayslips(context, base, artifacts) {
     // and rate it claims to have paid. That is what makes a rate check possible
     // at all, and the fixtures cover a match, a lower rate, and an advice whose
     // ordinary line does not agree with its own hours and rate.
-    await page.getByLabel('Choose payslip PDFs', { exact: true }).setInputFiles([adviceV3(0), adviceV3(1), adviceV3(2)]);
+    await page.getByLabel('Choose payslips or photos', { exact: true }).setInputFiles([adviceV3(0), adviceV3(1), adviceV3(2)]);
     await page.getByRole('heading', { name: 'Check your figures' }).waitFor();
     assert.ok((await page.locator('.pay-source-name').first().innerText()).includes('PAY ADVICE v3'));
     assert.equal(await page.getByLabel('Ordinary hours (optional)', { exact: true }).inputValue(), '38.00');
@@ -503,7 +503,7 @@ export async function verifyPayslips(context, base, artifacts) {
      * every payslip already read beside it. Now the unreadable one is named and
      * the rest are kept.
      */
-    await page.setInputFiles('input[aria-label="Choose payslip PDFs"]', [
+    await page.setInputFiles('input[aria-label="Choose payslips or photos"]', [
       { name: 'torn.pdf', mimeType: 'application/pdf', buffer: Buffer.from('not a pdf at all') },
       { name: unknown.name, mimeType: 'application/pdf', buffer: unknownPdf },
     ]);
@@ -534,6 +534,40 @@ export async function verifyPayslips(context, base, artifacts) {
     await page.reload();
     await page.getByRole('heading', { name: 'Understand your payslip.', exact: true }).waitFor();
 
+    /*
+     * A payslip that is a picture — which is what is actually on people's
+     * phones. Deliberately a documented layout, so this proves the recognised
+     * words reach the same parser a PDF would and produce the same figures,
+     * rather than proving some looser path.
+     *
+     * The recogniser runs on this device: the count of non-GET requests for the
+     * whole journey is asserted at the end and this block must not add to it.
+     */
+    const photo = JSON.parse(readFileSync(new URL('../../../sample-data/payslips/photo-example.json', import.meta.url), 'utf8'));
+    await page.getByLabel('Choose payslips or photos', { exact: true })
+      .setInputFiles({ name: photo.name, mimeType: 'image/png', buffer: Buffer.from(photo.pngBase64, 'base64') });
+    await page.getByRole('heading', { name: 'Check your figures' }).waitFor({ timeout: 180000 });
+    // Where the figures came from is on the screen, because a recognised figure
+    // deserves a second look more than a extracted one does.
+    assert.match(await page.locator('.panel-heading .eyebrow').innerText(), /picture/i);
+    assert.match(await page.locator('.pay-source-name').innerText(), /PAYSLIP SUMMARY v1/);
+    for (const [label, expected] of Object.entries({
+      'Employer': photo.facts['Employer'],
+      'Period start': photo.facts['Period start'],
+      'Period end': photo.facts['Period end'],
+      'Pay date': photo.facts['Pay date'],
+      'Gross pay (AUD)': photo.facts['Gross pay'],
+      'Tax withheld (AUD)': photo.facts['Tax withheld'],
+      'Other deductions (AUD)': photo.facts['Other deductions'],
+      'Net pay (AUD)': photo.facts['Net pay'],
+    })) {
+      assert.equal(await page.getByLabel(label, { exact: true }).inputValue(), expected, `recognised ${label}`);
+    }
+    // It is a proposal like any other: nothing counts until it is confirmed.
+    assert.equal(await page.getByRole('button', { name: 'Confirm and continue' }).isVisible(), true);
+    await page.reload();
+    await page.getByRole('heading', { name: 'Understand your payslip.', exact: true }).waitFor();
+
 
     await button('Try example payslips').click(); await page.getByRole('status').filter({ hasText: 'Six fictional payslips loaded.' }).waitFor();
     await button('Bank spending').click(); await button('My pay').click(); assert.equal(await page.locator('.pay-metrics').count(), 0);
@@ -550,7 +584,7 @@ export async function verifyPayslips(context, base, artifacts) {
     const posts = requests.attempted.filter(r => r.method === 'POST');
     assert.deepEqual(posts.map(r => new URL(r.url).pathname), ['/api/payslip/read'],
       `the assisted read was the only thing posted anywhere: ${posts.map(r => r.method + ' ' + r.url).join(', ')}`);
-    const result = { passed: true, guidedSteps: true, automaticBatchReview: true, noUnconfirmedZeroTotals: true, manualEntry: true, correctionInvalidates: true, duplicateBlocked: true, unreadableBatchAddsNothing: true, batchKeepsWhatItRead: true, exampleToOwnData: true, chartSwitching: true, yearAndEmployerFilters: true, emptyFilterRecovery: true, offlineExport: true, payOutlook: true, payOutlookWithholdingNotScaled: true, payOutlookMobile: true, taxReadiness: true, taxReadinessWholeYear: true, taxReadinessLocked: true, taxReadinessExport: true, taxReadinessMobile: true, yearEndReconciliation: true, yearEndNoDoubleCount: true, annualStatementPdfExtraction: true, annualStatementReviewGate: true, annualStatementDuplicateBlocked: true, annualStatementProvenance: true, yearEndProvisionalExcluded: true, yearEndExport: true, yearEndMobile: true, yearEndPreparationHub: true, yearEndBankChecksNetOnly: true, yearEndExpenseCoverage: true, portableWorkspaceHandoff: true, handoffYearMismatchBlocked: true, handoffExplicitApply: true, handoffDuplicateBlocked: true, handoffNoDoubleCount: true, yearEndPreparationExport: true, yearEndPreparationMobile: true, encryptedPreparationBackup: true, encryptedBackupWrongPassphraseBlocked: true, encryptedBackupExplicitRestore: true, payAdviceV2Layout: true, payAdviceV2CurrentPeriodOnly: true, payAdviceV2ReportRecordsLayout: true, payAdviceV3EarningsBlock: true, payRateSelfCheckWithoutRecord: true, payRateAgainstRecordedRate: true, payRateSilentChange: true, payRateReportNamesWhatWasNotChecked: true, payRateNoEmployerCharacterisation: true, thirdPartyRefused, clearConfirmation: true, clearRefreshAndWorkspaceChange: true, mobileOverflow: false, mobileReviewActionsVisible: true, documentUploads: 0, modelRequests: 0, pageErrors: errors };
+    const result = { passed: true, guidedSteps: true, automaticBatchReview: true, noUnconfirmedZeroTotals: true, manualEntry: true, correctionInvalidates: true, duplicateBlocked: true, unreadableBatchAddsNothing: true, batchKeepsWhatItRead: true, payslipFromPhoto: true, exampleToOwnData: true, chartSwitching: true, yearAndEmployerFilters: true, emptyFilterRecovery: true, offlineExport: true, payOutlook: true, payOutlookWithholdingNotScaled: true, payOutlookMobile: true, taxReadiness: true, taxReadinessWholeYear: true, taxReadinessLocked: true, taxReadinessExport: true, taxReadinessMobile: true, yearEndReconciliation: true, yearEndNoDoubleCount: true, annualStatementPdfExtraction: true, annualStatementReviewGate: true, annualStatementDuplicateBlocked: true, annualStatementProvenance: true, yearEndProvisionalExcluded: true, yearEndExport: true, yearEndMobile: true, yearEndPreparationHub: true, yearEndBankChecksNetOnly: true, yearEndExpenseCoverage: true, portableWorkspaceHandoff: true, handoffYearMismatchBlocked: true, handoffExplicitApply: true, handoffDuplicateBlocked: true, handoffNoDoubleCount: true, yearEndPreparationExport: true, yearEndPreparationMobile: true, encryptedPreparationBackup: true, encryptedBackupWrongPassphraseBlocked: true, encryptedBackupExplicitRestore: true, payAdviceV2Layout: true, payAdviceV2CurrentPeriodOnly: true, payAdviceV2ReportRecordsLayout: true, payAdviceV3EarningsBlock: true, payRateSelfCheckWithoutRecord: true, payRateAgainstRecordedRate: true, payRateSilentChange: true, payRateReportNamesWhatWasNotChecked: true, payRateNoEmployerCharacterisation: true, thirdPartyRefused, clearConfirmation: true, clearRefreshAndWorkspaceChange: true, mobileOverflow: false, mobileReviewActionsVisible: true, documentUploads: 0, modelRequests: 0, pageErrors: errors };
     writeFileSync(artifacts + 'payslip-evaluation.json', JSON.stringify(result, null, 2)); return result;
   } catch (e) { await page.screenshot({ path: artifacts + 'payslip-failure.png', fullPage: true }); console.error((await page.locator('body').innerText()).slice(-10000)); throw e } finally { await page.close() }
 }

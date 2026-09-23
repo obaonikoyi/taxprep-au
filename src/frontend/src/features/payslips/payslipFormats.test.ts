@@ -119,6 +119,23 @@ describe('format detection', () => {
   it('refuses a document claiming to be two layouts at once', () => {
     expect(() => detectFormat(['PAYSLIP SUMMARY v1', 'PAY ADVICE v2'])).toThrow('more than one')
   })
+  it('reads a marker off a picture through the misses a recogniser actually makes', () => {
+    // Recognising the drawn marker gives back a lowercase L for the 1. Every
+    // figure on the same payslip came back correct, so refusing the layout over
+    // one character would send a perfectly readable payslip to manual entry.
+    expect(detectFormat(['PAYSLIP SUMMARY vl'])).toBeNull()
+    expect(detectFormat(['PAYSLIP SUMMARY vl'], true)?.id).toBe('payslip-summary-v1')
+    expect(detectFormat(['PAY ADVICE vZ'], true)?.id).toBe('pay-advice-v2')
+    expect(detectFormat(['PAYSL1P SUMMARY v1'], true)?.id).toBe('payslip-summary-v1')
+  })
+  it('does not loosen a marker into a different layout', () => {
+    // The tolerance must never turn one documented layout into another, and
+    // must not accept a line that is simply not a marker.
+    expect(detectFormat(['PAY ADVICE v2'], true)?.id).toBe('pay-advice-v2')
+    expect(detectFormat(['Acme Payroll Statement'], true)).toBeNull()
+    expect(detectFormat(['PAYSLIP SUMMARY'], true)).toBeNull()
+    expect(detectFormat(['PAYSLIP SUMMARY v12'], true)).toBeNull()
+  })
 
   it('names both supported layouts when it cannot read a file', () => {
     expect(() => parsePayslip(['A scanned payslip'], 'x', 'x')).toThrow(/PAYSLIP SUMMARY v1 and PAY ADVICE v2/)

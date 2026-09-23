@@ -217,13 +217,46 @@ const PAY_ADVICE_V3: PayslipFormat = {
 export const FORMATS: PayslipFormat[] = [SUMMARY_V1, PAY_ADVICE_V2, PAY_ADVICE_V3]
 
 /** The layout this document uses, or null when none of them claims it. */
-export function detectFormat(lines: string[]): PayslipFormat | null {
-  const matched = FORMATS.filter(f => f.detect(lines))
+/*
+ * Reading a marker off a picture.
+ *
+ * A recogniser is very good at figures and merely good at short strings of
+ * mixed letters and digits. Recognising a drawn "PAYSLIP SUMMARY v1" gives back
+ * "PAYSLIP SUMMARY vl" — a lowercase L where the 1 should be — which is exactly
+ * the kind of miss that costs nothing in a sentence and everything in a marker
+ * compared with ===. Every figure on that same payslip came back correct.
+ *
+ * So a picture's marker line is compared with the handful of substitutions a
+ * recogniser actually makes, and nothing else is loosened: field labels and
+ * every value are still matched exactly, and a label that is misread simply
+ * leaves its field blank for the person to fill in.
+ *
+ * This is narrow on purpose. It decides which parser reads a payslip, and a
+ * marker matched too eagerly would hand a payslip to a parser that does not
+ * understand it. "PAYSLIP SUMMARY v1" and "PAY ADVICE v2" differ by far more
+ * than the characters below, so folding them together is not a risk this
+ * creates.
+ */
+const CONFUSED: Record<string, string> = { O: '0', Q: '0', D: '0', L: '1', I: '1', '|': '1', S: '5', B: '8', Z: '2', G: '6' }
+const canonical = (value: string) => value.toUpperCase().replace(/\s+/g, ' ').trim()
+  .split('').map(character => CONFUSED[character] ?? character).join('')
+
+export function detectFormat(lines: string[], recognised = false): PayslipFormat | null {
+  const loosely = (format: PayslipFormat) => lines.some(line => canonical(line) === canonical(format.marker))
+  const matched = FORMATS.filter(f => f.detect(lines) || (recognised && loosely(f)))
   if (matched.length > 1) throw new Error('This PDF claims more than one payslip layout. Use one payslip per file, or enter the figures manually.')
   return matched[0] ?? null
 }
 
-/** Human-readable name for a recorded format id, for the UI and reports. */
+/*
+ * Human-readable name for a recorded format id, for the UI and reports.
+ *
+ * Not every reading comes from a documented layout. A payslip read by asking a
+ * model carries its own id, and it used to render as nothing at all — so the
+ * one reading a person has most reason to look at twice was the one that said
+ * least about itself.
+ */
 export function formatLabel(id: string | undefined): string | null {
+  if (id === 'assisted-read-v1') return 'a layout we do not document, read for you'
   return FORMATS.find(f => f.id === id)?.label ?? null
 }

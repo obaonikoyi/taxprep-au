@@ -34,9 +34,13 @@ export default function PayslipStart({ headingRef, busy, hasRecords, fictional, 
             </span>
           </label>
         </div>
-        <label className="statement-file pay-file-secondary">Choose payslip PDFs<input aria-label="Choose payslip PDFs" type="file" accept=".pdf,application/pdf" multiple disabled={busy || fictional} onChange={e => { const files = [...(e.target.files ?? [])]; e.target.value = ''; if (files.length) onImport(files) }} /></label>
-        <details className="pay-format"><summary>Which PDFs work?</summary>
-          <p>One page with selectable text, up to 2 MB per file, and up to 20 PDFs at once. Scans, photos and other employer layouts are not read automatically yet — enter those figures yourself.</p>
+        <label className="statement-file pay-file-secondary">Choose payslips or photos<input aria-label="Choose payslips or photos" type="file" accept=".pdf,application/pdf,.png,.jpg,.jpeg,image/png,image/jpeg" multiple disabled={busy || fictional} onChange={e => { const files = [...(e.target.files ?? [])]; e.target.value = ''; if (files.length) onImport(files) }} /></label>
+        <details className="pay-format"><summary>Which files work?</summary>
+          <p>A one-page PDF of up to 2 MB, or a PNG or JPG photo of up to 5 MB, and up to 20 files at once.</p>
+          <p>
+            A photo or a scan is read on this device by recognising the words in the picture. Nothing is uploaded and no picture leaves your phone or computer.
+            Recognising a picture takes a few seconds and can misread a figure, so check every field before you confirm it — a straight, sharp photo of the whole payslip in good light reads best.
+          </p>
           <ul className="pay-format-list">
             <li>
               <strong>PAYSLIP SUMMARY v1</strong>

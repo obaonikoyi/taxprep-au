@@ -56,25 +56,33 @@ export default function PayslipDashboard() {
       controller.signal.addEventListener('abort', cancelListener, { once: true })
     })
     /*
-     * A minute per file, not per batch. One deadline across a batch was already
-     * tight for twenty PDFs and is wrong now that an unknown layout is read by
-     * asking a server: twenty of those take longer than a minute between them,
-     * so the batch would have been cut off mid-way through work that was going
-     * fine. A file that stalls now fails on its own and the rest carry on.
+     * A deadline per file, not per batch. One deadline across a batch was
+     * already tight for twenty PDFs and is wrong now that a file can be read by
+     * asking a server or by recognising a picture: twenty of those take far
+     * longer than a minute between them, so the batch would have been cut off
+     * mid-way through work that was going fine. A file that stalls now fails on
+     * its own and the rest carry on.
+     *
+     * Three minutes rather than one, because recognising a picture is seconds
+     * of work and the first one also fetches the recogniser — and because a PDF
+     * that turns out to be a scan cannot be told apart from one that is not
+     * until it has been opened. The deadline is here to stop a hang, not to
+     * hurry anybody: a PDF with its own text still finishes in well under a
+     * second.
      */
-    const readOne = async (file: File) => {
+    const readOne = async (file: File, note: (message: string) => void) => {
       const perFile = new AbortController()
       const stop = () => perFile.abort()
       controller.signal.addEventListener('abort', stop, { once: true })
-      const timer = setTimeout(stop, 60_000)
-      try { return await readPayslip(file, perFile.signal, sample, assist && !sample) }
+      const timer = setTimeout(stop, 180_000)
+      try { return await readPayslip(file, perFile.signal, sample, assist && !sample, note) }
       finally { clearTimeout(timer); controller.signal.removeEventListener('abort', stop) }
     }
     const reasonFor = (e: unknown) => {
       if (!(e instanceof Error)) return 'It could not be read.'
       // Inside the reader a deadline looks like a cancellation. Nobody cancelled
       // this one, and saying so would be a lie about what just happened.
-      return /Reading cancelled/.test(e.message) ? 'It took more than a minute to read. Try it on its own.' : e.message
+      return /Reading cancelled/.test(e.message) ? 'It took more than three minutes to read. Try it on its own.' : e.message
     }
     const work = async () => {
       if (!files) {
@@ -86,9 +94,12 @@ export default function PayslipDashboard() {
       const unread: SkippedFile[] = []
       for (let i = 0; i < files.length; i++) {
         if (controller.signal.aborted) throw new Error('Reading cancelled.')
-        setMessage(`Reading payslip ${i + 1} of ${files.length}…`)
+        const opening = `Reading payslip ${i + 1} of ${files.length}`
+        setMessage(`${opening}…`)
         try {
-          next.push(await readOne(files[i]))
+          // Recognising a picture takes seconds, and a screen that says nothing
+          // for ten of them reads as a screen that has stopped working.
+          next.push(await readOne(files[i], note => { if (!controller.signal.aborted) setMessage(`${opening}: ${note}`) }))
         } catch (e) {
           // A shipped example failing is a fault in this app, not in a file
           // somebody chose, and a half-loaded example is not an example.

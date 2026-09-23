@@ -11,6 +11,8 @@ export type Payslip = {
   facts: PayFacts; confirmed: boolean; sample: boolean;
   /** Which documented layout read this file. Absent for manual entry. */
   format?: string;
+  /** True when the words were recognised from a picture rather than read from the file's own text. */
+  fromPicture?: boolean;
 }
 export const labels: Record<PayField, string> = {
   employer: 'Employer', periodStart: 'Period start', periodEnd: 'Period end', payDate: 'Pay date',
