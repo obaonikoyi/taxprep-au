@@ -24,7 +24,11 @@ builder.Services.Configure<FormOptions>(options =>
  * line — a test host does exactly that — would otherwise hand the endpoint one
  * set of settings and the limiter another.
  */
-builder.Services.AddSingleton(provider => PayslipReadLimiter.FromConfiguration(provider.GetRequiredService<IConfiguration>()));
+builder.Services.AddSingleton(provider => PayslipReadLimiter.FromConfiguration(
+    provider.GetRequiredService<IConfiguration>(),
+    warn: message => provider.GetRequiredService<ILoggerFactory>().CreateLogger("Payslips.ReadLimits").LogWarning("{Message}", message)));
+// Whether a request's forwarded headers may be believed. Unset by default.
+builder.Services.AddSingleton(provider => OriginSecret.FromConfiguration(provider.GetRequiredService<IConfiguration>()));
 var app = builder.Build();
 
 // The deployment container is reached through Railway's HTTPS edge. Its private

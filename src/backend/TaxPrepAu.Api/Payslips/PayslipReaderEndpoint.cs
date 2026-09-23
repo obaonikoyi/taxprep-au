@@ -99,7 +99,7 @@ public static class PayslipReaderEndpoint
 
     public static void MapPayslipReader(this WebApplication app)
     {
-        app.MapPost("/api/payslip/read", async (HttpRequest request, HttpResponse response, IConfiguration configuration, PayslipReadLimiter limiter) =>
+        app.MapPost("/api/payslip/read", async (HttpRequest request, HttpResponse response, IConfiguration configuration, PayslipReadLimiter limiter, OriginSecret origin) =>
         {
             response.Headers.CacheControl = "no-store";
             if (!request.HasJsonContentType())
@@ -147,7 +147,7 @@ public static class PayslipReaderEndpoint
              *
              * See PayslipReadLimiter for what each of the two layers is worth.
              */
-            var decision = limiter.TryRead(PayslipReadLimiter.ClientKey(request));
+            var decision = limiter.TryRead(PayslipReadLimiter.ClientKey(request, origin.Trusts(request)));
             if (!decision.Allowed)
             {
                 response.Headers["Retry-After"] = ((int)Math.Ceiling(decision.RetryAfter.TotalSeconds)).ToString(CultureInfo.InvariantCulture);

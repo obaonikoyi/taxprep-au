@@ -67,17 +67,32 @@ public sealed class PayslipReadLimiter
     {
         public DateTimeOffset Ends;
         public int Count;
+        /// <summary>0 nothing said, 1 the near-the-limit warning, 2 the limit itself.</summary>
+        public int Announced;
     }
 
     private readonly IReadOnlyList<ReadLimit> limits;
     private readonly Func<DateTimeOffset> clock;
+    private readonly Action<string> warn;
+    private readonly int warnAt;
     private readonly Dictionary<(string Rule, string Client), Counted> counted = new();
     private readonly object gate = new();
 
-    public PayslipReadLimiter(IReadOnlyList<ReadLimit> limits, Func<DateTimeOffset> clock)
+    /*
+     * `warn` is how an operator finds out a budget is running out before the
+     * bill does. It is called at most twice per window — once approaching the
+     * limit, once on reaching it — because a warning on every request is a
+     * warning nobody reads.
+     *
+     * Only the global windows are announced. One person reaching their own
+     * limit is the limit working, and is nobody else's business.
+     */
+    public PayslipReadLimiter(IReadOnlyList<ReadLimit> limits, Func<DateTimeOffset> clock, Action<string>? warn = null, int warnAt = 80)
     {
         this.limits = limits;
         this.clock = clock;
+        this.warn = warn ?? (_ => { });
+        this.warnAt = Math.Clamp(warnAt, 1, 100);
     }
 
     /// <summary>The limits in force, for the milestone document and for tests.</summary>
@@ -135,7 +150,7 @@ public sealed class PayslipReadLimiter
      * A limit of 0 is honoured, and switches the reader off while leaving the
      * key configured.
      */
-    public static PayslipReadLimiter FromConfiguration(IConfiguration configuration, Func<DateTimeOffset>? clock = null)
+    public static PayslipReadLimiter FromConfiguration(IConfiguration configuration, Func<DateTimeOffset>? clock = null, Action<string>? warn = null)
     {
         // Read as text and parsed here rather than bound: a mistyped limit should
         // fall back to a number that holds, not stop the app from starting and
@@ -152,7 +167,7 @@ public sealed class PayslipReadLimiter
             new("your reads today", true, Configured("PerClientPerDay", 60), TimeSpan.FromDays(1)),
             new("all reads this hour", false, Configured("GlobalPerHour", 60), TimeSpan.FromHours(1)),
             new("all reads today", false, Configured("GlobalPerDay", 150), TimeSpan.FromDays(1)),
-        ], clock ?? (() => DateTimeOffset.UtcNow));
+        ], clock ?? (() => DateTimeOffset.UtcNow), warn, Configured("WarnAtPercent", 80));
     }
 
     /*
@@ -188,9 +203,23 @@ public sealed class PayslipReadLimiter
                 var window = Active(limit, client, now);
                 if (window is null) counted[key] = new Counted { Ends = now + limit.Window, Count = 1 };
                 else window.Count++;
+                if (!limit.PerClient) Announce(limit, counted[key], now);
             }
             return ReadLimitDecision.Pass;
         }
+    }
+
+    /// <summary>Say something once when a global budget is nearly gone, and once when it is.</summary>
+    private void Announce(ReadLimit limit, Counted window, DateTimeOffset now)
+    {
+        if (limit.Limit <= 0) return;
+        var level = window.Count >= limit.Limit ? 2 : window.Count * 100 >= limit.Limit * warnAt ? 1 : 0;
+        if (level <= window.Announced) return;
+        window.Announced = level;
+        var until = (window.Ends - now).TotalMinutes;
+        warn(level == 2
+            ? $"Assisted payslip reader: \"{limit.Name}\" is fully used ({window.Count} of {limit.Limit}). Reads are being refused for the next {until:F0} minutes."
+            : $"Assisted payslip reader: \"{limit.Name}\" is {window.Count * 100 / limit.Limit}% used ({window.Count} of {limit.Limit}), with {until:F0} minutes left in the window.");
     }
 
     private static (string, string) Key(ReadLimit limit, string client) => (limit.Name, limit.PerClient ? client : Everyone);
@@ -214,9 +243,12 @@ public sealed class PayslipReadLimiter
      * way to tell two visitors apart — with the caveat at the top of this file
      * about what that is and is not worth.
      */
-    public static string ClientKey(HttpRequest request)
+    public static string ClientKey(HttpRequest request, bool trustForwarded = true)
     {
-        foreach (var name in new[] { "CF-Connecting-IP", "X-Forwarded-For" })
+        // A request that did not come through our own front door has no
+        // standing to say where it came from, so only the address of the
+        // connection itself is believed. See OriginSecret.
+        foreach (var name in trustForwarded ? new[] { "CF-Connecting-IP", "X-Forwarded-For" } : [])
         {
             var header = request.Headers[name].ToString();
             // A header is written by the caller: read a bounded amount of it and
