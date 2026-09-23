@@ -15,7 +15,8 @@
     "predev": "node scripts/prepare-document-assets.mjs",
     "pretest:ui": "node scripts/prepare-document-assets.mjs",
     "prebuild": "node scripts/verify-assessment-sources.mjs && node scripts/verify-tax-sources.mjs && node scripts/prepare-document-assets.mjs",
-    "pretest": "node scripts/verify-assessment-sources.mjs && node scripts/verify-tax-sources.mjs"
+    "pretest": "node scripts/verify-assessment-sources.mjs && node scripts/verify-tax-sources.mjs",
+    "test:user-kit": "node scripts/user-test-check.mjs"
   },
   "dependencies": {
     "@tesseract.js-data/eng": "1.0.0",
