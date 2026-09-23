@@ -91,6 +91,7 @@ app.MapGet("/api/health", () => Results.Ok(new
 app.MapImportPreview();
 app.MapExpenseReview();
 app.MapPayslipReader();
+app.MapPayslipReadUsage();
 app.Run();
 
 public partial class Program;

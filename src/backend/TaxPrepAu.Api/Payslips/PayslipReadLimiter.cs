@@ -41,6 +41,16 @@ public sealed record ReadLimitDecision(bool Allowed, TimeSpan RetryAfter, ReadLi
     public static readonly ReadLimitDecision Pass = new(true, TimeSpan.Zero, null);
 }
 
+/// <summary>One limit's state. <paramref name="Resets"/> is null while nothing has been counted into it.</summary>
+public sealed record WindowUsage(string Name, TimeSpan Window, int Limit, int Used, DateTimeOffset? Resets);
+
+/// <summary>
+/// What the limiter has counted. <paramref name="Busiest"/> is the most any one
+/// caller has used in any window, which says whether a single caller is taking
+/// an unusual share without saying who they are.
+/// </summary>
+public sealed record LimiterUsage(IReadOnlyList<WindowUsage> Windows, int Clients, int Busiest);
+
 public sealed class PayslipReadLimiter
 {
     /// <summary>The partition every non-per-client limit counts into.</summary>
@@ -75,6 +85,38 @@ public sealed class PayslipReadLimiter
 
     /// <summary>How many windows are being tracked. Only a test has any use for this.</summary>
     public int Tracked { get { lock (gate) return counted.Count; } }
+
+    /*
+     * What has been used, for whoever pays the bill.
+     *
+     * The global windows are reported in full. Per-client windows are counted
+     * and never named: an address is personal data, and answering "who has been
+     * reading payslips here" is not something this app should be able to do,
+     * whoever is asking. What an operator actually needs from that side is
+     * whether one caller is taking an unusual share, and a number answers that
+     * without identifying anybody.
+     */
+    public LimiterUsage Usage()
+    {
+        var now = clock();
+        lock (gate)
+        {
+            var windows = limits
+                .Where(limit => !limit.PerClient)
+                .Select(limit =>
+                {
+                    var window = Active(limit, Everyone, now);
+                    return new WindowUsage(limit.Name, limit.Window, limit.Limit, window?.Count ?? 0, window?.Ends);
+                })
+                .ToList();
+
+            var live = counted.Where(entry => entry.Value.Ends > now && entry.Key.Client != Everyone).ToList();
+            return new LimiterUsage(
+                windows,
+                live.Select(entry => entry.Key.Client).Distinct().Count(),
+                live.Count == 0 ? 0 : live.Max(entry => entry.Value.Count));
+        }
+    }
 
     /*
      * The defaults are a deliberate choice about money, not a guess.
