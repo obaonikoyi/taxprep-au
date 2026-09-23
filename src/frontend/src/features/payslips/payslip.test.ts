@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest'
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs'
 import examples from '../../../../../sample-data/payslips/examples.json'
-import { appendPayslips, MAX_PAYSLIPS, buckets, changedFacts, confirmationIssues, dateValue, financialYear, money, observations, selectedPayslips, totals, validateFacts, type Payslip } from './payslip'
+import { appendPayslips, blankFacts, figuresNotInDocument, MAX_PAYSLIPS, buckets, changedFacts, confirmationIssues, dateValue, financialYear, money, observations, selectedPayslips, totals, validateFacts, type Payslip } from './payslip'
 import { parsePayslip, textLines } from './payslipReader'
 import { payslipReport } from './payslipReport'
 let slips: Payslip[]
@@ -45,6 +45,60 @@ describe('actual payslip PDFs and period facts', () => {
     expect(validateFacts({ ...slips[0].facts, periodEnd: '2027-01-01' }).join(' ')).toContain('63 days')
   })
 })
+/*
+ * Checking a reading against the document it came from. This exists for the
+ * reading that is only as good as a model: a documented parser takes its
+ * figures out of the text, so they are in the document by construction.
+ */
+describe('figures the reading proposed that are not in the document', () => {
+  const read = (text: string, facts: Partial<Record<string, string>>): Payslip => {
+    const full = { ...blankFacts(), ...facts } as ReturnType<typeof blankFacts>
+    return { id: 'x', hash: 'h', name: 'p.pdf', text, facts: full, original: { ...full }, confirmed: false, sample: false }
+  }
+
+  it('says nothing when every figure is in the text', () => {
+    expect(figuresNotInDocument(read('Gross 1840.00 Tax 286.00 Net 1554.00', { gross: '1840.00', withheld: '286.00', net: '1554.00' }))).toEqual([])
+  })
+
+  it('names a figure that is nowhere in the document', () => {
+    // The failure this exists for: a figure returned for a payslip that never
+    // stated it.
+    expect(figuresNotInDocument(read('Gross 1840.00 Net 1554.00', { gross: '1840.00', net: '1554.00', super: '211.60' }))).toEqual(['super'])
+  })
+
+  it('matches however the payslip punctuated it', () => {
+    expect(figuresNotInDocument(read('Gross $1,840.00 and net $1,554', { gross: '1840.00', net: '1554.00' }))).toEqual([])
+  })
+
+  it('never questions a zero, because a payslip with no deductions prints nothing', () => {
+    expect(figuresNotInDocument(read('Gross 1840.00', { gross: '1840.00', deductions: '0.00' }))).toEqual([])
+  })
+
+  it('leaves dates and the employer alone', () => {
+    // Turning "16 Jul 2026" into 2026-07-16 is the reading doing its job, and
+    // an employer name wraps and abbreviates.
+    const slip = read('Paid 16 Jul 2026 by Wattle Grove Cafe Pty Ltd. Gross 1840.00',
+      { employer: 'Wattle Grove Example Cafe', payDate: '2026-07-16', periodStart: '2026-07-01', gross: '1840.00' })
+    expect(figuresNotInDocument(slip)).toEqual([])
+  })
+
+  it('stops asking once the person has typed their own figure', () => {
+    const slip = read('Gross 1840.00', { gross: '1840.00', super: '211.60' })
+    expect(figuresNotInDocument(slip)).toEqual(['super'])
+    expect(figuresNotInDocument(changedFacts(slip, { ...slip.facts, super: '999.00' }))).toEqual([])
+  })
+
+  it('says nothing about a payslip typed in by hand', () => {
+    // No document was read, so there is nothing to check it against.
+    expect(figuresNotInDocument(read('', { gross: '1840.00', net: '1554.00' }))).toEqual([])
+  })
+
+  it('checks hours and rate as well as the amounts', () => {
+    expect(figuresNotInDocument(read('Gross 1840.00', { gross: '1840.00', hours: '80.00', rate: '23.00' })).sort())
+      .toEqual(['hours', 'rate'])
+  })
+})
+
 describe('review, duplication and honest totals', () => {
   it('excludes pending records and immediately invalidates confirmed edits', () => {
     expect(selectedPayslips(slips, 'all', 'all')).toEqual([])

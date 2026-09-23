@@ -528,6 +528,37 @@ export async function verifyPayslips(context, base, artifacts) {
     // records stay out of the totals is asserted earlier in this journey
     // (noUnconfirmedZeroTotals) and is not re-tested here.
     await button('Confirm and continue').waitFor();
+    // Every figure that reading proposed is in the payslip, so nothing is
+    // questioned. The next one is the opposite case.
+    assert.equal(await page.locator('.pay-unfound').count(), 0, 'a reading that matches the document is not questioned');
+
+    /*
+     * A figure the payslip never stated. This is the failure the cross-check
+     * exists for: a model can return a number that is nowhere in the text it
+     * was given, and until now the person was the only thing that would catch
+     * it. It is named rather than refused — a reading can be right in a way
+     * this cannot see — and the text is opened so the two can be compared.
+     */
+    await button('Clear pay history').click(); await button('Yes, clear history').click();
+    await page.unroute('**/api/payslip/read');
+    await page.route('**/api/payslip/read', async route => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ available: true, fields: {
+        employer: 'Unknown Layout Example Pty', periodStart: '2026-07-01', periodEnd: '2026-07-14', payDate: '2026-07-16',
+        gross: '2000.00', withheld: '300.00', deductions: '0.00', net: '1700.00', super: '987.65', hours: '64.00', rate: '31.25', ordinary: '2000.00',
+      } }) });
+    });
+    await page.locator('.pay-assist-choice input').check();
+    await page.setInputFiles('input[aria-label="Choose payslips or photos"]', { name: unknown.name, mimeType: 'application/pdf', buffer: unknownPdf });
+    await page.getByRole('heading', { name: 'Check your figures' }).waitFor({ timeout: 30000 });
+    const unfound = page.locator('.pay-unfound');
+    await unfound.waitFor();
+    const unfoundText = await unfound.innerText();
+    assert.match(unfoundText, /super recorded/i, `the invented figure is named: ${unfoundText}`);
+    assert.doesNotMatch(unfoundText, /gross pay/i, 'figures that are in the payslip are not questioned');
+    // Named, not refused: the person can still confirm it.
+    assert.equal(await button('Confirm and continue').isDisabled(), false);
+    // And the text to compare it against is already open.
+    assert.equal(await page.locator('.pay-source').getAttribute('open') !== null, true);
     await page.unroute('**/api/payslip/read');
     // A refresh clears the session, which is the documented behaviour and leaves
     // the next step a clean start screen.
@@ -578,13 +609,19 @@ export async function verifyPayslips(context, base, artifacts) {
     assert.deepEqual(errors, []);
     // The assisted reader is the one thing in this journey that leaves the
     // browser, and only because the person ticked the box for it. Everything
-    // else in the journey — six example payslips, three own-file uploads,
-    // manual entry, five report downloads — must still send nothing at all.
+    // else in the journey — six example payslips, three own-file uploads, a
+    // payslip read from a photograph on this device, manual entry, five report
+    // downloads — must still send nothing at all.
+    //
+    // Two reads, not one: the assisted path is exercised twice, once where the
+    // reading matches the payslip and once where it proposes a figure the
+    // payslip never stated. Counted exactly rather than allowed freely, so a
+    // third request appearing from anywhere still fails this.
     const thirdPartyRefused = assertStayedOnDevice(assert, requests, base, ['/api/payslip/read']);
     const posts = requests.attempted.filter(r => r.method === 'POST');
-    assert.deepEqual(posts.map(r => new URL(r.url).pathname), ['/api/payslip/read'],
-      `the assisted read was the only thing posted anywhere: ${posts.map(r => r.method + ' ' + r.url).join(', ')}`);
-    const result = { passed: true, guidedSteps: true, automaticBatchReview: true, noUnconfirmedZeroTotals: true, manualEntry: true, correctionInvalidates: true, duplicateBlocked: true, unreadableBatchAddsNothing: true, batchKeepsWhatItRead: true, payslipFromPhoto: true, exampleToOwnData: true, chartSwitching: true, yearAndEmployerFilters: true, emptyFilterRecovery: true, offlineExport: true, payOutlook: true, payOutlookWithholdingNotScaled: true, payOutlookMobile: true, taxReadiness: true, taxReadinessWholeYear: true, taxReadinessLocked: true, taxReadinessExport: true, taxReadinessMobile: true, yearEndReconciliation: true, yearEndNoDoubleCount: true, annualStatementPdfExtraction: true, annualStatementReviewGate: true, annualStatementDuplicateBlocked: true, annualStatementProvenance: true, yearEndProvisionalExcluded: true, yearEndExport: true, yearEndMobile: true, yearEndPreparationHub: true, yearEndBankChecksNetOnly: true, yearEndExpenseCoverage: true, portableWorkspaceHandoff: true, handoffYearMismatchBlocked: true, handoffExplicitApply: true, handoffDuplicateBlocked: true, handoffNoDoubleCount: true, yearEndPreparationExport: true, yearEndPreparationMobile: true, encryptedPreparationBackup: true, encryptedBackupWrongPassphraseBlocked: true, encryptedBackupExplicitRestore: true, payAdviceV2Layout: true, payAdviceV2CurrentPeriodOnly: true, payAdviceV2ReportRecordsLayout: true, payAdviceV3EarningsBlock: true, payRateSelfCheckWithoutRecord: true, payRateAgainstRecordedRate: true, payRateSilentChange: true, payRateReportNamesWhatWasNotChecked: true, payRateNoEmployerCharacterisation: true, thirdPartyRefused, clearConfirmation: true, clearRefreshAndWorkspaceChange: true, mobileOverflow: false, mobileReviewActionsVisible: true, documentUploads: 0, modelRequests: 0, pageErrors: errors };
+    assert.deepEqual(posts.map(r => new URL(r.url).pathname), ['/api/payslip/read', '/api/payslip/read'],
+      `the two assisted reads were the only things posted anywhere: ${posts.map(r => r.method + ' ' + r.url).join(', ')}`);
+    const result = { passed: true, guidedSteps: true, automaticBatchReview: true, noUnconfirmedZeroTotals: true, manualEntry: true, correctionInvalidates: true, duplicateBlocked: true, unreadableBatchAddsNothing: true, batchKeepsWhatItRead: true, payslipFromPhoto: true, readingCheckedAgainstDocument: true, exampleToOwnData: true, chartSwitching: true, yearAndEmployerFilters: true, emptyFilterRecovery: true, offlineExport: true, payOutlook: true, payOutlookWithholdingNotScaled: true, payOutlookMobile: true, taxReadiness: true, taxReadinessWholeYear: true, taxReadinessLocked: true, taxReadinessExport: true, taxReadinessMobile: true, yearEndReconciliation: true, yearEndNoDoubleCount: true, annualStatementPdfExtraction: true, annualStatementReviewGate: true, annualStatementDuplicateBlocked: true, annualStatementProvenance: true, yearEndProvisionalExcluded: true, yearEndExport: true, yearEndMobile: true, yearEndPreparationHub: true, yearEndBankChecksNetOnly: true, yearEndExpenseCoverage: true, portableWorkspaceHandoff: true, handoffYearMismatchBlocked: true, handoffExplicitApply: true, handoffDuplicateBlocked: true, handoffNoDoubleCount: true, yearEndPreparationExport: true, yearEndPreparationMobile: true, encryptedPreparationBackup: true, encryptedBackupWrongPassphraseBlocked: true, encryptedBackupExplicitRestore: true, payAdviceV2Layout: true, payAdviceV2CurrentPeriodOnly: true, payAdviceV2ReportRecordsLayout: true, payAdviceV3EarningsBlock: true, payRateSelfCheckWithoutRecord: true, payRateAgainstRecordedRate: true, payRateSilentChange: true, payRateReportNamesWhatWasNotChecked: true, payRateNoEmployerCharacterisation: true, thirdPartyRefused, clearConfirmation: true, clearRefreshAndWorkspaceChange: true, mobileOverflow: false, mobileReviewActionsVisible: true, documentUploads: 0, modelRequests: 0, pageErrors: errors };
     writeFileSync(artifacts + 'payslip-evaluation.json', JSON.stringify(result, null, 2)); return result;
   } catch (e) { await page.screenshot({ path: artifacts + 'payslip-failure.png', fullPage: true }); console.error((await page.locator('body').innerText()).slice(-10000)); throw e } finally { await page.close() }
 }
