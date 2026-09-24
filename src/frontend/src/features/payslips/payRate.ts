@@ -110,6 +110,26 @@ export function recordFor(records: RateRecord[], employer: string, date: string)
 export const expectedCents = (hoursHundredths: number, rateCents: number) => Math.round(hoursHundredths * rateCents / 100)
 
 export type FindingKind = 'rate-differs' | 'amount-differs' | 'payslip-self' | 'rate-changed'
+  | 'rate-above-record' | 'amount-above-record'
+
+/*
+ * Being paid more than you recorded is not the same kind of thing as being paid
+ * less, and treating it as one makes the whole panel untrustworthy.
+ *
+ * A rate record goes out of date on its own. Pay rises, and in Australia most
+ * awards and the national minimum wage move every year, so a contract signed
+ * two years ago states a rate that is simply no longer the one being paid. A
+ * payslip above the record is overwhelmingly that, and a panel that files it
+ * beside a shortfall — same heading, same count, same "ask your payroll
+ * contact" — is a panel that cries wolf, which is worse than one that says
+ * nothing.
+ *
+ * So these are kept, because a change worth noticing is worth showing, but they
+ * are shown as a record to update rather than a question to ask, and they carry
+ * no message to send anybody.
+ */
+export const ABOVE_RECORD: FindingKind[] = ['rate-above-record', 'amount-above-record']
+export const isAboveRecord = (kind: FindingKind) => ABOVE_RECORD.includes(kind)
 
 /** Always the same three parts, then what the finding cannot establish.
  * `yourRecord` is null for the check that needs no record at all. */
@@ -125,6 +145,11 @@ export type Finding = {
   difference: string
   limit: string
   question: string
+  /*
+   * The record this finding suggests, when the answer is to update one rather
+   * than to ask anybody anything. Present only on an above-record finding.
+   */
+  update?: { employer: string; amount: string; from: string }
   /*
    * The same finding, written to be sent.
    *
@@ -157,6 +182,13 @@ export type CheckState = {
 
 const periodText = (slip: Payslip) => `${slip.facts.periodStart} to ${slip.facts.periodEnd}`
 const ASK = 'Ask your employer’s payroll contact about this pay period, and keep this payslip.'
+const UPDATE = 'Nothing to ask anybody. Update your recorded rate so later payslips are compared with the right one.'
+/*
+ * Said once, plainly, and without alarm. An increase is almost always a rise —
+ * but an employer who has overpaid by mistake may ask for it back, and somebody
+ * who knows which of the two this is has lost nothing by being told.
+ */
+const RISE_LIMIT = 'This is almost always a pay rise your record has not caught up with — awards and agreements are commonly reviewed each year. Xoba Paycheck cannot tell a rise from a one-off overpayment, and an employer who has overpaid by mistake may ask for it back, so it is worth knowing which this is.'
 
 /** A rate record's own description, used wherever a finding cites it. */
 export function rateText(record: RateRecord): string {
@@ -214,7 +246,20 @@ export function rateChecks(slips: Payslip[], records: RateRecord[], issuesFor: (
           const consequence = hours !== null
             ? ` Over ${hoursText(hours)} hours that is ${aud(expectedCents(hours, recorded))} rather than ${aud(expectedCents(hours, rate))}.`
             : ''
-          findings.push({
+          const above = rate > recorded
+          findings.push(above ? {
+            id: `${slip.id}:rate`, slipId: slip.id, kind: 'rate-above-record',
+            heading: 'This payslip pays more than the rate you recorded',
+            employer: f.employer, period: periodText(slip),
+            yourRecord: `${rateText(record)}, from ${citedSource(record.source)}${record.note.trim() ? ` (${record.note.trim()})` : ''}, effective ${record.from}.`,
+            thePayslip: `${aud(rate)} an hour.${consequence}`,
+            difference: `${aud(rate - recorded)} an hour above what you recorded${hours !== null ? `, or ${aud(expectedCents(hours, rate) - expectedCents(hours, recorded))} over this period` : ''}.`,
+            limit: RISE_LIMIT,
+            question: UPDATE,
+            // Nobody writes to payroll to ask why they were paid more.
+            message: '',
+            update: { employer: f.employer, amount: f.rate.trim(), from: f.periodStart },
+          } : {
             id: `${slip.id}:rate`, slipId: slip.id, kind: 'rate-differs',
             heading: 'The rate on this payslip is not the rate you recorded',
             employer: f.employer, period: periodText(slip),
@@ -235,7 +280,18 @@ export function rateChecks(slips: Payslip[], records: RateRecord[], issuesFor: (
         // does show one, the self-check above already tests the same sum.
         compared.push(`the pay for those hours against ${rateText(record)} from ${citedSource(record.source)}`)
         const expected = expectedCents(hours, recorded)
-        if (Math.abs(expected - ordinary) > RATE_TOLERANCE_CENTS) findings.push({
+        if (Math.abs(expected - ordinary) > RATE_TOLERANCE_CENTS) findings.push(ordinary > expected ? {
+          id: `${slip.id}:amount`, slipId: slip.id, kind: 'amount-above-record',
+          heading: 'These hours were paid more than your recorded rate comes to',
+          employer: f.employer, period: periodText(slip),
+          yourRecord: `${rateText(record)}, from ${citedSource(record.source)}. Over ${hoursText(hours)} hours that is ${aud(expected)}.`,
+          thePayslip: `${aud(ordinary)} for ${hoursText(hours)} ordinary hours. This payslip does not show an hourly rate.`,
+          difference: `${aud(ordinary - expected)} more than your recorded rate comes to over these hours.`,
+          limit: `${RISE_LIMIT} This payslip states no hourly rate, so the higher amount may also come from the hours or an adjustment it does not itemise.`,
+          question: UPDATE,
+          message: '',
+          // No rate is printed, so there is no new rate to offer recording.
+        } : {
           id: `${slip.id}:amount`, slipId: slip.id, kind: 'amount-differs',
           heading: 'The pay for these hours is not what your recorded rate comes to',
           employer: f.employer, period: periodText(slip),
