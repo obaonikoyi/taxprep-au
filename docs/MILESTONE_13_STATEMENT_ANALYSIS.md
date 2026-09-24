@@ -35,7 +35,7 @@ The table offers search, category filtering and 20-row pagination. Date selectio
 
 ## Privacy and architecture
 
-`features/statements` separates PDF/CSV reading, pure parsing, analysis, UI and export. PDF.js and Papa Parse are existing pinned dependencies. PDF assets are served from the application's own origin. The file is never posted to the API, sent to a model, stored in localStorage/IndexedDB or retained on a server. Source bytes are released when reading finishes; extracted rows exist only in the active workspace. Downloaded reports remain on the user's device until they remove them.
+`features/statements` separates PDF/CSV reading, pure parsing, analysis, UI and export. PDF.js and Papa Parse are existing pinned dependencies. PDF assets are served from the application's own origin. The file is never posted to the API, stored in localStorage/IndexedDB or retained on a server. It is never sent to a model either — with one exception added in [Milestone 26](MILESTONE_26_READING_AN_UNSUPPORTED_STATEMENT.md), where a person may ask for the extracted *text* of an unsupported layout to be transcribed; the file itself still never leaves the device, nothing is stored, and the transcription is imported only if it reconciles against the statement's own printed balances. Source bytes are released when reading finishes; extracted rows exist only in the active workspace. Downloaded reports remain on the user's device until they remove them.
 
 The example is public fictional data. Supplied private documents and extracted private records remain outside Git, CI, screenshots and deployed assets. The fixture generator creates independent invented merchants and figures. No real statement is disguised and republished as a fixture.
 

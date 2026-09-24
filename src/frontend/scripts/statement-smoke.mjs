@@ -47,7 +47,64 @@ export async function verifyStatements(context,base,artifacts){
   await button('Try example statement').click();await page.getByRole('status').filter({hasText:'33 transactions read.'}).waitFor();
   await page.reload();await button('Bank spending').click();await page.getByRole('heading',{name:'Your statements, made clear.',exact:true}).waitFor();assert.equal(await page.locator('.statement-metrics').count(),0);
   assert.deepEqual(await page.evaluate(()=>Object.keys(localStorage).filter(k=>/statement/i.test(k))),[]);
-  assert.deepEqual(errors,[]);const thirdPartyRefused=assertStayedOnDevice(assert,requests,base);
-  const result={passed:true,syntheticOnly:true,rows:33,creditsAud:12649,debitsAud:5016.75,netAud:7632.25,balancesMatch:true,correctionsPreserveAmounts:true,dateFilter:true,mismatchPreservesSession:true,emptyStatement:true,csv:true,clearAndRefresh:true,offlineExport:true,yearEndHandoff:true,handoffNoDescriptions:true,mobileOverflow:false,documentUploads:0,modelRequests:0,thirdPartyRefused,pageErrors:errors};writeFileSync(artifacts+'statement-evaluation.json',JSON.stringify(result,null,2));return result;
+
+  /*
+   * A statement whose layout this app does not document, read by a model
+   * because the person asked for it on that one file.
+   *
+   * The whole design is the checksum: a statement prints an opening balance, a
+   * closing balance and its debit and credit totals, so a transcription is
+   * arithmetic rather than something to eyeball. Nobody checks two hundred
+   * rows by hand. Both halves are proved here — one that adds up and is
+   * imported, one that does not and is refused outright.
+   */
+  const unsupported={
+   opening:'1000.00',closing:'1250.50',printedDebits:'149.50',printedCredits:'400.00',
+   from:'2026-07-01',to:'2026-07-31',why:'',
+   rows:[
+    {date:'2026-07-02',description:'WOOLWORTHS 1234 ADELAIDE',amount:'-49.50',balance:'950.50'},
+    {date:'2026-07-05',description:'SALARY KESTREL EXAMPLE',amount:'400.00',balance:'1350.50'},
+    {date:'2026-07-20',description:'RENT TRANSFER',amount:'-100.00',balance:'1250.50'},
+   ]};
+  let statementSent=null;
+  const stubStatement=async body=>{await page.unroute('**/api/statement/read').catch(()=>{});await page.route('**/api/statement/read',async route=>{statementSent=JSON.parse(route.request().postData()??'{}');await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({available:true,statement:body})})})};
+
+  /*
+   * A PDF with plenty of selectable text that is in no layout this app
+   * documents, so the parser refuses it and the assisted path takes over. The
+   * user-test contract serves: what matters is that the documented parser
+   * cannot read it, not what it happens to be.
+   */
+  const unsupportedPdf=()=>({name:'foreign-bank-statement.pdf',mimeType:'application/pdf',
+   buffer:readFileSync(new URL('../../../sample-data/user-test/files/contract.pdf',import.meta.url))});
+  await stubStatement(unsupported);
+  await page.locator('.statement-assist-choice input').check();
+  await page.getByLabel('Choose bank statement',{exact:true}).setInputFiles(unsupportedPdf());
+  await page.getByRole('status').filter({hasText:'3 transactions read.'}).waitFor({timeout:120000});
+  assert.ok(statementSent&&typeof statementSent.text==='string'&&statementSent.text.length>200,'the request carried the extracted text');
+  assert.equal(/%PDF|JVBER/.test(statementSent.text),false,'the request carried text, not the PDF itself');
+  assert.match(await page.getByRole('status').first().innerText(),/adds up to the statement/i,'the person is told it was checked, not just read');
+  assert.deepEqual(await totals(),['$400.00','$149.50','$250.50','3']);
+  assert.match(await page.locator('.statement-help').evaluate(el=>el.textContent??''),/transcribed by a model/,'the screen says a model read this one');
+  assert.doesNotMatch(await page.locator('.statement-help').evaluate(el=>el.textContent??''),/No AI model was used/,'and does not still claim otherwise');
+
+  // And the half that matters more: a transcription that does not add up is
+  // refused outright rather than shown to somebody to check by hand.
+  await stubStatement({...unsupported,rows:unsupported.rows.slice(0,2)});
+  await page.getByLabel('Choose bank statement',{exact:true}).setInputFiles(unsupportedPdf());
+  const refused=page.getByRole('alert');
+  await refused.filter({hasText:'do not add up'}).waitFor({timeout:120000});
+  assert.deepEqual(await totals(),['$400.00','$149.50','$250.50','3'],'the statement already imported is untouched');
+  await page.unroute('**/api/statement/read');
+  await page.locator('.statement-assist-choice input').uncheck();
+
+  assert.deepEqual(errors,[]);
+  // The one thing in this journey that leaves the browser, and only because the
+  // person ticked the box for it. Counted exactly: a third would fail this.
+  const thirdPartyRefused=assertStayedOnDevice(assert,requests,base,['/api/statement/read']);
+  const posts=requests.attempted.filter(r=>r.method==='POST');
+  assert.deepEqual(posts.map(r=>new URL(r.url).pathname),['/api/statement/read','/api/statement/read'],
+   `only the statement readings the person asked for were posted: ${posts.map(r=>r.method+' '+r.url).join(', ')}`);
+  const result={passed:true,syntheticOnly:true,rows:33,creditsAud:12649,debitsAud:5016.75,netAud:7632.25,balancesMatch:true,correctionsPreserveAmounts:true,dateFilter:true,mismatchPreservesSession:true,emptyStatement:true,csv:true,clearAndRefresh:true,offlineExport:true,yearEndHandoff:true,handoffNoDescriptions:true,mobileOverflow:false,documentUploads:0,modelRequests:0,assistedStatementImported:true,assistedStatementRefusedWhenItDoesNotAddUp:true,thirdPartyRefused,pageErrors:errors};writeFileSync(artifacts+'statement-evaluation.json',JSON.stringify(result,null,2));return result;
  }catch(e){await page.screenshot({path:artifacts+'statement-failure.png',fullPage:true});console.error((await page.locator('body').innerText()).slice(-11000));throw e}finally{await page.close()}
 }

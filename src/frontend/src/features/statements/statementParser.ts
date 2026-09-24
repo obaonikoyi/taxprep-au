@@ -4,7 +4,7 @@ export interface PdfToken { text: string; x: number; y: number; width: number }
 export interface PdfPage { number: number; width: number; height: number; tokens: PdfToken[] }
 export interface StatementRow { id: string; date: string; description: string; cents: number; balanceCents: number | null; page: number; valueDate: string | null }
 export interface Statement {
-  id: string; name: string; format: 'commbank-text' | 'csv'; from: string; to: string
+  id: string; name: string; format: 'commbank-text' | 'csv' | 'assisted-read-v1'; from: string; to: string
   opening: number | null; closing: number | null; printedDebits: number | null; printedCredits: number | null
   rows: StatementRow[]; notices: string[]; issues: string[]; pages: number; reconciled: boolean
 }

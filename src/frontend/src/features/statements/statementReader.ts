@@ -1,5 +1,6 @@
 import Papa from 'papaparse'
-import { isoDate, parseStatement, type PdfPage, type Statement } from './statementParser'
+import { isoDate, pageLines, parseStatement, type PdfPage, type Statement } from './statementParser'
+import { readStatementWithAssistance } from './assistedStatement'
 export const MAX_STATEMENT_BYTES = 10_000_000
 export function parseStatementCsv(text: string, id: string, name: string): Statement {
   const parsed=Papa.parse<string[]>(text.replace(/^\uFEFF/,''),{skipEmptyLines:'greedy'})
@@ -18,7 +19,15 @@ export function parseStatementCsv(text: string, id: string, name: string): State
   const dates=rows.map(r=>r.date).sort()
   return{id,name,format:'csv',from:dates[0],to:dates.at(-1)!,opening:null,closing:null,printedDebits:null,printedCredits:null,rows,notices:['CSV has no statement balances. Totals cannot be checked against a bank ledger.'],issues:[],pages:0,reconciled:false}
 }
-export async function readStatement(file: File, signal: AbortSignal, progress:(text:string)=>void):Promise<Statement> {
+/*
+ * `assist` decides what happens when the documented parser cannot read a PDF:
+ * refuse, as this reader always has, or send the text it already extracted to
+ * this app's own server to be transcribed. It is off unless the person asked
+ * for it on this file, and it never changes how a layout we do understand is
+ * read — the documented parser is always preferred, because it can be held to
+ * its own arithmetic and a model can only be held to the statement's.
+ */
+export async function readStatement(file: File, signal: AbortSignal, progress:(text:string)=>void, assist = false):Promise<Statement> {
   if(!/\.(pdf|csv)$/i.test(file.name)||!file.size||file.size>MAX_STATEMENT_BYTES)throw new Error('Choose a PDF or CSV between 1 byte and 10 MB.')
   if(file.name.length>180)throw new Error('Shorten the file name to 180 characters or fewer.')
   const check=()=>{if(signal.aborted)throw new Error('Reading cancelled. Your previous statement is unchanged.')}
@@ -42,8 +51,23 @@ export async function readStatement(file: File, signal: AbortSignal, progress:(t
       tokenCount+=tokens.length;if(tokenCount>200000)throw new Error('This PDF contains too much text for the local analyser.')
       pages.push({number:n,width:page.view![2],height:page.view![3],tokens});page.cleanup()
     }
-    const result=parseStatement(pages,id,file.name)
-    if(result.issues.length)throw new Error(`Statement check failed. ${result.issues.slice(0,3).join(' ')} Use a bank CSV export if this layout differs. Nothing was imported.`)
+    let result: Statement
+    try {
+      result=parseStatement(pages,id,file.name)
+      if(result.issues.length)throw new Error(`Statement check failed. ${result.issues.slice(0,3).join(' ')} Use a bank CSV export if this layout differs. Nothing was imported.`)
+    } catch (error) {
+      if(!assist)throw error
+      /*
+       * The text of every page, laid out line by line as it appears. Not the
+       * PDF, and not the columns the documented parser needs — a transcriber
+       * reads a page the way a person does.
+       */
+      progress('This layout is not one we document. Asking the reader to transcribe it…')
+      const text=pages.map(page=>`--- page ${page.number} ---\n${pageLines(page).map(line=>line.map(t=>t.text.trim()).join(' ').replace(/\s+/g,' ').trim()).filter(Boolean).join('\n')}`).join('\n')
+      if(text.length>200_000)throw new Error('This statement contains too much text to be read. Use a shorter period, or a CSV export from your bank.')
+      check()
+      result=await readStatementWithAssistance(text,id,file.name,signal)
+    }
     return result
   }finally{signal.removeEventListener('abort',abort);await task.destroy()}
 }
