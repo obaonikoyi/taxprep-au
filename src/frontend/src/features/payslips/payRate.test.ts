@@ -383,3 +383,82 @@ describe('the message to payroll', () => {
     expect(changed.message).toContain('2026-07-28')
   })
 })
+
+/*
+ * A contract two years old, and a payslip from last fortnight.
+ *
+ * The case this panel was not designed for. A rate record goes out of date on
+ * its own: pay rises, and in Australia most awards and the national minimum
+ * wage move every year, so a contract signed two years ago states a rate that
+ * is simply no longer the one being paid. Nobody writes to payroll to ask why
+ * they were paid more, and a panel that files that beside a shortfall — same
+ * count, same heading, same "ask your payroll contact" — stops being believed.
+ */
+describe('a payslip that pays more than the rate you recorded', () => {
+  const paid = (rate: string, hours = '38.00', periodStart = '2026-08-12'): Payslip => {
+    const facts: PayFacts = {
+      ...blankFacts(), employer: 'Kestrel Example Hospitality',
+      periodStart, periodEnd: '2026-08-25', payDate: '2026-08-27',
+      gross: (Number(rate) * Number(hours)).toFixed(2), withheld: '0.00', deductions: '0.00',
+      net: (Number(rate) * Number(hours)).toFixed(2),
+      hours, rate, ordinary: (Number(rate) * Number(hours)).toFixed(2),
+    }
+    return { id: `slip-${rate}-${periodStart}`, name: 'p.pdf', hash: 'h', text: '', facts, original: { ...facts }, confirmed: true, sample: false }
+  }
+  // The contract, signed two years before the payslip above.
+  const contract: RateRecord = { ...blankRate(), id: 'r1', employer: 'Kestrel Example Hospitality', basis: 'hourly', amount: '30.00', from: '2024-07-01', source: 'contract' }
+  const check = (slips: Payslip[], records: RateRecord[]) => rateChecks(slips, records, () => [])
+
+  it('is a record to update, not a question to ask', () => {
+    const { findings } = check([paid('32.10')], [contract])
+    expect(findings.map(f => f.kind)).toEqual(['rate-above-record'])
+    expect(findings[0].heading).toBe('This payslip pays more than the rate you recorded')
+    expect(findings[0].difference).toContain('$2.10 an hour above what you recorded')
+    expect(findings[0].difference).toContain('$79.80 over this period')
+  })
+
+  it('offers nobody a message, because nobody asks payroll why they were paid more', () => {
+    expect(check([paid('32.10')], [contract]).findings[0].message).toBe('')
+  })
+
+  it('says it cannot tell a rise from an overpayment, without alarm', () => {
+    const { limit } = check([paid('32.10')], [contract]).findings[0]
+    expect(limit).toContain('almost always a pay rise')
+    expect(limit).toContain('may ask for it back')
+  })
+
+  it('offers the new rate and the date it starts, so the record can be fixed in one go', () => {
+    expect(check([paid('32.10')], [contract]).findings[0].update)
+      .toEqual({ employer: 'Kestrel Example Hospitality', amount: '32.10', from: '2026-08-12' })
+  })
+
+  it('still treats a payslip below the record as a question, with a message to send', () => {
+    const { findings } = check([paid('28.00')], [contract])
+    expect(findings.map(f => f.kind)).toEqual(['rate-differs'])
+    expect(findings[0].difference).toContain('below what you recorded')
+    expect(findings[0].message).toContain('Could you let me know which rate applies')
+    expect(findings[0].update).toBeUndefined()
+  })
+
+  it('finds nothing at all when an early payslip matches the contract', () => {
+    // The other half of the same test: the contract and a payslip from when it
+    // was current should agree exactly, and silence here is the right answer.
+    expect(check([paid('30.00', '38.00', '2024-08-12')], [contract]).findings).toEqual([])
+  })
+
+  it('separates the two when a run of payslips contains both', () => {
+    const { findings } = check([paid('28.00', '38.00', '2024-08-12'), paid('32.10')], [contract])
+    expect(findings.filter(f => f.kind === 'rate-differs')).toHaveLength(1)
+    expect(findings.filter(f => f.kind === 'rate-above-record')).toHaveLength(1)
+  })
+
+  it('treats a payslip with no rate but higher pay the same way', () => {
+    const noRate = paid('32.10')
+    noRate.facts = { ...noRate.facts, rate: '' }
+    const { findings } = check([noRate], [contract])
+    expect(findings.map(f => f.kind)).toEqual(['amount-above-record'])
+    expect(findings[0].message).toBe('')
+    // No rate is printed, so there is no new rate to offer recording.
+    expect(findings[0].update).toBeUndefined()
+  })
+})

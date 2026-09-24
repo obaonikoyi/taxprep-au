@@ -620,6 +620,28 @@ export async function verifyPayslips(context, base, artifacts) {
     await refusal.waitFor({ timeout: 60000 });
     assert.match(await refusal.innerText(), /casual loading/, 'the reason for refusing reaches the person');
     assert.equal(await contractPanel.getByLabel('Hourly rate (AUD)').inputValue(), '40.00', 'a refusal leaves the form exactly as it was');
+    /*
+     * The case a contract two years old creates: the payslip pays more than the
+     * record, because pay rises. That is a record to update, not a question for
+     * payroll — and one button fixes it rather than leaving it to nag.
+     */
+    await contractPanel.getByLabel('Hourly rate (AUD)').fill('20.00');
+    await contractPanel.getByLabel('This rate started').fill('2024-07-01');
+    await contractPanel.getByRole('button', { name: /^(Save|Record|Add)/ }).last().click();
+    const outdated = page.locator('.pay-rate-outdated');
+    await outdated.waitFor();
+    const outdatedText = await outdated.innerText();
+    assert.match(outdatedText, /pays more than the rate you recorded/, 'a rise reads as a rise');
+    assert.match(outdatedText, /above what you recorded/);
+    assert.equal(await outdated.getByRole('button', { name: /Copy message for payroll/ }).count(), 0,
+      'nobody is offered a message asking payroll why they were paid more');
+    // The questions list is left alone by it.
+    assert.doesNotMatch(await page.locator('.pay-rate-findings').first().innerText(), /pays more than the rate you recorded/);
+    await outdated.getByRole('button', { name: /^Record / }).first().click();
+    await page.getByRole('status').filter({ hasText: /Recorded .* an hour/ }).waitFor();
+    assert.equal(await page.locator('.pay-rate-outdated').count(), 0, 'recording the rise clears it');
+    assert.equal(await contractPanel.locator('.pay-rate-records li').count(), 2, 'the old rate is kept, ended, beside the new one');
+
     await page.unroute('**/api/contract/read');
     await page.reload();
     await page.getByRole('heading', { name: 'Understand your payslip.', exact: true }).waitFor();
@@ -681,7 +703,7 @@ export async function verifyPayslips(context, base, artifacts) {
     assert.deepEqual(posts.map(r => new URL(r.url).pathname),
       ['/api/payslip/read', '/api/payslip/read', '/api/contract/read', '/api/contract/read'],
       `only the readings the person asked for were posted anywhere: ${posts.map(r => r.method + ' ' + r.url).join(', ')}`);
-    const result = { passed: true, guidedSteps: true, automaticBatchReview: true, noUnconfirmedZeroTotals: true, manualEntry: true, correctionInvalidates: true, duplicateBlocked: true, unreadableBatchAddsNothing: true, batchKeepsWhatItRead: true, payslipFromPhoto: true, readingCheckedAgainstDocument: true, rateReadFromContract: true, contractRefusalRespected: true, exampleToOwnData: true, chartSwitching: true, yearAndEmployerFilters: true, emptyFilterRecovery: true, offlineExport: true, payOutlook: true, payOutlookWithholdingNotScaled: true, payOutlookMobile: true, taxReadiness: true, taxReadinessWholeYear: true, taxReadinessLocked: true, taxReadinessExport: true, taxReadinessMobile: true, yearEndReconciliation: true, yearEndNoDoubleCount: true, annualStatementPdfExtraction: true, annualStatementReviewGate: true, annualStatementDuplicateBlocked: true, annualStatementProvenance: true, yearEndProvisionalExcluded: true, yearEndExport: true, yearEndMobile: true, yearEndPreparationHub: true, yearEndBankChecksNetOnly: true, yearEndExpenseCoverage: true, portableWorkspaceHandoff: true, handoffYearMismatchBlocked: true, handoffExplicitApply: true, handoffDuplicateBlocked: true, handoffNoDoubleCount: true, yearEndPreparationExport: true, yearEndPreparationMobile: true, encryptedPreparationBackup: true, encryptedBackupWrongPassphraseBlocked: true, encryptedBackupExplicitRestore: true, payAdviceV2Layout: true, payAdviceV2CurrentPeriodOnly: true, payAdviceV2ReportRecordsLayout: true, payAdviceV3EarningsBlock: true, payRateSelfCheckWithoutRecord: true, payRateAgainstRecordedRate: true, payRateSilentChange: true, payRateReportNamesWhatWasNotChecked: true, payRateNoEmployerCharacterisation: true, thirdPartyRefused, clearConfirmation: true, clearRefreshAndWorkspaceChange: true, mobileOverflow: false, mobileReviewActionsVisible: true, documentUploads: 0, modelRequests: 0, pageErrors: errors };
+    const result = { passed: true, guidedSteps: true, automaticBatchReview: true, noUnconfirmedZeroTotals: true, manualEntry: true, correctionInvalidates: true, duplicateBlocked: true, unreadableBatchAddsNothing: true, batchKeepsWhatItRead: true, payslipFromPhoto: true, readingCheckedAgainstDocument: true, rateReadFromContract: true, contractRefusalRespected: true, payRiseIsNotAQuestion: true, payRiseRecordedInOneClick: true, exampleToOwnData: true, chartSwitching: true, yearAndEmployerFilters: true, emptyFilterRecovery: true, offlineExport: true, payOutlook: true, payOutlookWithholdingNotScaled: true, payOutlookMobile: true, taxReadiness: true, taxReadinessWholeYear: true, taxReadinessLocked: true, taxReadinessExport: true, taxReadinessMobile: true, yearEndReconciliation: true, yearEndNoDoubleCount: true, annualStatementPdfExtraction: true, annualStatementReviewGate: true, annualStatementDuplicateBlocked: true, annualStatementProvenance: true, yearEndProvisionalExcluded: true, yearEndExport: true, yearEndMobile: true, yearEndPreparationHub: true, yearEndBankChecksNetOnly: true, yearEndExpenseCoverage: true, portableWorkspaceHandoff: true, handoffYearMismatchBlocked: true, handoffExplicitApply: true, handoffDuplicateBlocked: true, handoffNoDoubleCount: true, yearEndPreparationExport: true, yearEndPreparationMobile: true, encryptedPreparationBackup: true, encryptedBackupWrongPassphraseBlocked: true, encryptedBackupExplicitRestore: true, payAdviceV2Layout: true, payAdviceV2CurrentPeriodOnly: true, payAdviceV2ReportRecordsLayout: true, payAdviceV3EarningsBlock: true, payRateSelfCheckWithoutRecord: true, payRateAgainstRecordedRate: true, payRateSilentChange: true, payRateReportNamesWhatWasNotChecked: true, payRateNoEmployerCharacterisation: true, thirdPartyRefused, clearConfirmation: true, clearRefreshAndWorkspaceChange: true, mobileOverflow: false, mobileReviewActionsVisible: true, documentUploads: 0, modelRequests: 0, pageErrors: errors };
     writeFileSync(artifacts + 'payslip-evaluation.json', JSON.stringify(result, null, 2)); return result;
   } catch (e) { await page.screenshot({ path: artifacts + 'payslip-failure.png', fullPage: true }); console.error((await page.locator('body').innerText()).slice(-10000)); throw e } finally { await page.close() }
 }

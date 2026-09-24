@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { confirmationIssues, employerKey, type Payslip } from './payslip'
-import { addRate, blankRate, MAX_RATE_RECORDS, rateChecks, rateSources, rateText, validateRate, WEEKS_PER_YEAR, type RateRecord } from './payRate'
+import { addRate, blankRate, isAboveRecord, MAX_RATE_RECORDS, rateChecks, rateSources, rateText, validateRate, WEEKS_PER_YEAR, type Finding, type RateRecord } from './payRate'
 import { contractText, readContract } from './contractReader'
 
 /**
@@ -68,6 +68,37 @@ export default function PayRatePanel({ slips, records, onRecords }: { slips: Pay
   }
   const employers = [...new Map(slips.filter(s => s.facts.employer.trim()).map(s => [employerKey(s.facts.employer), s.facts.employer])).values()]
   const { findings, states } = rateChecks(slips, records, slip => confirmationIssues(slip, slips))
+  /*
+   * Two lists, not one. A payslip above the recorded rate is a record that has
+   * gone out of date, not a question for anybody, and putting it in the same
+   * count as a shortfall is what makes a panel like this stop being believed.
+   */
+  const questions = findings.filter(f => !isAboveRecord(f.kind))
+  const outOfDate = findings.filter(f => isAboveRecord(f.kind))
+
+  /** Close the record this payslip has outgrown, and open one from its period. */
+  function recordTheRise(finding: Finding) {
+    if (!finding.update) return
+    const { employer, amount, from } = finding.update
+    const previous = records.find(r => employerKey(r.employer) === employerKey(employer) && r.from <= from && (!r.to.trim() || r.to >= from))
+    const dayBefore = new Date(Date.parse(from) - 86400000).toISOString().slice(0, 10)
+    const kept = previous
+      ? records.map(r => r.id === previous.id ? { ...r, to: dayBefore } : r)
+      : records
+    try {
+      const added: RateRecord = {
+        ...(previous ?? blankRate()),
+        id: crypto.randomUUID(), employer, amount, from, to: '',
+        basis: 'hourly', weeklyHours: '',
+        source: previous?.source ?? 'contract',
+        note: `Taken from the payslip for the period starting ${from}.`,
+      }
+      const issues = validateRate(added, kept)
+      if (issues.length) { setMessage(issues[0]); return }
+      onRecords(addRate(kept, added))
+      setMessage(`Recorded ${amount} an hour for ${employer} from ${from}.${previous ? ` Your earlier rate now ends on ${dayBefore}.` : ''} Earlier payslips are still compared with the rate that covered them.`)
+    } catch (e) { setMessage(e instanceof Error ? e.message : 'That rate could not be recorded.') }
+  }
   const issues = draft ? validateRate(draft, records) : []
   const checked = states.filter(s => s.checked).length
   const set = (patch: Partial<RateRecord>) => {
@@ -206,10 +237,10 @@ export default function PayRatePanel({ slips, records, onRecords }: { slips: Pay
     <p role="status" className="pay-rate-message">{message}</p>
 
     <div className="pay-rate-findings">
-      <h4>{findings.length ? `${findings.length} question${findings.length === 1 ? '' : 's'} to ask` : 'Nothing to ask so far'}</h4>
-      {findings.length === 0
+      <h4>{questions.length ? `${questions.length} question${questions.length === 1 ? '' : 's'} to ask` : 'Nothing to ask so far'}</h4>
+      {questions.length === 0
         ? <p className="pay-rate-empty">Nothing was found in what Xoba Paycheck compared. That is not a statement that your pay is right — see what was checked below, and what was not.</p>
-        : <ol>{findings.map(finding => <li key={finding.id} className="pay-rate-finding">
+        : <ol>{questions.map(finding => <li key={finding.id} className="pay-rate-finding">
           <div className="pay-rate-finding-heading"><strong>{finding.heading}</strong><small>{finding.employer} · {finding.period}</small></div>
           <dl>
             {finding.yourRecord && <div><dt>Your record</dt><dd>{finding.yourRecord}</dd></div>}
@@ -226,6 +257,26 @@ export default function PayRatePanel({ slips, records, onRecords }: { slips: Pay
           </div>
         </li>)}</ol>}
     </div>
+
+    {outOfDate.length > 0 && <div className="pay-rate-findings pay-rate-outdated">
+      <h4>{outOfDate.length === 1 ? 'Your record looks out of date' : `${outOfDate.length} payslips pay more than your record`}</h4>
+      <p className="pay-rate-empty">These are not questions for your employer. They are here because the rate you recorded no longer matches what you are being paid.</p>
+      <ol>{outOfDate.map(finding => <li key={finding.id} className="pay-rate-finding">
+        <div className="pay-rate-finding-heading"><strong>{finding.heading}</strong><small>{finding.employer} · {finding.period}</small></div>
+        <dl>
+          {finding.yourRecord && <div><dt>Your record</dt><dd>{finding.yourRecord}</dd></div>}
+          <div><dt>This payslip</dt><dd>{finding.thePayslip}</dd></div>
+          <div><dt>The difference</dt><dd><strong>{finding.difference}</strong></dd></div>
+        </dl>
+        <p className="pay-rate-limit">{finding.limit}</p>
+        <p className="pay-rate-question">{finding.question}</p>
+        {finding.update && <div className="pay-rate-send">
+          <button type="button" className="secondary-button" onClick={() => recordTheRise(finding)}>
+            Record {finding.update.amount} an hour from {finding.update.from}
+          </button>
+        </div>}
+      </li>)}</ol>
+    </div>}
 
     <details className="statement-help pay-rate-states">
       <summary>What was checked, and what was not ({checked} of {states.length} payslips)</summary>
