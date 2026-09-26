@@ -1,5 +1,6 @@
 import { labels, confirmationIssues, figuresNotInDocument, optionalFields, type Payslip, type PayFacts, type PayField } from './payslip'
 import { formatLabel } from './payslipFormats'
+import PayslipEarnings from './PayslipEarnings'
 
 const groups: { title: string; fields: PayField[] }[] = [
   { title: 'Employer and dates', fields: ['employer', 'periodStart', 'periodEnd', 'payDate'] },
@@ -25,6 +26,7 @@ export default function PayslipReview({ slip, all, onChange, onConfirm, onClose,
     <div className="panel-heading"><div><p className="eyebrow">{!slip.hash ? 'Enter from your payslip' : slip.fromPicture ? 'Recognised from your picture — check every figure' : 'Read from your PDF'}</p><h3>{slip.facts.employer || 'New payslip'}</h3><p className="pay-source-name">{slip.name}{formatLabel(slip.format) ? <> · read as <strong>{formatLabel(slip.format)}</strong></> : null}</p></div><button className="text-button" onClick={onClose}>Close review</button></div>
     <p className="pay-review-tip">Use the amounts for <strong>this pay period</strong>, not the year-to-date (YTD) totals.</p>
     <p className="pay-review-tip">Hours and rate are optional. Filling them in lets Xoba Paycheck compare this payslip with the rate you agreed to, and with its own arithmetic.</p>
+    {slip.lines && <PayslipEarnings lines={slip.lines} facts={slip.facts} />}
     {unfound.length > 0 && <div role="alert" className="statement-error pay-unfound">
       <strong>{unfound.length === 1 ? 'One figure was not' : `${unfound.length} figures were not`} found in what we read.</strong>
       <p>
