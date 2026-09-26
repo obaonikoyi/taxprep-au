@@ -12,6 +12,7 @@
  * worst thing this reader could do.
  */
 import { blankFacts, dateValue, fields, labels, type PayFacts } from './payslip'
+import type { EarningsLine } from './payslipEarnings'
 
 export type TextToken = { text: string; x: number; y: number; width?: number }
 export type TextRow = { text: string; tokens: TextToken[] }
@@ -76,6 +77,15 @@ const AMOUNT_ROWS: [keyof PayFacts, string][] = [
 ]
 
 const AMOUNT = /^\$?\d[\d,]*(?:\.\d{1,2})?$/
+/*
+ * Figures inside the earnings block, where a rate carries more decimals than
+ * money does — an afternoon loading of $49.8080 is an ordinary thing for a
+ * payroll system to print. A token filter that stops at two places cannot see
+ * such a rate at all, so the column it sits in reads as empty and the line
+ * goes unchecked. The totals table below keeps the stricter pattern: a gross
+ * printed to four places would be a misread, not a rate.
+ */
+const FIGURE = /^\$?\d[\d,]*(?:\.\d{1,4})?$/
 
 /** Column anchors from the totals header row, or null when it is not readable.
  * The `hours` guard keeps this off the earnings header below, which carries
@@ -117,9 +127,15 @@ function currentPeriodAmount(row: TextRow, cols: { current: number; ytd: number 
  *   Ordinary hours    38.00     28.90      1,098.20       32,946.00
  *   Overtime           4.00     43.35        173.40        1,204.00
  *
- * Only the ordinary line is read. An overtime or penalty multiplier depends
- * on the award and the roster, neither of which Xoba Paycheck knows, so those lines
- * are left to the gross total and never checked against an agreed rate.
+ * Every line is read, not only the one labelled "Ordinary".
+ *
+ * It used to be only that one, because a penalty multiplier depends on an
+ * award and a roster this app does not know. That reasoning holds for the word
+ * "correct" and for nothing else — and taking one row of a shift worker's
+ * table can mean reading nine percent of their pay. Whether a line's hours
+ * times its rate equals the amount printed beside it needs no award. Neither
+ * does whether the lines add up. Nothing here decides that a loading is the
+ * right one; see payslipEarnings.ts for what is and is not concluded.
  */
 type Anchors = { hours: number; rate: number; current: number; ytd: number }
 
@@ -142,7 +158,7 @@ function earningsColumns(rows: TextRow[]): Anchors | null {
 /** The figure under one of several columns, or blank when it is not clearly
  * under any of them. Same discipline as the two-column rule above. */
 function columnValue(row: TextRow, anchors: number[], index: number): string {
-  const numbers = row.tokens.filter(t => AMOUNT.test(t.text.trim()))
+  const numbers = row.tokens.filter(t => FIGURE.test(t.text.trim()))
   // One lone figure in a multi-column row could belong to any of them.
   if (numbers.length < 2) return ''
   let best: { text: string; distance: number } | null = null
@@ -158,14 +174,62 @@ function columnValue(row: TextRow, anchors: number[], index: number): string {
   return best.distance < margin ? best.text : ''
 }
 
-function ordinaryLine(rows: TextRow[]): Pick<PayFacts, 'hours' | 'rate' | 'ordinary'> | null {
+const HEADER = (r: TextRow) => /hours/i.test(r.text) && /rate/i.test(r.text) && /this pay/i.test(r.text)
+const ORDINARY = /^ordinary\b/i
+
+/**
+ * Every row of the earnings block, in the order the payslip prints them.
+ * Empty when the document has no such block, which is every v2 advice and
+ * every summary layout, so callers need no special case for those.
+ */
+export function earningsLines(rows: TextRow[]): EarningsLine[] {
   const cols = earningsColumns(rows)
-  if (!cols) return null
-  const row = rows.find(r => /^ordinary\b/i.test(r.text.trim()))
-  if (!row) return null
+  const start = rows.findIndex(HEADER)
+  if (!cols || start < 0) return []
   const order = [cols.hours, cols.rate, cols.current, cols.ytd]
   const strip = (v: string) => v.replace(/^\$/, '')
-  return { hours: strip(columnValue(row, order, 0)), rate: strip(columnValue(row, order, 1)), ordinary: strip(columnValue(row, order, 2)) }
+  const lines: EarningsLine[] = []
+  for (const row of rows.slice(start + 1)) {
+    const text = row.text.trim()
+    /*
+     * The block ends at its own total or at whatever section starts next —
+     * and the next section announces itself with a header of its own. Reading
+     * past it would take the totals table's rows for earnings lines and count
+     * gross a second time.
+     */
+    if (!text || /^total\b/i.test(text) || HEADER(row) || /^description\b/i.test(text)) break
+    const label = row.tokens.filter(t => t.text.trim() && !FIGURE.test(t.text.trim()) && tokenCentre(t) < cols.hours)
+      .map(t => t.text.trim()).join(' ').replace(/\s+/g, ' ').trim()
+    const amount = strip(columnValue(row, order, 2))
+    // A row with no label or no amount under "this pay" is not an earnings
+    // line; a note printed inside the block should not become one.
+    if (!label || !amount) continue
+    lines.push({ label, hours: strip(columnValue(row, order, 0)), rate: strip(columnValue(row, order, 1)), amount })
+  }
+  return lines
+}
+
+/*
+ * "28.7600" to "28.76", but "31.6360" left exactly as it is.
+ *
+ * Trailing zeros past two places are padding a payroll system printed; digits
+ * past two places are the figure itself, and dropping them would change
+ * somebody's rate. The review form holds hours and money to two places, so a
+ * line padded out to four has to be trimmed to go in it — and one that is
+ * genuinely finer than that is left alone and flagged by the form rather than
+ * quietly rounded behind the person's back. The full precision is kept either
+ * way on the earnings line, which is where the arithmetic is done.
+ */
+export const trimToCents = (value: string) => {
+  const m = value.trim().match(/^(\$?\d[\d,]*\.\d\d)0+$/)
+  return m ? m[1] : value.trim()
+}
+
+/** The ordinary line's three fields, which are the ones the review form has
+ * always carried. Unchanged in what it returns, beyond the trimming above. */
+function ordinaryLine(rows: TextRow[]): Pick<PayFacts, 'hours' | 'rate' | 'ordinary'> | null {
+  const line = earningsLines(rows).find(l => ORDINARY.test(l.label))
+  return line ? { hours: trimToCents(line.hours), rate: trimToCents(line.rate), ordinary: trimToCents(line.amount) } : null
 }
 
 const PAY_ADVICE_V2: PayslipFormat = {

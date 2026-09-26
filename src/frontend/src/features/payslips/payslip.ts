@@ -1,3 +1,4 @@
+import type { EarningsLine } from './payslipEarnings'
 export const PAYSLIP_VERSION = 'payslip-summary-v1'
 export const MAX_PAYSLIPS = 100
 export const fields = ['employer', 'periodStart', 'periodEnd', 'payDate', 'gross', 'withheld', 'deductions', 'net', 'super', 'hours', 'rate', 'ordinary'] as const
@@ -13,7 +14,16 @@ export type Payslip = {
   format?: string;
   /** True when the words were recognised from a picture rather than read from the file's own text. */
   fromPicture?: boolean;
+  /*
+   * Every row of the earnings block, when the layout prints one. Kept beside
+   * the facts rather than inside them: the facts are the twelve fields a
+   * person confirms one by one, and a table of a variable number of rows is
+   * not one of those. Absent for a layout with no such block, for manual
+   * entry, and for a reading that came back from the assisted reader.
+   */
+  lines?: EarningsLine[];
 }
+export type { EarningsLine }
 export const labels: Record<PayField, string> = {
   employer: 'Employer', periodStart: 'Period start', periodEnd: 'Period end', payDate: 'Pay date',
   gross: 'Gross pay', withheld: 'Tax withheld', deductions: 'Other deductions', net: 'Net pay', super: 'Super recorded',

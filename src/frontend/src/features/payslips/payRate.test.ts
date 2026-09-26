@@ -4,6 +4,7 @@ import advicesV3 from '../../../../../sample-data/payslips/advice-v3-examples.js
 import advicesV2 from '../../../../../sample-data/payslips/advice-examples.json'
 import { blankFacts, confirmationIssues, validateFacts, type PayFacts, type Payslip } from './payslip'
 import { parsePayslip, textRows } from './payslipReader'
+import { checkEarnings, multiplierText, rateValue } from './payslipEarnings'
 import { payslipReport } from './payslipReport'
 import { addRate, blankRate, hourlyCents, rateChecks, recordFor, validateRate, type Finding, type RateRecord } from './payRate'
 
@@ -25,7 +26,7 @@ beforeAll(async () => {
 
 describe('PAY ADVICE v3 earnings block', () => {
   it('reads ordinary hours, rate and pay from the itemised block', () => {
-    expect(v3).toHaveLength(3)
+    expect(v3).toHaveLength(4)
     for (const slip of v3) expect(slip.format).toBe('pay-advice-v3')
     expect(v3[0].facts).toMatchObject({ hours: '38.00', rate: '28.90', ordinary: '1,098.20', gross: '1,098.20' })
     expect(v3[1].facts).toMatchObject({ hours: '38.00', rate: '27.50', ordinary: '1,045.00', gross: '1,045.00' })
@@ -33,20 +34,75 @@ describe('PAY ADVICE v3 earnings block', () => {
     for (const slip of v3) expect(validateFacts(slip.facts)).toEqual([])
   })
 
-  it('reads only the ordinary line, never the overtime beside it', () => {
-    // The third advice pays 4.00 overtime hours at 43.35 for 173.40. An
-    // overtime multiplier depends on an award, so none of it may be read.
+  it('keeps the overtime line out of the ordinary fields, while still reading it', () => {
+    // The third advice pays 4.00 overtime hours at 43.35 for 173.40. The three
+    // form fields are the ORDINARY line and must stay that way — an overtime
+    // multiplier depends on an award, and a recorded ordinary rate must never
+    // be compared against it. The line itself is read; it is just read
+    // somewhere the rate check does not look.
     const facts = v3[2].facts
     expect(facts.hours).not.toBe('4.00')
     expect(facts.rate).not.toBe('43.35')
     expect(facts.ordinary).not.toBe('173.40')
-    expect(v3[2].text).toContain('43.35')
+    expect(v3[2].lines?.map(l => l.label)).toEqual(['Ordinary hours', 'Overtime'])
+    expect(v3[2].lines?.[1]).toMatchObject({ hours: '4.00', rate: '43.35', amount: '173.40' })
+  })
+
+  /*
+   * The case this milestone exists for: a fortnight of shift work where the
+   * ordinary line is a small fraction of the pay. Reading only that line means
+   * checking nine percent of it, and the rates only multiply out at four
+   * decimal places.
+   */
+  describe('a payslip that is mostly penalty rates', () => {
+    const shift = () => v3[3]
+
+    it('reads every line of the table, not just the ordinary one', () => {
+      expect(shift().lines?.map(l => l.label)).toEqual(['Ordinary hours', 'Afternoon hours', 'Saturday hours', 'Sunday hours'])
+      expect(shift().lines?.map(l => l.rate)).toEqual(['28.7600', '31.6360', '40.2640', '51.7680'])
+      expect(shift().lines?.map(l => l.hours)).toEqual(['7.5000', '36.2500', '8.0000', '14.0000'])
+      expect(shift().lines?.map(l => l.amount)).toEqual(['215.70', '1,146.81', '322.11', '724.75'])
+    })
+
+    it('still puts only the ordinary line in the form, trimmed to what the form holds', () => {
+      expect(shift().facts).toMatchObject({ hours: '7.50', rate: '28.76', ordinary: '215.70', gross: '2,409.37' })
+      expect(validateFacts(shift().facts)).toEqual([])
+    })
+
+    it('finds every line consistent with its own hours and rate', () => {
+      const result = checkEarnings(shift().lines!, shift().facts)
+      expect(result.disagreeing).toEqual([])
+      expect(result.itemised).toBe(240937)
+      expect(result.unitemised).toBe(0)
+    })
+
+    it('reports the loadings as exact multiples without calling them right', () => {
+      const result = checkEarnings(shift().lines!, shift().facts)
+      expect(result.lines.map(l => l.multiplier && multiplierText(l.multiplier))).toEqual(['1', '1.1', '1.4', '1.8'])
+    })
+
+    it('says how little of this pay a recorded ordinary rate would cover', () => {
+      expect(checkEarnings(shift().lines!, shift().facts).ordinaryShare).toBe(9)
+    })
+
+    /*
+     * Why the reader keeps four decimal places rather than trimming rates the
+     * way it trims the ordinary line for the form. Round this table's rates to
+     * cents and three of its four lines stop agreeing with amounts that are
+     * perfectly correct.
+     */
+    it('would report false differences if it had rounded the rates to cents', () => {
+      const rounded = shift().lines!.map(l => ({ ...l, rate: (rateValue(l.rate)! / 10_000).toFixed(2) }))
+      expect(checkEarnings(rounded, shift().facts).disagreeing.map(l => l.label))
+        .toEqual(['Afternoon hours', 'Saturday hours', 'Sunday hours'])
+    })
   })
 
   it('never takes a year-to-date figure into hours, rate or pay', () => {
     for (const slip of v3) {
       expect(slip.text).toContain('48,912.00')
-      for (const value of Object.values(slip.facts)) expect(['32,946.00', '33,991.00', '34,120.00', '4,120.00', '48,912.00']).not.toContain(value)
+      for (const value of Object.values(slip.facts)) expect(['32,946.00', '33,991.00', '34,120.00', '4,120.00', '48,912.00', '5,602.44', '29,821.06', '8,375.11', '18,843.50']).not.toContain(value)
+      for (const line of slip.lines ?? []) expect(['32,946.00', '34,120.00', '4,120.00', '29,821.06', '18,843.50']).not.toContain(line.amount)
     }
   })
 

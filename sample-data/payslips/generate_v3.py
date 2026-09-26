@@ -59,6 +59,19 @@ specs = [
          earnings=[('Ordinary hours', '38.00', '28.90', '1,080.00', '34,120.00'),
                    ('Overtime', '4.00', '43.35', '173.40', '4,120.00')],
          gross='1,253.40', withheld='196.00', deductions='25.00', net='1,032.40', superann='144.14'),
+    # 4 · A fortnight of shift work: four lines, most of the money in the
+    #     penalty rows, and rates printed to four places. Every line agrees
+    #     with its own hours and rate ONLY at that precision — round the rates
+    #     to cents and three of the four stop agreeing, which is the whole
+    #     reason the reader keeps four. The loadings are exact multiples of
+    #     the ordinary rate (1.1, 1.4, 1.8); that is a fact about the page and
+    #     not a claim that those are the right loadings for anybody's award.
+    dict(name='Kingfisher Example Care', start='01/07/2026', end='14/07/2026', paid='16/07/2026',
+         earnings=[('Ordinary hours', '7.5000', '28.7600', '215.70', '5,602.44'),
+                   ('Afternoon hours', '36.2500', '31.6360', '1,146.81', '29,821.06'),
+                   ('Saturday hours', '8.0000', '40.2640', '322.11', '8,375.11'),
+                   ('Sunday hours', '14.0000', '51.7680', '724.75', '18,843.50')],
+         gross='2,409.37', withheld='520.00', deductions='0.00', net='1,889.37', superann='289.12'),
 ]
 
 result = []
@@ -126,7 +139,7 @@ for number, spec in enumerate(specs, 1):
 
     c.setFillColor(HexColor('#66616b')); c.setFont('SampleSans', 10)
     c.drawString(44, y - 20, 'Year-to-date figures are cumulative and must not be summed across pay advices.')
-    c.drawString(44, y - 40, 'Overtime and penalty lines depend on an award and are not checked against an agreed ordinary rate.')
+    c.drawString(44, y - 40, 'Every line is checked against its own hours and rate. Whether a loading is the right one depends on an award.')
     c.drawString(44, y - 60, 'Amounts illustrate document reading, not approved payroll or tax calculations.')
 
     c.showPage(); c.save()

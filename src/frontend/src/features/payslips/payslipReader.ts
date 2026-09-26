@@ -1,6 +1,6 @@
 import { PAYSLIP_VERSION, type Payslip } from './payslip'
 import { ASSISTED_FORMAT, readWithAssistance } from './assistedReader'
-import { detectFormat, type TextRow, type TextToken } from './payslipFormats'
+import { detectFormat, earningsLines, type TextRow, type TextToken } from './payslipFormats'
 import { isPicture, MAX_PICTURE_BYTES, pictureCanvas, recogniseRows } from './payslipPicture'
 export type { TextRow, TextToken } from './payslipFormats'
 
@@ -36,8 +36,13 @@ export function parsePayslip(lines: string[], hash: string, name: string, sample
   if (lines.join('\n').length > 20_000) throw new Error('This payslip contains too much text.')
   // Every format reads current-period values only; cumulative YTD figures are
   // never extracted, so they can never be summed across payslips.
-  const facts = format.parse({ lines, rows: rows ?? lines.map(text => ({ text, tokens: [] })) })
-  return { id: hash, hash, name, text: lines.join('\n'), facts, original: { ...facts }, confirmed: false, sample, format: format.id }
+  const built = rows ?? lines.map(text => ({ text, tokens: [] }))
+  const facts = format.parse({ lines, rows: built })
+  // Read from the same rows the facts came from, so the table on screen and
+  // the ordinary figures in the form can never disagree about the document.
+  const earnings = earningsLines(built)
+  return { id: hash, hash, name, text: lines.join('\n'), facts, original: { ...facts }, confirmed: false, sample, format: format.id,
+    ...(earnings.length ? { lines: earnings } : {}) }
 }
 /*
  * `assist` decides what happens when no documented layout matches: throw, as
