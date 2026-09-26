@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { appendPayslips, blankFacts, changedFacts, confirmationIssues, employerKey, financialYear, MAX_PAYSLIPS, selectedPayslips, type Payslip, type SkippedFile } from './payslip'
-import { readPayslip } from './payslipReader'
+import { isUnknownLayout, readPayslip } from './payslipReader'
 import { downloadPayReport, payslipReport } from './payslipReport'
 import PayslipStart from './PayslipStart'
 import PayslipSummary from './PayslipSummary'
@@ -21,10 +21,26 @@ export default function PayslipDashboard() {
   // Files this batch could not add. Named rather than dropped quietly: the
   // person chose them, and they need to know which ones to deal with by hand.
   const [skipped, setSkipped] = useState<SkippedFile[]>([])
-  // Off until asked for, and only for this session: it decides whether an
-  // unknown layout's text may be sent to the server to be read.
-  const [assist, setAssist] = useState(false)
+  /*
+   * Files whose layout nothing here recognises, held so the person can be asked
+   * about them by name. The asking used to be a checkbox above the file picker,
+   * ticked before anything had happened, to guarantee that consent came before
+   * anything left the device. It still does: choosing a file sends nothing, the
+   * layouts are tried here, and only a "yes" to this question — naming these
+   * files — ever puts their text on the wire. What has gone is being asked to
+   * decide about a thing that had not happened yet, in words that needed the
+   * idea of a "layout" to make sense.
+   */
+  const [offer, setOffer] = useState<File[]>([])
   const active = useRef<AbortController | null>(null), stageHeading = useRef<HTMLHeadingElement>(null), clearButton = useRef<HTMLButtonElement>(null)
+  /*
+   * Everything this screen says about a batch is said above the start card. By
+   * the time somebody has scrolled down far enough to choose a file, that is
+   * off the top of the screen — so the app answering there, and leaving the
+   * page where it was, is indistinguishable from the app doing nothing. Every
+   * answer now brings the page to it.
+   */
+  const alerts = useRef<HTMLDivElement>(null)
   useEffect(() => () => active.current?.abort(), [])
   const confirmed = selectedPayslips(slips, year, employer)
   const allConfirmed = selectedPayslips(slips, 'all', 'all')
@@ -44,12 +60,28 @@ export default function PayslipDashboard() {
     stageHeading.current?.scrollIntoView({ block: 'start', behavior: 'instant' })
   }, [stage, selected])
 
-  async function importFiles(files?: File[]) {
+  /*
+   * Declared after the stage effect so it wins when a batch does both — reads
+   * some files and has a question about others. Both run on the same commit,
+   * and the last one to take focus keeps it. The question is the thing that
+   * needs answering; the heading is just where the reading landed.
+   *
+   * The last child is what gets scrolled to, not the region: when a batch
+   * produced a failure and a question, the question is below the failure, and
+   * centring the pair can leave it off the bottom of a short window.
+   */
+  useEffect(() => {
+    if (!error && !skipped.length && !offer.length) return
+    alerts.current?.focus({ preventScroll: true })
+    alerts.current?.lastElementChild?.scrollIntoView({ block: 'center', behavior: 'instant' })
+  }, [error, skipped, offer])
+
+  async function importFiles(files?: File[], assist = false) {
     if (active.current) return
     const sample = !files
     if (slips.length && fictional !== sample) { setError('Clear the current history before switching between example and your own payslips. Download a report first if you need it.'); return }
     const controller = new AbortController(); active.current = controller
-    setBusy(true); setError(''); setSkipped([]); setMessage('Opening payslips…')
+    setBusy(true); setError(''); setSkipped([]); setOffer([]); setMessage('Opening payslips…')
     let cancelListener: (() => void) | undefined
     const cancelled = new Promise<never>((_, reject) => {
       cancelListener = () => reject(new Error('Reading cancelled. Existing payslips are unchanged.'))
@@ -92,6 +124,7 @@ export default function PayslipDashboard() {
       if (!files.length || files.length > 20 || slips.length + files.length > MAX_PAYSLIPS) throw new Error('Choose 1–20 PDFs at a time, with no more than 100 payslips in this session.')
       const next: Payslip[] = []
       const unread: SkippedFile[] = []
+      const unknown: File[] = []
       for (let i = 0; i < files.length; i++) {
         if (controller.signal.aborted) throw new Error('Reading cancelled.')
         const opening = `Reading payslip ${i + 1} of ${files.length}`
@@ -104,33 +137,42 @@ export default function PayslipDashboard() {
           // A shipped example failing is a fault in this app, not in a file
           // somebody chose, and a half-loaded example is not an example.
           if (sample || controller.signal.aborted) throw e
-          unread.push({ name: files[i].name, reason: reasonFor(e) })
+          // A layout nothing recognises is not a failure, it is a question this
+          // app can still ask. Kept apart from files that are genuinely broken.
+          if (!assist && isUnknownLayout(e)) unknown.push(files[i])
+          else unread.push({ name: files[i].name, reason: reasonFor(e) })
         }
       }
       const { kept, skipped: notAdded } = appendPayslips(slips, next)
       const skipped = [...unread, ...notAdded]
-      // Nothing was added, so this is simply a failure and reads like one.
-      if (kept.length === slips.length) throw new Error(skipped[0]?.reason ?? 'Could not read these payslips.')
+      // Nothing was added and nothing can be offered, so this is simply a
+      // failure and reads like one. A batch with a question still to ask is not
+      // that, even when it added nothing: the question is the outcome.
+      if (kept.length === slips.length && !unknown.length) throw new Error(skipped[0]?.reason ?? 'Could not read these payslips.')
       if (sample) {
         if (next.some(s => confirmationIssues(s, kept).length)) throw new Error('The example could not be verified.')
         // Only shipped fictional examples are pre-reviewed. Every user file starts unconfirmed.
-        return { combined: kept.map(s => ({ ...s, confirmed: true })), skipped }
+        return { combined: kept.map(s => ({ ...s, confirmed: true })), skipped, unknown }
       }
-      return { combined: kept, skipped }
+      return { combined: kept, skipped, unknown }
     }
     try {
-      const { combined, skipped } = await Promise.race([work(), cancelled])
+      const { combined, skipped, unknown } = await Promise.race([work(), cancelled])
       if (!controller.signal.aborted) {
-        setSlips(combined); setYear('all'); setEmployer('all'); setSkipped(skipped)
-        setSelected(sample ? null : combined[slips.length].id)
-        setStage(sample ? 'summary' : 'review')
-        setMessage(sample ? 'Six fictional payslips loaded. Example figures are pre-reviewed.' : `${combined.length - slips.length} payslip(s) read. Confirm their figures before they appear in charts.`)
+        const added = combined.length - slips.length
+        setSlips(combined); setYear('all'); setEmployer('all'); setSkipped(skipped); setOffer(unknown)
+        setSelected(sample || !added ? null : combined[slips.length].id)
+        // Nothing new to check means there is nothing to move on to. Staying on
+        // this step keeps the question, and the file picker, where they are.
+        setStage(sample ? 'summary' : added ? 'review' : 'add')
+        setMessage(sample ? 'Six fictional payslips loaded. Example figures are pre-reviewed.'
+          : added ? `${added} payslip(s) read. Confirm their figures before they appear in charts.` : '')
       }
     } catch (e) { if (active.current === controller) { setError(e instanceof Error ? e.message : 'Could not read these payslips.'); setMessage('') } }
     finally { if (cancelListener) controller.signal.removeEventListener('abort', cancelListener); if (active.current === controller) { active.current = null; setBusy(false) } }
   }
   function focusStart() { requestAnimationFrame(() => { stageHeading.current?.focus({ preventScroll: true }); stageHeading.current?.scrollIntoView({ block: 'start' }) }) }
-  function clear() { setStage('add'); setClearRequested(false); setSlips([]); setRates([]); setSelected(null); setYear('all'); setEmployer('all'); setMessage('Pay history cleared.'); setError(''); setSkipped([]); focusStart() }
+  function clear() { setStage('add'); setClearRequested(false); setSlips([]); setRates([]); setSelected(null); setYear('all'); setEmployer('all'); setMessage('Pay history cleared.'); setError(''); setSkipped([]); setOffer([]); focusStart() }
   function manual() {
     if (fictional) { setError('Clear the example history before adding your own figures.'); return }
     if (slips.length >= MAX_PAYSLIPS) { setError('This session already has 100 payslips.'); return }
@@ -138,7 +180,7 @@ export default function PayslipDashboard() {
     setSlips([...slips, { id, name: 'Manual payslip', hash: null, text: '', facts, original: { ...facts }, confirmed: false, sample: false }])
     setSelected(id); setStage('review'); setYear('all'); setEmployer('all'); setError(''); setMessage('Enter the period figures from your payslip, then confirm them.')
   }
-  function openReview(id: string) { setSelected(id); setStage('review'); setYear('all'); setEmployer('all'); setError(''); setSkipped([]) }
+  function openReview(id: string) { setSelected(id); setStage('review'); setYear('all'); setEmployer('all'); setError(''); setSkipped([]); setOffer([]) }
   function confirmCurrent() {
     if (!current || confirmationIssues(current, slips).length) return
     const updated = slips.map(s => s.id === current.id ? { ...s, confirmed: true } : s)
@@ -165,7 +207,7 @@ export default function PayslipDashboard() {
         aria-label={['Add payslips', 'Check figures', 'View summary'][i]}
         aria-current={stage === step ? 'step' : undefined}
         disabled={busy || (step !== 'add' && !slips.length)}
-        onClick={() => { setStage(step); setError(''); setSkipped([]); setMessage(''); setClearRequested(false); if (step === 'add') focusStart(); if (step === 'review') setSelected(selected ?? pending[0]?.id ?? slips[0]?.id ?? null) }}>
+        onClick={() => { setStage(step); setError(''); setSkipped([]); setOffer([]); setMessage(''); setClearRequested(false); if (step === 'add') focusStart(); if (step === 'review') setSelected(selected ?? pending[0]?.id ?? slips[0]?.id ?? null) }}>
         <span className="pay-step-number" aria-hidden="true">{i + 1}</span>
         <span><strong>{['Add payslips', 'Check figures', 'View summary'][i]}</strong><small>{['Start with a file or your figures', pending.length ? `${pending.length} to check` : 'Make sure the amounts match', 'Understand and download your pay'][i]}</small></span>
       </button>)}
@@ -173,14 +215,31 @@ export default function PayslipDashboard() {
 
     {fictional && <aside className="pay-example-banner"><div><strong>You’re exploring an example</strong><p>These six fictional payslips show how the dashboard works.</p></div><button className="secondary-button" disabled={busy} onClick={clear}>Use my own payslips</button></aside>}
     <div className="pay-status"><p role="status">{message}</p>{busy && <button className="text-button" onClick={() => active.current?.abort()}>Cancel reading</button>}</div>
-    {error && <div role="alert" className="statement-error"><strong>We couldn’t add those payslips.</strong><p>{error}</p><p>You can enter the figures manually if your PDF layout is not supported.</p></div>}
-    {skipped.length > 0 && <div role="alert" className="statement-error">
-      <strong>{skipped.length} of those files {skipped.length === 1 ? 'was' : 'were'} not added.</strong>
-      <p>The rest were read and are waiting for you to check them. Add these again on their own, or enter their figures by hand.</p>
-      <ul>{skipped.map((file, i) => <li key={`${file.name}-${i}`}>{file.name} — {file.reason}</li>)}</ul>
+    {(error || skipped.length > 0 || offer.length > 0) && <div className="pay-alerts" ref={alerts} tabIndex={-1}>
+      {error && <div role="alert" className="statement-error"><strong>We couldn’t add those payslips.</strong><p>{error}</p><p>You can type the figures in yourself instead.</p></div>}
+      {skipped.length > 0 && <div role="alert" className="statement-error">
+        <strong>{skipped.length} of those files {skipped.length === 1 ? 'was' : 'were'} not added.</strong>
+        <p>The rest were read and are waiting for you to check them. Add these again on their own, or type their figures in by hand.</p>
+        <ul>{skipped.map((file, i) => <li key={`${file.name}-${i}`}>{file.name} — {file.reason}</li>)}</ul>
+      </div>}
+      {offer.length > 0 && <div role="alert" className="pay-offer">
+        <strong>{offer.length === 1 ? 'Your payslip is set out in a way this app has not seen before' : `${offer.length} of those payslips are set out in a way this app has not seen before`}</strong>
+        <ul>{offer.map((file, i) => <li key={`${file.name}-${i}`}>{file.name}</li>)}</ul>
+        <p>Nothing has left your device. There are two ways forward, and both end with you checking every figure.</p>
+        <dl className="pay-offer-choices">
+          <dt>Type the figures in yourself</dt>
+          <dd>Nothing is sent anywhere at all. You copy the amounts off your payslip.</dd>
+          <dt>Let our reader try</dt>
+          <dd>The <em>words</em> of {offer.length === 1 ? 'this payslip' : 'these payslips'} are sent to our server to be read — never the file, and never a picture of it. Nothing is stored. The reading comes back for you to check, and no figure counts until you confirm it.</dd>
+        </dl>
+        <div className="pay-offer-actions">
+          <button className="primary-button" disabled={busy} onClick={() => { const files = offer; setOffer([]); void importFiles(files, true) }}>Let our reader try</button>
+          <button className="secondary-button" disabled={busy} onClick={() => { setOffer([]); manual() }}>Type the figures in myself</button>
+        </div>
+      </div>}
     </div>}
 
-    {stage === 'add' && <PayslipStart headingRef={stageHeading} busy={busy} hasRecords={slips.length > 0} fictional={fictional} assist={assist} onAssist={setAssist} onManual={manual} onImport={files => void importFiles(files)} />}
+    {stage === 'add' && <PayslipStart headingRef={stageHeading} busy={busy} hasRecords={slips.length > 0} fictional={fictional} onManual={manual} onImport={files => void importFiles(files)} />}
 
     {stage === 'review' && <>
       <div className="pay-section-heading"><div><p className="eyebrow">Step 2 of 3</p><h2 ref={stageHeading} tabIndex={-1}>Check your figures</h2><p>{allConfirmed.length} of {slips.length} payslips checked. Match each amount to your original payslip.</p></div>{allConfirmed.length > 0 && <button className="secondary-button" onClick={() => setStage('summary')}>See checked totals</button>}</div>

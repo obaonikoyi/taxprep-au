@@ -1,7 +1,7 @@
 import type { Ref } from 'react'
-type Props = { headingRef: Ref<HTMLHeadingElement>; busy: boolean; hasRecords: boolean; fictional: boolean; assist: boolean; onAssist: (assist: boolean) => void; onManual: () => void; onImport: (files?: File[]) => void }
+type Props = { headingRef: Ref<HTMLHeadingElement>; busy: boolean; hasRecords: boolean; fictional: boolean; onManual: () => void; onImport: (files?: File[]) => void }
 
-export default function PayslipStart({ headingRef, busy, hasRecords, fictional, assist, onAssist, onManual, onImport }: Props) {
+export default function PayslipStart({ headingRef, busy, hasRecords, fictional, onManual, onImport }: Props) {
   async function downloadExample(layout: 'summary' | 'advice') {
     const { default: examples } = layout === 'summary'
       ? await import('../../../../../sample-data/payslips/examples.json')
@@ -15,46 +15,37 @@ export default function PayslipStart({ headingRef, busy, hasRecords, fictional, 
     <section className="pay-start-card">
       <span className="pay-card-icon" aria-hidden="true">↗</span>
       <h2 ref={headingRef} tabIndex={-1}>{hasRecords ? 'Add another payslip' : 'Start with your payslip'}</h2>
-      <p>Have your payslip ready. Add its figures, check them, then see your pay summary.</p>
-      <button className="primary-button" disabled={busy || fictional} onClick={onManual}>Enter figures manually <span aria-hidden="true">→</span></button>
-      <span className="pay-start-hint">Copy the figures shown on your payslip.</span>
-      <div className="pay-upload-option">
-        <h3>Have a PDF?</h3>
-        <p>Three documented layouts are read here on your device. For any other employer's layout, the assisted reader below can read it for you.</p>
-        <div className="pay-assist">
-          <label className="pay-assist-choice">
-            <input type="checkbox" checked={assist} disabled={busy || fictional} onChange={e => onAssist(e.target.checked)} />
-            <span>
-              <strong>Read any layout for me</strong>
-              <small>
-                For a layout this app does not know, the text of that payslip is sent to our server to be read, and the reading comes back for you to check.
-                Your PDF never leaves this device, nothing is stored, and figures still count for nothing until you confirm them.
-                Leave this off and any unknown layout is simply not read — you enter those figures yourself, and nothing leaves your device at all.
-              </small>
-            </span>
-          </label>
-        </div>
-        <label className="statement-file pay-file-secondary">Choose payslips or photos<input aria-label="Choose payslips or photos" type="file" accept=".pdf,application/pdf,.png,.jpg,.jpeg,image/png,image/jpeg" multiple disabled={busy || fictional} onChange={e => { const files = [...(e.target.files ?? [])]; e.target.value = ''; if (files.length) onImport(files) }} /></label>
-        <details className="pay-format"><summary>Which files work?</summary>
-          <p>A one-page PDF of up to 2 MB, or a PNG or JPG photo of up to 5 MB, and up to 20 files at once.</p>
-          <p>
-            A photo or a scan is read on this device by recognising the words in the picture. Nothing is uploaded and no picture leaves your phone or computer.
-            Recognising a picture takes a few seconds and can misread a figure, so check every field before you confirm it — a straight, sharp photo of the whole payslip in good light reads best.
-          </p>
-          <ul className="pay-format-list">
-            <li>
-              <strong>PAYSLIP SUMMARY v1</strong>
-              <p>One labelled line per figure.</p>
-              <button className="text-button" disabled={busy} onClick={() => void downloadExample('summary')}>Download example</button>
-            </li>
-            <li>
-              <strong>PAY ADVICE v2</strong>
-              <p>A table with <em>This pay</em> and <em>Year to date</em> columns. Only the <em>This pay</em> column is read — year-to-date figures are never used.</p>
-              <button className="text-button" disabled={busy} onClick={() => void downloadExample('advice')}>Download example</button>
-            </li>
-          </ul>
-        </details>
-      </div>
+      {/*
+        * One thing to do, said in one line. What used to be here asked a person
+        * to understand three separate controls — a manual-entry button, a
+        * privacy checkbox and a file picker — before they could do anything at
+        * all, and named "documented layouts" to explain the difference. Nobody
+        * arrives knowing what a layout is. They arrive holding a payslip.
+        */}
+      <p>Add your payslip and it fills in the figures. You check them, then you see your pay.</p>
+      <label className="statement-file pay-file-main">Choose your payslip<input aria-label="Choose payslips or photos" type="file" accept=".pdf,application/pdf,.png,.jpg,.jpeg,image/png,image/jpeg" multiple disabled={busy || fictional} onChange={e => { const files = [...(e.target.files ?? [])]; e.target.value = ''; if (files.length) onImport(files) }} /></label>
+      <span className="pay-start-hint">A PDF, or a photo taken on your phone. Your file stays on this device.</span>
+      {/*
+        * Typing it all in by hand is a real answer — a paper payslip, a format
+        * nothing can read — but it is the harder road, so it is offered as one
+        * rather than presented as the way in.
+        */}
+      <p className="pay-start-alt">No file to hand? <button className="text-button" disabled={busy || fictional} onClick={onManual}>Type the figures in yourself</button></p>
+      <details className="pay-format"><summary>What files can I use?</summary>
+        <p>A PDF of one page, up to 2 MB. Or a photo of your payslip — PNG or JPG, up to 5 MB. Up to 20 files at once.</p>
+        <p>
+          A photo is read on this device by recognising the words in the picture. Nothing is uploaded and no picture leaves your phone or computer.
+          It takes a few seconds and it can misread a figure, so check every one before you confirm it. A straight, sharp photo of the whole payslip in good light reads best.
+        </p>
+        <ul className="pay-format-list">
+          <li>
+            <strong>Want to try it first?</strong>
+            <p>Download a made-up payslip and add it like your own.</p>
+            <button className="text-button" disabled={busy} onClick={() => void downloadExample('summary')}>Download a simple one</button>
+            <button className="text-button" disabled={busy} onClick={() => void downloadExample('advice')}>Download one with a table</button>
+          </li>
+        </ul>
+      </details>
     </section>
     {!hasRecords && <section className="pay-start-card pay-demo-card">
       <span className="pay-demo-label">Just looking around?</span><h2>See it with an example</h2><p>No files needed. Explore six made-up payslips and see what your dashboard could look like.</p>

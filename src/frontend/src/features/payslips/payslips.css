@@ -46,19 +46,14 @@
 .pay-start-card > p { max-width: 50ch; margin-bottom: var(--space-5); color: var(--ink-muted); font-size: var(--text-base); }
 .pay-card-icon { display: grid; place-items: center; width: 42px; height: 42px; margin-bottom: var(--space-5); border-radius: var(--radius-md); color: var(--brand-ink); background: var(--brand-tint-strong); font-size: var(--text-lg); }
 .pay-start-hint { display: block; margin-top: var(--space-3); color: var(--ink-muted); font-size: var(--text-xs); line-height: var(--leading-normal); }
-.pay-upload-option { margin-top: var(--space-6); padding-top: var(--space-6); border-top: 1px solid var(--line); }
-.pay-upload-option h3 { font-size: var(--text-base); }
-.pay-upload-option > p, /* The choice that changes what leaves the device. It sits above the file
- * picker, not below it: a person cannot consent to something they are shown
- * after they have already chosen the file. */
-.pay-assist { margin: var(--space-4) 0 var(--space-3); padding: var(--space-4); border: 1px solid var(--info-line); border-radius: var(--radius-md); background: var(--info-tint); }
+/* Shared with the bank-statement screen, which still asks up front because
+ * there is no on-device layout to try first. */
 .pay-assist-choice { display: flex; align-items: start; gap: var(--space-3); cursor: pointer; }
 .pay-assist-choice input { margin-top: 3px; flex: 0 0 auto; }
 .pay-assist-choice strong { display: block; color: var(--ink); font-size: var(--text-sm); }
 .pay-assist-choice small { display: block; margin-top: var(--space-2); color: var(--ink-body); font-size: var(--text-xs); line-height: var(--leading-normal); }
 
 .pay-format p { color: var(--ink-muted); font-size: var(--text-sm); line-height: var(--leading-normal); }
-.pay-file-secondary { border-color: var(--line-strong); color: var(--brand-ink); background: var(--surface); }
 .pay-format { margin-top: var(--space-4); font-size: var(--text-xs); line-height: var(--leading-normal); }
 .pay-format summary { font-weight: 650; cursor: pointer; }
 
@@ -498,3 +493,26 @@
 @media (max-width: 620px) {
   .pay-rate-finding dl > div { grid-template-columns: 1fr; gap: var(--space-1); }
 }
+
+/* ------------------------------------------------- an unrecognised layout --
+ * The one place the app asks for something rather than reporting something, so
+ * it is not styled as an error: nothing has gone wrong and nothing is lost.
+ * What each choice actually does is spelled out above the buttons, because the
+ * button labels alone cannot carry it.
+ */
+.pay-alerts:focus { outline: 3px solid var(--focus); outline-offset: 4px; border-radius: var(--radius-md); }
+.pay-offer { margin-top: var(--space-5); padding: var(--space-5); border: 1px solid var(--info-line); border-radius: var(--radius-md); background: var(--info-tint); }
+.pay-offer > strong { display: block; color: var(--ink); font-size: var(--text-base); line-height: var(--leading-snug); }
+.pay-offer > ul { margin: var(--space-3) 0; padding-left: var(--space-5); color: var(--ink-body); font-size: var(--text-sm); }
+.pay-offer > p { margin: var(--space-3) 0; color: var(--ink-body); font-size: var(--text-sm); line-height: var(--leading-normal); }
+.pay-offer-choices { margin: var(--space-4) 0; font-size: var(--text-sm); line-height: var(--leading-normal); }
+.pay-offer-choices dt { margin-top: var(--space-3); color: var(--ink); font-weight: 700; }
+.pay-offer-choices dd { margin: var(--space-1) 0 0; color: var(--ink-body); }
+.pay-offer-actions { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-5); }
+
+/* The way in. A file picker that looked like an aside, under a paragraph about
+ * layouts, was read as the awkward option — so the awkward option is the one
+ * people took. */
+.pay-file-main { width: 100%; }
+.pay-start-alt { margin-top: var(--space-5); color: var(--ink-muted); font-size: var(--text-sm); }
+.pay-format-list .text-button + .text-button { margin-left: var(--space-4); }

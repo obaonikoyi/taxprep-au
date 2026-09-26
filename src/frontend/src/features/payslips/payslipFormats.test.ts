@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest'
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs'
 import advices from '../../../../../sample-data/payslips/advice-examples.json'
 import { totals, validateFacts, type Payslip } from './payslip'
-import { parsePayslip, textRows } from './payslipReader'
+import { isUnknownLayout, parsePayslip, textRows } from './payslipReader'
 import { detectFormat, type TextRow } from './payslipFormats'
 
 let slips: Payslip[]
@@ -137,8 +137,19 @@ describe('format detection', () => {
     expect(detectFormat(['PAYSLIP SUMMARY v12'], true)).toBeNull()
   })
 
-  it('names both supported layouts when it cannot read a file', () => {
-    expect(() => parsePayslip(['A scanned payslip'], 'x', 'x')).toThrow(/PAYSLIP SUMMARY v1 and PAY ADVICE v2/)
+  /*
+   * It used to name the layouts it knows — "PAYSLIP SUMMARY v1 and PAY ADVICE
+   * v2" — to somebody who had just chosen a file off their desktop. That told
+   * nobody anything they could act on. What has to survive is not the wording
+   * but the distinction: an unrecognised layout is the one failure the app can
+   * still do something about, so it must stay knowable apart from a torn file.
+   */
+  it('marks an unrecognised layout as such, so it can be offered rather than refused', () => {
+    let raised: unknown
+    try { parsePayslip(['A scanned payslip'], 'x', 'x') } catch (error) { raised = error }
+    expect(isUnknownLayout(raised)).toBe(true)
+    expect(isUnknownLayout(new Error('The selected file is not a PDF.'))).toBe(false)
+    expect(isUnknownLayout('not an error at all')).toBe(false)
   })
 
   it('rejects a v2 advice that repeats a labelled field', () => {

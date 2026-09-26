@@ -17,6 +17,27 @@ export async function verifyPayslips(context, base, artifacts) {
   const advice = index => ({ name: advices[index].name, mimeType: 'application/pdf', buffer: Buffer.from(advices[index].pdfBase64, 'base64') });
   const adviceV3 = index => ({ name: advicesV3[index].name, mimeType: 'application/pdf', buffer: Buffer.from(advicesV3[index].pdfBase64, 'base64') });
   const ratePanel = () => page.getByRole('region', { name: 'Pay rate checks' });
+  /*
+   * The question the app asks when it cannot recognise a layout, and the three
+   * things that make it an answer rather than a shrug: it is on the screen, it
+   * has the keyboard, and it says which file it means.
+   *
+   * This used to be an error rendered above the start card — correct, specific
+   * and, by the time somebody had scrolled down to the file picker, 427 pixels
+   * above the top of the window with nothing moved and nothing focused. From
+   * the chair it was indistinguishable from the app doing nothing at all, and
+   * that is exactly how it was reported. Asserting the words alone would pass
+   * on that bug, so the geometry is asserted too.
+   */
+  const offered = async name => {
+    const panel = page.locator('.pay-offer');
+    await panel.waitFor({ timeout: 30000 });
+    const box = await panel.boundingBox();
+    const height = await page.evaluate(() => window.innerHeight);
+    assert.ok(box && box.y >= 0 && box.y < height, `the question is on the screen, not at y=${box?.y} in a ${height}px window`);
+    assert.equal(await page.evaluate(() => document.activeElement?.className ?? ''), 'pay-alerts', 'the question has the keyboard');
+    assert.ok((await panel.innerText()).includes(name), `the question names ${name}`);
+  };
   try {
     await page.goto(base.href);
     await page.getByRole('heading', { name: 'Understand your payslip.', exact: true }).waitFor();
@@ -372,7 +393,7 @@ export async function verifyPayslips(context, base, artifacts) {
     assert.deepEqual(await totals(), ['$3,900.00', '$3,260.00', '$600.00', '$468.00']);
 
     // Manual entry, scoped results, empty filter recovery and report corrections.
-    await button('Add another payslip').click(); await button('Enter figures manually').click();
+    await button('Add another payslip').click(); await button('Type the figures in yourself').click();
     await page.locator('.pay-review').getByLabel('Employer', { exact: true }).fill('Manual example');
     for (const [label, value] of [['Period start', '2026-06-01'], ['Period end', '2026-06-14'], ['Pay date', '2026-06-16'], ['Gross pay (AUD)', '100'], ['Tax withheld (AUD)', '0'], ['Other deductions (AUD)', '0'], ['Net pay (AUD)', '100']]) await page.locator('.pay-review').getByLabel(label, { exact: true }).fill(value);
     await button('Confirm and continue').click();
@@ -478,6 +499,37 @@ export async function verifyPayslips(context, base, artifacts) {
     await button('Clear pay history').click(); await button('Yes, clear history').click();
     assert.equal(await page.locator('.pay-rate-panel').count(), 0);
 
+    // A PDF with real text in a layout no documented format matches.
+    const unknown = JSON.parse(readFileSync(new URL('../../../sample-data/payslips/unknown-layout-example.json', import.meta.url), 'utf8'));
+    const unknownPdf = Buffer.from(unknown.pdfBase64, 'base64');
+
+    /*
+     * A payslip whose layout nothing here recognises, chosen by somebody who
+     * has not been asked about anything yet — which is every first-time
+     * visitor, because the question that used to sit above the file picker is
+     * gone. The app has to come back with something they can see and act on.
+     *
+     * Nothing is stubbed here and nothing may be sent: the whole exchange is
+     * this device trying the layouts it knows, failing, and asking. The
+     * journey's exact request count at the end is what enforces that.
+     */
+    /*
+     * Scrolled to the bottom first, which is where somebody ends up after
+     * reading "What files can I use?" — and is the state the original report
+     * came from. Choosing a file from the top of the page proves nothing here:
+     * the answer lands near the top either way. It is only from down the page
+     * that a reply which does not move the window is invisible.
+     */
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.setInputFiles('input[aria-label="Choose payslips or photos"]', { name: unknown.name, mimeType: 'application/pdf', buffer: unknownPdf });
+    await offered(unknown.name);
+    // Declining is a real answer, and it leads somewhere: the figures screen,
+    // with nothing sent. It used to lead to a message off the top of the page.
+    await button('Type the figures in myself').click();
+    await page.getByRole('heading', { name: 'Check your figures' }).waitFor();
+    assert.equal(await page.getByLabel('Gross pay (AUD)', { exact: true }).inputValue(), '');
+    await button('Clear pay history').click(); await button('Yes, clear history').click();
+
     /*
      * The assisted reader, end to end, with the server's answer stubbed.
      *
@@ -494,27 +546,36 @@ export async function verifyPayslips(context, base, artifacts) {
         gross: '2000.00', withheld: '300.00', deductions: '0.00', net: '1700.00', super: '230.00', hours: '64.00', rate: '31.25', ordinary: '2000.00',
       } }) });
     });
-    // A PDF with real text in a layout no documented format matches.
-    const unknown = JSON.parse(readFileSync(new URL('../../../sample-data/payslips/unknown-layout-example.json', import.meta.url), 'utf8'));
-    const unknownPdf = Buffer.from(unknown.pdfBase64, 'base64');
-    await page.locator('.pay-assist-choice input').check();
     /*
-     * Two files, and one of them cannot be read at all. This used to cost the
-     * other one: a batch was all or nothing, so a single bad file threw away
-     * every payslip already read beside it. Now the unreadable one is named and
-     * the rest are kept.
+     * One batch, three fates, all at once: a documented layout is read and
+     * kept, a torn file is named, and a layout nothing recognises becomes a
+     * question. A batch used to be all or nothing, so one bad file threw away
+     * every payslip read beside it; and an unrecognised one used to be a
+     * failure like any other. Neither is true now, and the three outcomes have
+     * to be able to happen together or the batch is still all or nothing.
      */
     await page.setInputFiles('input[aria-label="Choose payslips or photos"]', [
+      file(0),
       { name: 'torn.pdf', mimeType: 'application/pdf', buffer: Buffer.from('not a pdf at all') },
       { name: unknown.name, mimeType: 'application/pdf', buffer: unknownPdf },
     ]);
-    await page.getByRole('heading', { name: 'Check your figures' }).waitFor({ timeout: 30000 });
+    /*
+     * The consent is asked here rather than by a checkbox above the file
+     * picker, and it is asked about this file by name. Nothing has been sent
+     * at this point: the layouts were tried on this device and none matched.
+     */
+    await offered(unknown.name);
+    assert.equal(posted, null, 'nothing is sent before the question is answered');
     const notAdded = page.getByRole('alert').filter({ hasText: 'not added' });
     await notAdded.waitFor();
     const notAddedText = await notAdded.innerText();
     assert.match(notAddedText, /torn\.pdf/, `the file that failed is named: ${notAddedText}`);
     assert.match(notAddedText, /not a PDF/, `and why: ${notAddedText}`);
-    assert.equal(await reviewCount(), 1, 'the payslip beside it was kept');
+    assert.equal(notAddedText.includes(unknown.name), false, `an unrecognised layout is a question, not a failure: ${notAddedText}`);
+    assert.equal(await reviewCount(), 1, 'the payslip read beside them was kept');
+    await button('Let our reader try').click();
+    await page.getByRole('heading', { name: 'Check your figures' }).waitFor({ timeout: 30000 });
+    assert.equal(await reviewCount(), 2, 'and it is still there after the question is answered');
     assert.ok(posted && typeof posted.text === 'string' && posted.text.length > 40, `the request carried the extracted text: ${JSON.stringify(posted)?.slice(0, 120)}`);
     assert.equal(/%PDF|JVBER/.test(posted.text), false, 'the request carried text, not the PDF itself');
     // The proposal is in the fields, for the person to check — not applied.
@@ -548,8 +609,9 @@ export async function verifyPayslips(context, base, artifacts) {
         gross: '2000.00', withheld: '300.00', deductions: '0.00', net: '1700.00', super: '987.65', hours: '64.00', rate: '31.25', ordinary: '2000.00',
       } }) });
     });
-    await page.locator('.pay-assist-choice input').check();
     await page.setInputFiles('input[aria-label="Choose payslips or photos"]', { name: unknown.name, mimeType: 'application/pdf', buffer: unknownPdf });
+    await offered(unknown.name);
+    await button('Let our reader try').click();
     await page.getByRole('heading', { name: 'Check your figures' }).waitFor({ timeout: 30000 });
     const unfound = page.locator('.pay-unfound');
     await unfound.waitFor();
@@ -703,7 +765,7 @@ export async function verifyPayslips(context, base, artifacts) {
     assert.deepEqual(posts.map(r => new URL(r.url).pathname),
       ['/api/payslip/read', '/api/payslip/read', '/api/contract/read', '/api/contract/read'],
       `only the readings the person asked for were posted anywhere: ${posts.map(r => r.method + ' ' + r.url).join(', ')}`);
-    const result = { passed: true, guidedSteps: true, automaticBatchReview: true, noUnconfirmedZeroTotals: true, manualEntry: true, correctionInvalidates: true, duplicateBlocked: true, unreadableBatchAddsNothing: true, batchKeepsWhatItRead: true, payslipFromPhoto: true, readingCheckedAgainstDocument: true, rateReadFromContract: true, contractRefusalRespected: true, payRiseIsNotAQuestion: true, payRiseRecordedInOneClick: true, exampleToOwnData: true, chartSwitching: true, yearAndEmployerFilters: true, emptyFilterRecovery: true, offlineExport: true, payOutlook: true, payOutlookWithholdingNotScaled: true, payOutlookMobile: true, taxReadiness: true, taxReadinessWholeYear: true, taxReadinessLocked: true, taxReadinessExport: true, taxReadinessMobile: true, yearEndReconciliation: true, yearEndNoDoubleCount: true, annualStatementPdfExtraction: true, annualStatementReviewGate: true, annualStatementDuplicateBlocked: true, annualStatementProvenance: true, yearEndProvisionalExcluded: true, yearEndExport: true, yearEndMobile: true, yearEndPreparationHub: true, yearEndBankChecksNetOnly: true, yearEndExpenseCoverage: true, portableWorkspaceHandoff: true, handoffYearMismatchBlocked: true, handoffExplicitApply: true, handoffDuplicateBlocked: true, handoffNoDoubleCount: true, yearEndPreparationExport: true, yearEndPreparationMobile: true, encryptedPreparationBackup: true, encryptedBackupWrongPassphraseBlocked: true, encryptedBackupExplicitRestore: true, payAdviceV2Layout: true, payAdviceV2CurrentPeriodOnly: true, payAdviceV2ReportRecordsLayout: true, payAdviceV3EarningsBlock: true, payRateSelfCheckWithoutRecord: true, payRateAgainstRecordedRate: true, payRateSilentChange: true, payRateReportNamesWhatWasNotChecked: true, payRateNoEmployerCharacterisation: true, thirdPartyRefused, clearConfirmation: true, clearRefreshAndWorkspaceChange: true, mobileOverflow: false, mobileReviewActionsVisible: true, documentUploads: 0, modelRequests: 0, pageErrors: errors };
+    const result = { passed: true, guidedSteps: true, automaticBatchReview: true, noUnconfirmedZeroTotals: true, manualEntry: true, correctionInvalidates: true, duplicateBlocked: true, unreadableBatchAddsNothing: true, batchKeepsWhatItRead: true, unknownLayoutAsksRatherThanRefuses: true, unknownLayoutAnswerIsOnScreen: true, decliningTheReaderGoesToManualEntry: true, payslipFromPhoto: true, readingCheckedAgainstDocument: true, rateReadFromContract: true, contractRefusalRespected: true, payRiseIsNotAQuestion: true, payRiseRecordedInOneClick: true, exampleToOwnData: true, chartSwitching: true, yearAndEmployerFilters: true, emptyFilterRecovery: true, offlineExport: true, payOutlook: true, payOutlookWithholdingNotScaled: true, payOutlookMobile: true, taxReadiness: true, taxReadinessWholeYear: true, taxReadinessLocked: true, taxReadinessExport: true, taxReadinessMobile: true, yearEndReconciliation: true, yearEndNoDoubleCount: true, annualStatementPdfExtraction: true, annualStatementReviewGate: true, annualStatementDuplicateBlocked: true, annualStatementProvenance: true, yearEndProvisionalExcluded: true, yearEndExport: true, yearEndMobile: true, yearEndPreparationHub: true, yearEndBankChecksNetOnly: true, yearEndExpenseCoverage: true, portableWorkspaceHandoff: true, handoffYearMismatchBlocked: true, handoffExplicitApply: true, handoffDuplicateBlocked: true, handoffNoDoubleCount: true, yearEndPreparationExport: true, yearEndPreparationMobile: true, encryptedPreparationBackup: true, encryptedBackupWrongPassphraseBlocked: true, encryptedBackupExplicitRestore: true, payAdviceV2Layout: true, payAdviceV2CurrentPeriodOnly: true, payAdviceV2ReportRecordsLayout: true, payAdviceV3EarningsBlock: true, payRateSelfCheckWithoutRecord: true, payRateAgainstRecordedRate: true, payRateSilentChange: true, payRateReportNamesWhatWasNotChecked: true, payRateNoEmployerCharacterisation: true, thirdPartyRefused, clearConfirmation: true, clearRefreshAndWorkspaceChange: true, mobileOverflow: false, mobileReviewActionsVisible: true, documentUploads: 0, modelRequests: 0, pageErrors: errors };
     writeFileSync(artifacts + 'payslip-evaluation.json', JSON.stringify(result, null, 2)); return result;
   } catch (e) { await page.screenshot({ path: artifacts + 'payslip-failure.png', fullPage: true }); console.error((await page.locator('body').innerText()).slice(-10000)); throw e } finally { await page.close() }
 }

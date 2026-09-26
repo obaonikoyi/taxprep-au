@@ -1,6 +1,6 @@
 import { PAYSLIP_VERSION, type Payslip } from './payslip'
 import { ASSISTED_FORMAT, readWithAssistance } from './assistedReader'
-import { detectFormat, FORMATS, type TextRow, type TextToken } from './payslipFormats'
+import { detectFormat, type TextRow, type TextToken } from './payslipFormats'
 import { isPicture, MAX_PICTURE_BYTES, pictureCanvas, recogniseRows } from './payslipPicture'
 export type { TextRow, TextToken } from './payslipFormats'
 
@@ -19,7 +19,16 @@ export function textLines(tokens: TextToken[]): string[] {
   return textRows(tokens).map(r => r.text)
 }
 
-const unsupported = () => new Error(`This PDF layout is not supported yet. The reader currently understands ${FORMATS.map(f => f.marker).join(' and ')}. Enter the figures manually for any other layout.`)
+/*
+ * A layout nothing here recognises. Not a broken file and not a failure — the
+ * one outcome the app can still do something about, so the caller has to be
+ * able to tell it apart from a torn PDF. Matched on a stable opening rather
+ * than the whole sentence, so the wording can be improved without the
+ * behaviour quietly changing with it.
+ */
+export const UNKNOWN_LAYOUT = 'This payslip is set out in a way this app has not seen before'
+export const isUnknownLayout = (error: unknown) => error instanceof Error && error.message.startsWith(UNKNOWN_LAYOUT)
+const unsupported = () => new Error(`${UNKNOWN_LAYOUT}. You can type its figures in yourself.`)
 
 export function parsePayslip(lines: string[], hash: string, name: string, sample = false, rows?: TextRow[], recognised = false): Payslip {
   const format = detectFormat(lines, recognised)
@@ -118,7 +127,7 @@ async function fromRows(rows: TextRow[], hash: string, name: string, sample: boo
   try {
     return { ...parsePayslip(lines, hash, name, sample, rows, fromPicture), fromPicture }
   } catch (error) {
-    if (!assist || !(error instanceof Error) || !error.message.startsWith('This PDF layout is not supported')) throw error
+    if (!assist || !isUnknownLayout(error)) throw error
     const text = lines.join('\n')
     if (text.length > 20_000) throw new Error('This payslip contains too much text.')
     const facts = await readWithAssistance(text, signal)
