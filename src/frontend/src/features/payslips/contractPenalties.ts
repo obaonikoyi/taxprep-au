@@ -12,7 +12,7 @@
  * reported as not compared, never assumed to be fine; a contract term with no
  * matching line is reported as not seen, never treated as unpaid.
  */
-import { rateValue, type EarningsLine } from './payslipEarnings'
+import { lineHours, rateValue, type EarningsLine } from './payslipEarnings'
 
 /** As the contract reader returns it. Exactly one of multiplier and amount. */
 export type ContractPenalty = { kind: string; multiplier: string; amount: string; quote: string }
@@ -23,6 +23,14 @@ export type PenaltyKind = (typeof PENALTY_KINDS)[number]
 export const kindLabels: Record<PenaltyKind, string> = {
   saturday: 'Saturday', sunday: 'Sunday', publicHoliday: 'Public holiday',
   evening: 'Evening', night: 'Night', overtime: 'Overtime',
+}
+
+/* The same words inside a sentence. A day of the week keeps its capital
+ * wherever it sits; the rest are ordinary nouns and lowercasing the label
+ * blindly would give "The saturday rate", which reads like a typo. */
+export const kindInSentence: Record<PenaltyKind, string> = {
+  saturday: 'Saturday', sunday: 'Sunday', publicHoliday: 'public holiday',
+  evening: 'evening', night: 'night', overtime: 'overtime',
 }
 
 /*
@@ -66,6 +74,9 @@ export type PenaltyComparison = {
   label: string
   /** What this line was actually paid at, in ten-thousandths. */
   paid: number
+  /** The line's hours, in ten-thousandths, or null when it prints none. A gap
+   * of a few cents an hour means nothing until it is multiplied out. */
+  hours: number | null
   /** What the contract's term comes to, in ten-thousandths. */
   expected: number
   agrees: boolean
@@ -114,7 +125,7 @@ export function checkAgainstContract(lines: EarningsLine[], ordinary: number | n
       : rateValue(term.amount)
     if (expected === null) { uncompared.push(line.label); continue }
     compared.push({
-      kind, label: line.label, paid, expected,
+      kind, label: line.label, paid, expected, hours: lineHours(line.hours),
       agrees: Math.abs(paid - expected) <= RATE_TOLERANCE,
       basis: term.multiplier ? 'multiplier' : 'amount',
       multiplier: term.multiplier,

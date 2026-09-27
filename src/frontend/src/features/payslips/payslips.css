@@ -541,3 +541,10 @@
   .pay-earnings { padding: var(--space-4); overflow-x: auto; }
   .pay-earnings-table { min-width: 520px; }
 }
+
+/* The penalty terms read from a contract, shown before they can raise
+ * anything, each beside the sentence it came from. */
+.pay-rate-penalties { margin: var(--space-3) 0 0; font-size: var(--text-sm); }
+.pay-rate-penalties dt { margin-top: var(--space-3); color: var(--ink); font-weight: 700; }
+.pay-rate-penalties dd { margin: var(--space-1) 0 0; color: var(--ink-body); }
+.pay-rate-penalties blockquote { margin: var(--space-2) 0 0; padding-left: var(--space-3); border-left: 2px solid var(--line-strong); color: var(--ink-muted); font-size: var(--text-xs); line-height: var(--leading-normal); }

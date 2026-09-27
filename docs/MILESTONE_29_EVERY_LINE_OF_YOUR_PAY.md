@@ -130,12 +130,90 @@ to a dollar fails 3 tests; putting the figure pattern back to two decimals fails
 running app: the table renders, the figures are right, the discrepancy in the
 existing third advice is found and named, and **no request leaves the device**.
 
+## The contract half
+
+The case this came from is a contract that states Saturday, Sunday and
+public-holiday rates, and an app that recorded one number. The contract reader
+now returns those terms beside the rate:
+
+```json
+{ "kind": "saturday", "multiplier": "1.5", "amount": "",
+  "quote": "Work performed on a Saturday is paid at time and a half." }
+```
+
+A contract says it one of two ways — *"time and a half"* or *"$58.50 an hour"* —
+so exactly one of multiplier and amount carries a figure; both, or neither, and
+the entry is dropped. The kinds are a closed enum in the schema, so a day this
+app has no rule for cannot come back at all.
+
+**A casual loading is deliberately not one of them.** It applies to every
+ordinary hour rather than to a kind of day, so it changes what the ordinary
+rate *is* rather than sitting on top of it. The existing rule refusing a loaded
+rate still covers it, unchanged.
+
+**Verification is the rate's defence applied harder.** Every penalty carries its
+own sentence, every sentence must be in the contract, and one that is not
+**discards all of them** — an answer that will supply a sentence the contract
+does not contain has not earned belief about the others. A reading whose own
+rate sentence could not be found is not believed about penalties either.
+
+Why that strictness: a wrong ordinary rate gives one baseline nobody may act
+on. A wrong penalty gives a specific claim about a specific Saturday, about a
+term that may never have been in the contract.
+
+### What it says
+
+> **1 question to ask**
+>
+> **The Saturday rate on this payslip is not the rate your contract states**
+> Kingfisher Example Care · 2026-07-01 to 2026-07-14
+>
+> **YOUR RECORD** Your contract states 1.5 times your ordinary rate, which comes
+> to $43.14 an hour: *"Work performed on a Saturday is paid at time and a half."*
+> **THIS PAYSLIP** The "Saturday hours" line was paid at $40.2640 an hour.
+> **THE DIFFERENCE** $2.88 an hour below the rate that sentence states. Over the
+> 8.00 hours on that line, that is $23.01.
+>
+> Xoba Paycheck compares one line on this payslip with one sentence in your document.
+> It does not know your award or agreement, whether a different term covers this
+> shift, or how those hours were classified.
+
+The gap is given in cents and then multiplied out. Four decimal places in a
+money figure reads as noise, and a few cents an hour means nothing to anybody
+until it is a number over hours actually worked. The rate itself is printed as
+the payslip prints it, because that is the document's own figure.
+
+### What it will not conclude
+
+| Situation | What happens |
+|---|---|
+| Penalty line, no matching contract term | Nothing. Never "fine" |
+| Contract term, no matching payslip line | Nothing. **Never "unpaid"** |
+| A multiplier with no recorded ordinary rate | Nothing. Never a guessed base |
+| A line whose rate equals the term | Nothing |
+
+The second row is the one that matters. A fortnight with no Sunday shift owes
+no Sunday penalty, and raising it would be an accusation built out of an empty
+roster.
+
+Which day a line is for is read from its label, and the patterns are **ordered**,
+because a label can carry two of the words. *"Saturday overtime"* is overtime,
+and a contract's Saturday rate is not the rate for it. Reordering the patterns
+fails a test.
+
+Verified in a browser end to end: a shift-work advice, a contract read with an
+evening term at ×1.1 and a Saturday term at ×1.5. The afternoon line matches
+×1.1 exactly and raises nothing; the Saturday line is $2.88 an hour below and
+raises one question. No page errors.
+
+The banned-word test covers this finding's every string, including the message
+the person can send, which asks and never asserts an entitlement.
+
 ## Still open
 
-**The contract half.** The case this came from is a contract that states
-Saturday, Sunday and public-holiday rates, and an app that records one ordinary
-rate. Until the contract reader takes those too, each penalty line is described
-against the ordinary rate and compared with nothing. That is the next piece.
+**The assisted reader** returns the twelve fields and no table, so a payslip
+read that way shows no lines and no penalty comparison. The documented layouts
+are unaffected.
 
 **The assisted reader** returns the twelve fields and no table, so a payslip
 read that way shows no lines. The documented layouts are unaffected.

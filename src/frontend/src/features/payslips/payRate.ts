@@ -15,6 +15,8 @@
  * employer or the user's situation. Keep it that way.
  */
 import { aud, dateValue, employerKey, hoursText, hoursValue, money, type Payslip } from './payslip'
+import { lineAmount, rateText as rateFigure } from './payslipEarnings'
+import { checkAgainstContract, kindInSentence, type ContractPenalty } from './contractPenalties'
 
 /** Payroll systems round legitimately and differently. Anything at or below
  * this is rounding, not a question worth putting to a payroll officer. */
@@ -40,6 +42,13 @@ export type RateRecord = {
   to: string
   source: RateSource
   note: string
+  /*
+   * The penalty rates the contract states, when this record came from one that
+   * was read rather than typed. Each carries the sentence it was read from and
+   * has already been checked against the document. Absent on a typed record,
+   * and absent on a contract that states none — which is most of them.
+   */
+  penalties?: ContractPenalty[]
 }
 
 /*
@@ -110,7 +119,7 @@ export function recordFor(records: RateRecord[], employer: string, date: string)
 export const expectedCents = (hoursHundredths: number, rateCents: number) => Math.round(hoursHundredths * rateCents / 100)
 
 export type FindingKind = 'rate-differs' | 'amount-differs' | 'payslip-self' | 'rate-changed'
-  | 'rate-above-record' | 'amount-above-record'
+  | 'rate-above-record' | 'amount-above-record' | 'penalty-differs'
 
 /*
  * Being paid more than you recorded is not the same kind of thing as being paid
@@ -182,6 +191,8 @@ export type CheckState = {
 
 const periodText = (slip: Payslip) => `${slip.facts.periodStart} to ${slip.facts.periodEnd}`
 const ASK = 'Ask your employer’s payroll contact about this pay period, and keep this payslip.'
+/** A rate held in ten-thousandths, printed the way a payslip prints one. */
+const rateTo4 = (tenThousandths: number) => rateFigure(tenThousandths)
 const UPDATE = 'Nothing to ask anybody. Update your recorded rate so later payslips are compared with the right one.'
 /*
  * Said once, plainly, and without alarm. An increase is almost always a rise —
@@ -217,6 +228,56 @@ export function rateChecks(slips: Payslip[], records: RateRecord[], issuesFor: (
     const record = recordFor(records, f.employer, f.periodStart)
     const recorded = record ? hourlyCents(record) : null
     const compared: string[] = []
+
+    /*
+     * 0 · Penalty lines against the terms the contract states for them.
+     *
+     * This is the only check that looks past the ordinary line. It exists
+     * because on a shift worker's payslip the ordinary line can be a tenth of
+     * the pay, so a rate check that stops there has checked almost nothing.
+     *
+     * Both sides are the person's own documents: a rate printed on a payslip
+     * line, and a sentence from a contract that has already been found in that
+     * contract. Nothing here knows an award, so nothing here says a loading is
+     * the one anybody is entitled to — only that these two documents do not
+     * say the same thing, which is a question worth asking either way.
+     *
+     * A line with no matching term, and a term with no matching line, both
+     * produce nothing. A fortnight with no Sunday shift owes no Sunday
+     * penalty, and saying otherwise would be an accusation built out of an
+     * empty roster.
+     */
+    if (slip.lines?.length && record?.penalties?.length) {
+      const penalties = checkAgainstContract(slip.lines, recorded === null ? null : recorded * 100, record.penalties)
+      if (penalties.compared.length) compared.push(`each penalty line on this payslip against the rate ${citedSource(record.source)} states for that day`)
+      for (const line of penalties.differing) {
+        const stated = line.basis === 'multiplier'
+          ? `${line.multiplier} times your ordinary rate, which comes to $${rateTo4(line.expected)} an hour`
+          : `$${rateTo4(line.expected)} an hour`
+        const below = line.paid < line.expected
+        findings.push({
+          id: `${slip.id}:penalty:${line.kind}`, slipId: slip.id, kind: 'penalty-differs',
+          heading: `The ${kindInSentence[line.kind]} rate on this payslip is not the rate ${citedSource(record.source)} states`,
+          employer: f.employer, period: periodText(slip),
+          yourRecord: `${citedSource(record.source).replace(/^your/, 'Your')} states ${stated}: “${line.quote}”`,
+          thePayslip: `The “${line.label}” line was paid at $${rateTo4(line.paid)} an hour.`,
+          /*
+           * The gap an hour, in cents, and then what it comes to over the
+           * hours on that line. Cents because four decimal places in a money
+           * figure reads as noise; the total because a few cents an hour means
+           * nothing to anybody until it is multiplied out.
+           */
+          difference: `${aud(Math.round(Math.abs(line.paid - line.expected) / 100))} an hour ${below ? 'below' : 'above'} the rate that sentence states.`
+            + (line.hours === null ? '' : ` Over the ${hoursText(Math.round(line.hours / 100))} hours on that line, that is ${aud(lineAmount(line.hours, Math.abs(line.paid - line.expected)))}.`),
+          limit: 'Xoba Paycheck compares one line on this payslip with one sentence in your document. It does not know your award or agreement, whether a different term covers this shift, or how those hours were classified.',
+          question: ASK,
+          message: sendable(
+            `Could you help me understand my payslip for the period ${periodText(slip)}?`,
+            `The “${line.label}” line is paid at $${rateTo4(line.paid)} an hour. My contract says ${stated}.`,
+            'I may be reading one of them the wrong way. Could you let me know which rate applies to those hours?'),
+        })
+      }
+    }
 
     // 2 · The payslip does not agree with itself. Needs no record at all, and
     // is the most useful check in the set for exactly that reason.
