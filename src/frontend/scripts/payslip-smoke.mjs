@@ -574,7 +574,14 @@ export async function verifyPayslips(context, base, artifacts) {
     assert.equal(notAddedText.includes(unknown.name), false, `an unrecognised layout is a question, not a failure: ${notAddedText}`);
     assert.equal(await reviewCount(), 1, 'the payslip read beside them was kept');
     await button('Let our reader try').click();
-    await page.getByRole('heading', { name: 'Check your figures' }).waitFor({ timeout: 30000 });
+    /*
+     * Wait for the payslip the answer produced, not for the confirm step.
+     * The first batch already read one file, so that step — and its heading —
+     * are on screen before this click; waiting for the heading proves nothing
+     * and returns before the reader has finished, which is a race that passes
+     * on a fast machine and fails on a slow one.
+     */
+    await page.locator('.pay-history li').nth(1).waitFor({ timeout: 30000 });
     assert.equal(await reviewCount(), 2, 'and it is still there after the question is answered');
     assert.ok(posted && typeof posted.text === 'string' && posted.text.length > 40, `the request carried the extracted text: ${JSON.stringify(posted)?.slice(0, 120)}`);
     assert.equal(/%PDF|JVBER/.test(posted.text), false, 'the request carried text, not the PDF itself');
