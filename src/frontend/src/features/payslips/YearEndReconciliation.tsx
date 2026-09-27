@@ -28,6 +28,15 @@ const moneyDifference = (value: number | null) => value === null ? '—' : `${va
 
 export default function YearEndReconciliation({ allSlips, year, employerFilter }: Props) {
   const coverage = useMemo(() => payCoverageForYear(allSlips, year), [allSlips, year])
+  /*
+   * Changing this remounts the two children below, discarding a
+   * half-finished reconciliation when the payslips underneath it change.
+   *
+   * It is used on two SIBLINGS, so each needs its own key: React requires keys
+   * to be unique among siblings whatever the element types are, and warns that
+   * duplicates may leave a child duplicated or dropped. Same scope, different
+   * keys, same remount-on-change behaviour.
+   */
   const scopeKey = `${year}|${allSlips.map(slip => `${slip.id}:${slip.confirmed}:${Object.values(slip.facts).join('~')}`).join('|')}`
   const [open, setOpen] = useState(false)
   const [sources, setSources] = useState<AnnualPaySource[]>([])
@@ -103,7 +112,7 @@ export default function YearEndReconciliation({ allSlips, year, employerFilter }
     <p className="year-end-employers">Recorded employers: {coverage.employerNames.map(([, name]) => name).join(', ')}.</p>
 
     {!open ? <button className="secondary-button" onClick={() => setOpen(true)}>Start year-end reconciliation</button> : <>
-      <AnnualStatementIntake key={scopeKey} year={year} employers={coverage.employerNames} sources={sources} onAdd={addImportedSource} />
+      <AnnualStatementIntake key={`intake|${scopeKey}`} year={year} employers={coverage.employerNames} sources={sources} onAdd={addImportedSource} />
 
       <div className="year-end-guidance"><strong>Manual entry remains available.</strong><p>If the annual statement layout is not supported, enter figures from the source itself. Do not enter a TFN. One employer can have more than one income statement, so link each source individually.</p></div>
 
@@ -143,7 +152,7 @@ export default function YearEndReconciliation({ allSlips, year, employerFilter }
         <button className="secondary-button" onClick={() => downloadYearEndReconciliationReport(yearEndReconciliationReport(result))}>Download year-end pay handover</button>
       </div>
 
-      <YearEndPreparationHub key={scopeKey} reconciliation={result} />
+      <YearEndPreparationHub key={`hub|${scopeKey}`} reconciliation={result} />
 
             <details className="statement-help year-end-sources"><summary>Why Tax ready and why can one employer have multiple sources?</summary><p>ATO wording references only · version {ANNUAL_SOURCE_GUIDANCE_VERSION}. These links support source-status wording and multiple-statement handling; they do not unlock Xoba Paycheck tax calculations.</p><ul>{annualSourceGuidance.map(source => <li key={source.id}><a href={source.url} target="_blank" rel="noreferrer">{source.title}</a></li>)}</ul></details>
     </>}
