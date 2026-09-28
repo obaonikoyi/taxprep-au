@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { contractReading, ContractReadError, readContract } from './contractReader'
+import { contractPenalties, contractReading, ContractReadError, readContract } from './contractReader'
 
 /*
  * What the app will believe about a contract.
@@ -41,7 +41,7 @@ describe('what the app will believe about a contract', () => {
 
   it('blanks anything that is not a string', () => {
     const reading = contractReading({ employer: { name: 'Kestrel' }, amount: 3250, basis: ['hourly'], quote: null, why: 7 })
-    expect(reading).toEqual({ employer: '', basis: '', amount: '', weeklyHours: '', from: '', quote: '', why: '' })
+    expect(reading).toEqual({ employer: '', basis: '', amount: '', weeklyHours: '', from: '', quote: '', why: '', penalties: [] })
   })
 
   it('answers blanks for anything that is not an object at all', () => {
@@ -117,3 +117,42 @@ describe('asking the server to read a contract', () => {
     await expect(readContract(contract, controller.signal)).rejects.toThrow(/cancelled/i)
   })
 })
+
+/*
+ * Penalty rates arrive beside the rate, already checked against the contract
+ * by the server. They are narrowed again here for the same reason the basis
+ * is: either end could change without the other, and a penalty this app acts
+ * on becomes a specific claim about a specific Saturday.
+ */
+describe('what the app will believe about a penalty rate', () => {
+  const entry = (over: Record<string, unknown> = {}) =>
+    ({ kind: 'saturday', multiplier: '1.5', amount: '', quote: 'Saturdays are paid at time and a half.', ...over })
+
+  it('keeps an entry that states one usable figure and quotes its sentence', () => {
+    expect(contractPenalties([entry()])).toEqual([{ kind: 'saturday', multiplier: '1.5', amount: '', quote: 'Saturdays are paid at time and a half.' }])
+    expect(contractPenalties([entry({ multiplier: '', amount: '58.50' })])[0].amount).toBe('58.50')
+  })
+
+  it.each([
+    ['a day it has no rule for', entry({ kind: 'birthday' })],
+    ['no kind at all', entry({ kind: '' })],
+    ['both a multiplier and a flat rate', entry({ amount: '58.50' })],
+    ['neither', entry({ multiplier: '' })],
+    ['a multiplier that is not a number', entry({ multiplier: 'time and a half' })],
+    ['a flat rate carrying a symbol', entry({ multiplier: '', amount: '$58.50' })],
+    ['a figure of zero', entry({ multiplier: '0' })],
+    ['no sentence to show for it', entry({ quote: '' })],
+    ['a number where a string belongs', entry({ multiplier: 1.5 })],
+  ])('drops an entry with %s', (_why, row) => expect(contractPenalties([row])).toEqual([]))
+
+  it('keeps the first of a kind stated twice', () => {
+    const kept = contractPenalties([entry(), entry({ multiplier: '2' })])
+    expect(kept).toHaveLength(1)
+    expect(kept[0].multiplier).toBe('1.5')
+  })
+
+  it('answers an empty list for anything that is not a list of entries', () => {
+    for (const value of [null, undefined, 'saturday', 42, {}, [null, 3, 'saturday']]) expect(contractPenalties(value)).toEqual([])
+  })
+})
+

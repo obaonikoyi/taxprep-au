@@ -7,7 +7,7 @@ Element.prototype.scrollIntoView = () => {}
 afterEach(cleanup)
 const button = (name: string) => screen.getByRole('button', { name })
 function fillManual() {
-  fireEvent.click(button('Enter figures manually'))
+  fireEvent.click(button('Type the figures in yourself'))
   const review = within(screen.getByRole('region', { name: 'Review payslip' }))
   for (const [name, value] of [['Employer', 'Example employer'], ['Period start', '2026-07-01'], ['Period end', '2026-07-14'], ['Pay date', '2026-07-16'], ['Gross pay (AUD)', '100'], ['Tax withheld (AUD)', '10'], ['Other deductions (AUD)', '0'], ['Net pay (AUD)', '90']]) {
     fireEvent.change(review.getByLabelText(name, { exact: true }), { target: { value } })

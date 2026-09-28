@@ -4,6 +4,7 @@ import advicesV3 from '../../../../../sample-data/payslips/advice-v3-examples.js
 import advicesV2 from '../../../../../sample-data/payslips/advice-examples.json'
 import { blankFacts, confirmationIssues, validateFacts, type PayFacts, type Payslip } from './payslip'
 import { parsePayslip, textRows } from './payslipReader'
+import { checkEarnings, multiplierText, rateValue, type EarningsLine } from './payslipEarnings'
 import { payslipReport } from './payslipReport'
 import { addRate, blankRate, hourlyCents, rateChecks, recordFor, validateRate, type Finding, type RateRecord } from './payRate'
 
@@ -25,7 +26,7 @@ beforeAll(async () => {
 
 describe('PAY ADVICE v3 earnings block', () => {
   it('reads ordinary hours, rate and pay from the itemised block', () => {
-    expect(v3).toHaveLength(3)
+    expect(v3).toHaveLength(4)
     for (const slip of v3) expect(slip.format).toBe('pay-advice-v3')
     expect(v3[0].facts).toMatchObject({ hours: '38.00', rate: '28.90', ordinary: '1,098.20', gross: '1,098.20' })
     expect(v3[1].facts).toMatchObject({ hours: '38.00', rate: '27.50', ordinary: '1,045.00', gross: '1,045.00' })
@@ -33,20 +34,75 @@ describe('PAY ADVICE v3 earnings block', () => {
     for (const slip of v3) expect(validateFacts(slip.facts)).toEqual([])
   })
 
-  it('reads only the ordinary line, never the overtime beside it', () => {
-    // The third advice pays 4.00 overtime hours at 43.35 for 173.40. An
-    // overtime multiplier depends on an award, so none of it may be read.
+  it('keeps the overtime line out of the ordinary fields, while still reading it', () => {
+    // The third advice pays 4.00 overtime hours at 43.35 for 173.40. The three
+    // form fields are the ORDINARY line and must stay that way — an overtime
+    // multiplier depends on an award, and a recorded ordinary rate must never
+    // be compared against it. The line itself is read; it is just read
+    // somewhere the rate check does not look.
     const facts = v3[2].facts
     expect(facts.hours).not.toBe('4.00')
     expect(facts.rate).not.toBe('43.35')
     expect(facts.ordinary).not.toBe('173.40')
-    expect(v3[2].text).toContain('43.35')
+    expect(v3[2].lines?.map(l => l.label)).toEqual(['Ordinary hours', 'Overtime'])
+    expect(v3[2].lines?.[1]).toMatchObject({ hours: '4.00', rate: '43.35', amount: '173.40' })
+  })
+
+  /*
+   * The case this milestone exists for: a fortnight of shift work where the
+   * ordinary line is a small fraction of the pay. Reading only that line means
+   * checking nine percent of it, and the rates only multiply out at four
+   * decimal places.
+   */
+  describe('a payslip that is mostly penalty rates', () => {
+    const shift = () => v3[3]
+
+    it('reads every line of the table, not just the ordinary one', () => {
+      expect(shift().lines?.map(l => l.label)).toEqual(['Ordinary hours', 'Afternoon hours', 'Saturday hours', 'Sunday hours'])
+      expect(shift().lines?.map(l => l.rate)).toEqual(['28.7600', '31.6360', '40.2640', '51.7680'])
+      expect(shift().lines?.map(l => l.hours)).toEqual(['7.5000', '36.2500', '8.0000', '14.0000'])
+      expect(shift().lines?.map(l => l.amount)).toEqual(['215.70', '1,146.81', '322.11', '724.75'])
+    })
+
+    it('still puts only the ordinary line in the form, trimmed to what the form holds', () => {
+      expect(shift().facts).toMatchObject({ hours: '7.50', rate: '28.76', ordinary: '215.70', gross: '2,409.37' })
+      expect(validateFacts(shift().facts)).toEqual([])
+    })
+
+    it('finds every line consistent with its own hours and rate', () => {
+      const result = checkEarnings(shift().lines!, shift().facts)
+      expect(result.disagreeing).toEqual([])
+      expect(result.itemised).toBe(240937)
+      expect(result.unitemised).toBe(0)
+    })
+
+    it('reports the loadings as exact multiples without calling them right', () => {
+      const result = checkEarnings(shift().lines!, shift().facts)
+      expect(result.lines.map(l => l.multiplier && multiplierText(l.multiplier))).toEqual(['1', '1.1', '1.4', '1.8'])
+    })
+
+    it('says how little of this pay a recorded ordinary rate would cover', () => {
+      expect(checkEarnings(shift().lines!, shift().facts).ordinaryShare).toBe(9)
+    })
+
+    /*
+     * Why the reader keeps four decimal places rather than trimming rates the
+     * way it trims the ordinary line for the form. Round this table's rates to
+     * cents and three of its four lines stop agreeing with amounts that are
+     * perfectly correct.
+     */
+    it('would report false differences if it had rounded the rates to cents', () => {
+      const rounded = shift().lines!.map(l => ({ ...l, rate: (rateValue(l.rate)! / 10_000).toFixed(2) }))
+      expect(checkEarnings(rounded, shift().facts).disagreeing.map(l => l.label))
+        .toEqual(['Afternoon hours', 'Saturday hours', 'Sunday hours'])
+    })
   })
 
   it('never takes a year-to-date figure into hours, rate or pay', () => {
     for (const slip of v3) {
       expect(slip.text).toContain('48,912.00')
-      for (const value of Object.values(slip.facts)) expect(['32,946.00', '33,991.00', '34,120.00', '4,120.00', '48,912.00']).not.toContain(value)
+      for (const value of Object.values(slip.facts)) expect(['32,946.00', '33,991.00', '34,120.00', '4,120.00', '48,912.00', '5,602.44', '29,821.06', '8,375.11', '18,843.50']).not.toContain(value)
+      for (const line of slip.lines ?? []) expect(['32,946.00', '34,120.00', '4,120.00', '29,821.06', '18,843.50']).not.toContain(line.amount)
     }
   })
 
@@ -460,5 +516,92 @@ describe('a payslip that pays more than the rate you recorded', () => {
     expect(findings[0].message).toBe('')
     // No rate is printed, so there is no new rate to offer recording.
     expect(findings[0].update).toBeUndefined()
+  })
+})
+
+/*
+ * A penalty line against the term the contract states for that day.
+ *
+ * The check that finally looks past the ordinary line. Both sides are the
+ * person's own documents, and neither side is an award, so this may raise a
+ * question and may never settle one.
+ */
+describe('penalty lines against a contract', () => {
+  const shift = (over: Partial<PayFacts> = {}, lines?: EarningsLine[]): Payslip => ({
+    ...slip({ hours: '38.00', rate: '30.00', ordinary: '1140.00', gross: '1140.00', withheld: '152.00', deductions: '20.00', net: '968.00', ...over }),
+    lines: lines ?? [
+      { label: 'Ordinary hours', hours: '38.0000', rate: '30.0000', amount: '1,140.00' },
+      { label: 'Saturday hours', hours: '8.0000', rate: '42.0000', amount: '336.00' },
+    ],
+  })
+  const withTerms = (...penalties: { kind: string; multiplier: string; amount: string; quote: string }[]) =>
+    rate({ amount: '30.00', source: 'contract', penalties })
+  const saturday = { kind: 'saturday', multiplier: '1.5', amount: '', quote: 'Work performed on a Saturday is paid at time and a half.' }
+
+  it('raises the difference when a payslip line is not the contract rate', () => {
+    // 30.00 x 1.5 is 45.00; the payslip paid 42.00.
+    const { findings } = check([shift()], [withTerms(saturday)])
+    const penalty = findings.filter(f => f.kind === 'penalty-differs')
+    expect(penalty).toHaveLength(1)
+    expect(penalty[0].heading).toBe('The Saturday rate on this payslip is not the rate your contract states')
+    expect(penalty[0].thePayslip).toContain('$42.00 an hour')
+    // The gap an hour, and what it comes to over the hours on that line.
+    expect(penalty[0].difference).toBe('$3.00 an hour below the rate that sentence states. Over the 8.00 hours on that line, that is $24.00.')
+    // Never four decimal places in a money figure the person is meant to read.
+    expect(penalty[0].difference).not.toMatch(/\$\d+\.\d{3}/)
+    expect(penalty[0].yourRecord).toContain('1.5 times your ordinary rate')
+    expect(penalty[0].yourRecord).toContain(saturday.quote)
+  })
+
+  it('says nothing when the line is the rate the contract states', () => {
+    const paid = shift({}, [
+      { label: 'Ordinary hours', hours: '38.0000', rate: '30.0000', amount: '1,140.00' },
+      { label: 'Saturday hours', hours: '8.0000', rate: '45.0000', amount: '360.00' },
+    ])
+    expect(check([paid], [withTerms(saturday)]).findings.filter(f => f.kind === 'penalty-differs')).toEqual([])
+  })
+
+  it('takes a flat rate the contract states instead of a multiple', () => {
+    const term = { kind: 'saturday', multiplier: '', amount: '48.00', quote: 'Saturday work is paid at $48.00 per hour.' }
+    const { findings } = check([shift()], [withTerms(term)])
+    expect(findings.filter(f => f.kind === 'penalty-differs')[0].yourRecord).toContain('$48.00 an hour')
+  })
+
+  it('says nothing about a day the contract does not mention', () => {
+    const sunday = shift({}, [{ label: 'Sunday hours', hours: '8.0000', rate: '10.0000', amount: '80.00' }])
+    expect(check([sunday], [withTerms(saturday)]).findings.filter(f => f.kind === 'penalty-differs')).toEqual([])
+  })
+
+  it('never treats a day the payslip has no line for as unpaid', () => {
+    // A fortnight with no Sunday shift owes no Sunday penalty.
+    const sunday = { kind: 'sunday', multiplier: '2', amount: '', quote: 'Sunday work is paid at double time.' }
+    const only = shift({}, [{ label: 'Ordinary hours', hours: '38.0000', rate: '30.0000', amount: '1,140.00' }])
+    expect(check([only], [withTerms(saturday, sunday)]).findings.filter(f => f.kind === 'penalty-differs')).toEqual([])
+  })
+
+  it('does nothing at all for a record with no contract terms', () => {
+    expect(check([shift()], [rate({ amount: '30.00' })]).findings.filter(f => f.kind === 'penalty-differs')).toEqual([])
+  })
+
+  it('does nothing for a payslip with no earnings lines read', () => {
+    const noLines = { ...shift(), lines: undefined }
+    expect(check([noLines], [withTerms(saturday)]).findings.filter(f => f.kind === 'penalty-differs')).toEqual([])
+  })
+
+  it('never characterises the employer in a penalty finding', () => {
+    const banned = /\b(underpaid|underpayment|unlawful|illegal|owed|owes|stolen|wage theft|correct|incorrect|fraud)\b/i
+    const { findings, states } = check([shift()], [withTerms(saturday)])
+    const strings = [
+      ...findings.flatMap(f => [f.heading, f.thePayslip, f.difference, f.limit, f.question, f.message, f.yourRecord ?? '']),
+      ...states.map(s => s.detail),
+    ]
+    for (const text of strings) expect(text).not.toMatch(banned)
+  })
+
+  it('offers a message that asks rather than asserts', () => {
+    const message = check([shift()], [withTerms(saturday)]).findings.find(f => f.kind === 'penalty-differs')!.message
+    expect(message).toContain('Could you help me understand my payslip')
+    expect(message).toContain('Could you let me know which rate applies')
+    expect(message).not.toMatch(/should|must|entitled|require/i)
   })
 })

@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { confirmationIssues, employerKey, type Payslip } from './payslip'
 import { addRate, blankRate, isAboveRecord, MAX_RATE_RECORDS, rateChecks, rateSources, rateText, validateRate, WEEKS_PER_YEAR, type Finding, type RateRecord } from './payRate'
 import { contractText, readContract } from './contractReader'
+import { kindLabels, type PenaltyKind } from './contractPenalties'
 
 /**
  * The agreed rate, and the questions the payslips raise against it.
@@ -55,6 +56,12 @@ export default function PayRatePanel({ slips, records, onRecords }: { slips: Pay
         weeklyHours: found.weeklyHours || current?.weeklyHours || '',
         from: found.from || current?.from || '',
         source: 'contract',
+        /*
+         * Always set, never merged. Reading a second contract that states no
+         * penalties must clear the first one's, or a term from a document the
+         * person has moved on from would go on producing questions.
+         */
+        penalties: found.penalties,
       }))
       setQuote(found.quote)
       setMessage('')
@@ -176,6 +183,25 @@ export default function PayRatePanel({ slips, records, onRecords }: { slips: Pay
             <strong>Read from this sentence in your contract:</strong>
             <blockquote>{quote}</blockquote>
             <p>Check it says what the figures below say. If it does not, change them — nothing is saved until you press save.</p>
+          </div>}
+          {/*
+            * The penalty terms, shown for the same reason the sentence above
+            * is: each one will be compared against a real line on a real
+            * payslip, so the person sees what was read before it can raise
+            * anything. Each carries the sentence it came from.
+            */}
+          {!!draft?.penalties?.length && <div className="pay-rate-quote">
+            <strong>Also read from your contract, for particular days:</strong>
+            <dl className="pay-rate-penalties">
+              {draft.penalties.map(penalty => <div key={penalty.kind}>
+                <dt>{kindLabels[penalty.kind as PenaltyKind]}</dt>
+                <dd>
+                  {penalty.multiplier ? `${penalty.multiplier} times your ordinary rate` : `$${penalty.amount} an hour`}
+                  <blockquote>{penalty.quote}</blockquote>
+                </dd>
+              </div>)}
+            </dl>
+            <p>Each of these is compared with the matching line on your payslips. Remove one by clearing the form and entering your rate yourself.</p>
           </div>}
         </div>
         <div className="pay-fields">

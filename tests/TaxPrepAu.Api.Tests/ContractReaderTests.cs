@@ -194,3 +194,129 @@ public class ContractEndpointTests : IClassFixture<WebApplicationFactory<Program
         Assert.True(ContractReaderEndpoint.BudgetCost > 1);
     }
 }
+
+/*
+ * Penalty rates a contract states for a kind of day.
+ *
+ * Everything the ordinary rate's tests are about applies here and harder. An
+ * ordinary rate that is wrong produces one baseline nobody may act on; a
+ * penalty rate that is wrong produces a specific claim about a specific
+ * Saturday — "your contract says time and a half and you were paid 1.4" —
+ * about a term that may never have been in the contract at all.
+ */
+public class ContractPenaltyTests
+{
+    private const string Contract = """
+        4. Pay
+        4.1  The ordinary hourly rate is $32.50 per hour, effective 1 July 2026.
+        4.2  Work performed on a Saturday is paid at time and a half.
+        4.3  Work performed on a Sunday is paid at $58.50 per hour.
+        4.4  Penalty rates for public holidays apply as per the award.
+        """;
+
+    private static string Entry(string kind, string multiplier, string amount, string quote)
+        => $$"""{"kind":"{{kind}}","multiplier":"{{multiplier}}","amount":"{{amount}}","quote":"{{quote}}"}""";
+    private static List<ContractPenalty> Parse(params string[] entries)
+        => ContractReaderEndpoint.ParsePenalties($$"""{"amount":"32.50","penalties":[{{string.Join(",", entries)}}]}""");
+
+    [Fact]
+    public void ReadsAMultiplierAndAFlatRateSideBySide()
+    {
+        var penalties = Parse(
+            Entry("saturday", "1.5", "", "4.2  Work performed on a Saturday is paid at time and a half."),
+            Entry("sunday", "", "58.50", "4.3  Work performed on a Sunday is paid at $58.50 per hour."));
+        Assert.Equal(2, penalties.Count);
+        Assert.Equal(new ContractPenalty("saturday", "1.5", "", "4.2  Work performed on a Saturday is paid at time and a half."), penalties[0]);
+        Assert.Equal("58.50", penalties[1].Amount);
+        Assert.Equal(string.Empty, penalties[1].Multiplier);
+    }
+
+    [Fact]
+    public void KeepsOnlyTheKindsThisAppHasARuleFor()
+    {
+        // A casual loading is deliberately not a kind: it applies to every
+        // ordinary hour, so it changes what the ordinary rate is rather than
+        // sitting on top of it for one day.
+        Assert.DoesNotContain("casual", ContractReaderEndpoint.PenaltyKinds);
+        Assert.Empty(Parse(Entry("casual", "1.25", "", "Casual employees are paid a 25% loading.")));
+        Assert.Empty(Parse(Entry("birthday", "2", "", "4.2  Work performed on a Saturday is paid at time and a half.")));
+    }
+
+    [Theory]
+    // Both figures: the contract cannot have meant a multiplier AND a flat rate.
+    [InlineData("1.5", "58.50")]
+    // Neither: nothing to compare a payslip line against.
+    [InlineData("", "")]
+    // Not plain numbers. A range or a word is exactly what an inferred rate looks like.
+    [InlineData("time and a half", "")]
+    [InlineData("1.5x", "")]
+    [InlineData("", "$58.50")]
+    [InlineData("", "58.50 to 62.00")]
+    [InlineData("0", "")]
+    [InlineData("-1.5", "")]
+    public void DropsAnEntryThatDoesNotStateOneUsableFigure(string multiplier, string amount)
+        => Assert.Empty(Parse(Entry("saturday", multiplier, amount, "4.2  Work performed on a Saturday is paid at time and a half.")));
+
+    [Fact]
+    public void DropsAnEntryWithNoQuoteAtAll()
+        => Assert.Empty(Parse(Entry("saturday", "1.5", "", "")));
+
+    [Fact]
+    public void KeepsOnlyTheFirstOfARepeatedKind()
+    {
+        var penalties = Parse(
+            Entry("saturday", "1.5", "", "4.2  Work performed on a Saturday is paid at time and a half."),
+            Entry("saturday", "2", "", "4.3  Work performed on a Sunday is paid at $58.50 per hour."));
+        Assert.Single(penalties);
+        Assert.Equal("1.5", penalties[0].Multiplier);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("not json")]
+    [InlineData("{}")]
+    [InlineData("""{"penalties":"none"}""")]
+    [InlineData("""{"penalties":[null,3,"saturday"]}""")]
+    [InlineData("[]")]
+    public void AnswersAnEmptyListRatherThanThrowingOnAnythingUnusable(string answer)
+        => Assert.Empty(ContractReaderEndpoint.ParsePenalties(answer));
+
+    [Fact]
+    public void BelievesAPenaltyOnlyWhenItsSentenceIsInTheContract()
+    {
+        var good = Parse(Entry("saturday", "1.5", "", "4.2  Work performed on a Saturday is paid at time and a half."));
+        Assert.Single(ContractReaderEndpoint.VerifiedPenalties(good, Contract));
+
+        // A line break where the page ended, not where the sentence did.
+        var wrapped = Parse(Entry("saturday", "1.5", "", "4.2  Work performed on a Saturday\\n     is paid at time and a half."));
+        Assert.Single(ContractReaderEndpoint.VerifiedPenalties(wrapped, Contract));
+    }
+
+    [Fact]
+    public void ThrowsAwayEveryPenaltyWhenOneSentenceIsNotInTheContract()
+    {
+        // 4.4 states no figure, so "time and a half on public holidays" is a
+        // sentence the model supplied rather than read. One such sentence
+        // discards the others: an answer that will invent one has not earned
+        // belief about the rest.
+        var mixed = Parse(
+            Entry("saturday", "1.5", "", "4.2  Work performed on a Saturday is paid at time and a half."),
+            Entry("publicHoliday", "2.5", "", "4.4  Work on a public holiday is paid at double time and a half."));
+        Assert.Equal(2, mixed.Count);
+        Assert.Empty(ContractReaderEndpoint.VerifiedPenalties(mixed, Contract));
+    }
+
+    [Fact]
+    public void TellsTheModelWhatAPenaltyIsAndIsNot()
+    {
+        var prompt = ContractReaderEndpoint.SystemPrompt;
+        Assert.Contains("A casual loading is not a penalty rate", prompt);
+        Assert.Contains("Exactly one of multiplier and amount", prompt);
+        Assert.Contains("Leave a penalty out rather than working one out", prompt);
+        Assert.Contains("as per the award", prompt);
+    }
+
+    [Fact]
+    public void OffersTheModelOnlyTheDaysItCanAct0n()
+        => Assert.Equal(["saturday", "sunday", "publicHoliday", "evening", "night", "overtime"], ContractReaderEndpoint.PenaltyKinds);
+}

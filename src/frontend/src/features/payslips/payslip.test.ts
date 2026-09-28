@@ -29,7 +29,7 @@ describe('actual payslip PDFs and period facts', () => {
   })
   it('rejects ambiguous fields and unsupported PDF layouts', () => {
     expect(() => parsePayslip(['PAYSLIP SUMMARY v1', 'Gross pay: 10', 'Gross pay: 20'], 'x', 'x')).toThrow('More than one')
-    expect(() => parsePayslip(['A scanned payslip'], 'x', 'x')).toThrow('not supported')
+    expect(() => parsePayslip(['A scanned payslip'], 'x', 'x')).toThrow('has not seen before')
   })
   it.each([['1,234.56', 123456], ['$45.10', 4510], ['0', 0], ['0.01', 1], ['', null], ['12,34', null], ['1e3', null], ['1.001', null], ['-1', null], ['10000000.01', null]])('strictly parses %s', (input, result) => expect(money(String(input))).toBe(result))
   it('validates real calendar dates and maps years by pay date', () => {

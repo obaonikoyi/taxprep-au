@@ -2,6 +2,8 @@ import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist'
 import { isPicture, pictureCanvas, recogniseRows } from './payslipPicture'
 import { textLines } from './payslipReader'
 import type { RateBasis } from './payRate'
+import { PENALTY_KINDS, type ContractPenalty } from './contractPenalties'
+import { rateValue } from './payslipEarnings'
 
 /*
  * Reading the agreed rate out of a contract.
@@ -35,11 +37,17 @@ export type ContractReading = {
   quote: string
   /** Why there is no rate, when there is none. Written for the person to read. */
   why: string
+  /*
+   * The penalty rates the contract states, each with its own sentence, already
+   * checked against the document by the server. Empty when the contract states
+   * none — which is most contracts, and is a silence rather than a finding.
+   */
+  penalties: ContractPenalty[]
 }
 
 export class ContractReadError extends Error {}
 
-const blank = (): ContractReading => ({ employer: '', basis: '', amount: '', weeklyHours: '', from: '', quote: '', why: '' })
+const blank = (): ContractReading => ({ employer: '', basis: '', amount: '', weeklyHours: '', from: '', quote: '', why: '', penalties: [] })
 
 /** What the server may be believed about. Anything else is nothing. */
 export function contractReading(value: unknown): ContractReading {
@@ -62,7 +70,45 @@ export function contractReading(value: unknown): ContractReading {
   if (basis === 'hourly' || basis === 'annual') reading.basis = basis
   // A rate with no basis is not a rate, and a basis with no rate is nothing.
   if (!reading.amount || !reading.basis) { reading.amount = ''; reading.basis = ''; reading.quote = '' }
+  reading.penalties = contractPenalties(source.penalties)
   return reading
+}
+
+/*
+ * The penalty list, narrowed here as well as on the server, because either end
+ * could change without the other — the same reason the basis is narrowed twice
+ * above. An entry that is not a usable comparison is dropped rather than
+ * carried forward as something to be sorted out later.
+ */
+/* A plain positive number and nothing else, matching the server's rule exactly.
+ * `rateValue` tolerates a leading "$" because a payslip prints one; a contract
+ * reading is asked for a bare figure, and the two ends narrow identically or
+ * the second check is not a check. */
+const plainFigure = (value: string) => /^\d{1,7}(?:\.\d{1,4})?$/.test(value) && rateValue(value)! > 0
+
+export function contractPenalties(value: unknown): ContractPenalty[] {
+  if (!Array.isArray(value)) return []
+  const kept: ContractPenalty[] = []
+  for (const entry of value.slice(0, 12)) {
+    if (entry === null || typeof entry !== 'object') continue
+    const row = entry as Record<string, unknown>
+    const text = (key: string, longest: number) => {
+      const read = row[key]
+      return typeof read === 'string' && read.length <= longest ? read.trim() : ''
+    }
+    const kind = text('kind', 40)
+    if (!(PENALTY_KINDS as readonly string[]).includes(kind)) continue
+    const multiplier = text('multiplier', 40), amount = text('amount', 40)
+    // Exactly one figure, a real one, and a sentence to show for it.
+    if ((multiplier === '') === (amount === '')) continue
+    if (multiplier && !plainFigure(multiplier)) continue
+    if (amount && !plainFigure(amount)) continue
+    const quote = text('quote', 300)
+    if (!quote) continue
+    if (kept.some(p => p.kind === kind)) continue
+    kept.push({ kind, multiplier, amount, quote })
+  }
+  return kept
 }
 
 /** Pull the words out of a contract, on this device, whatever shape it arrives in. */
@@ -136,5 +182,8 @@ export async function readContract(text: string, signal: AbortSignal): Promise<C
     ? (body as { message: string }).message
     : 'The contract could not be read. Enter the rate from your contract instead.'
   if (!response.ok) throw new ContractReadError(message)
-  return contractReading((body as { fields?: unknown })?.fields)
+  const reading = contractReading((body as { fields?: unknown })?.fields)
+  // Penalties travel beside the fields, not inside them.
+  reading.penalties = contractPenalties((body as { penalties?: unknown })?.penalties)
+  return reading
 }
