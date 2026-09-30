@@ -29,6 +29,13 @@ namespace TaxPrepAu.Api.Payslips;
  */
 public sealed record PayslipReadRequest(string? Text);
 
+/*
+ * One row of a payslip's earnings table, as printed. Hours and Rate are empty
+ * for a row that states neither — a bonus, an allowance, a leave payment — and
+ * such a row is unchecked rather than wrong.
+ */
+public sealed record PayslipEarningsLine(string Label, string Hours, string Rate, string Amount);
+
 public static class PayslipReaderEndpoint
 {
     /// <summary>The browser refuses a payslip above this, so nothing larger is expected here.</summary>
@@ -37,6 +44,9 @@ public static class PayslipReaderEndpoint
     public const int MinimumTextLength = 40;
 
     /// <summary>The twelve fields the app already holds, in its own order.</summary>
+    /// <summary>An earnings table longer than this is a misreading, not a payslip.</summary>
+    public const int MaximumLines = 30;
+
     public static readonly string[] Fields =
     [
         "employer", "periodStart", "periodEnd", "payDate", "gross", "withheld",
@@ -94,7 +104,27 @@ public static class PayslipReaderEndpoint
         - ordinary: the pay for those ordinary hours, if it is itemised separately from gross.
 
         Overtime, penalty rates, allowances and leave loading are never any of these fields.
-        Leave them out; only the ordinary line is read.
+        Leave them out of the twelve fields above; they belong in `lines` below.
+
+        THE EARNINGS TABLE goes in `lines`, one entry per row, in the order the payslip
+        prints them. Most of a shift worker's pay is in the rows below the ordinary one,
+        and leaving them out means reading a tenth of the payslip.
+
+        - label: that row's description exactly as printed, such as "Saturday Hours".
+        - hours, rate, amount: as printed, from the THIS PAY column only, with no currency
+          symbol, no commas and no sign. Keep every decimal place the payslip prints.
+          A rate of 49.8080 is not 49.81, and rounding it makes the row stop adding up.
+        - "" for any of the three that row does not print. A bonus with an amount and no
+          hours is normal.
+        - Include only rows of EARNINGS. Never the table's own total row, and never a tax,
+          deduction, superannuation or year-to-date row.
+        - Never invent a row, never merge two rows, never split one. Copy what is there.
+        - Return [] when the payslip prints no such table.
+
+        YOUR TABLE IS CHECKED. Every figure in it is looked for in the text you were given,
+        and the amounts must add up to the gross you returned. If either fails, the whole
+        table is thrown away and the person types it in. Guessing a row cannot be hidden,
+        and an omitted row is safer than an invented one.
         """;
 
     public static void MapPayslipReader(this WebApplication app)
@@ -156,8 +186,9 @@ public static class PayslipReaderEndpoint
 
             try
             {
-                var facts = await Read(text, key!, request.HttpContext.RequestAborted);
-                return Results.Ok(new { available = true, fields = facts });
+                var reading = await Read(text, key!, request.HttpContext.RequestAborted);
+                var lines = VerifiedLines(reading.Lines, text);
+                return Results.Ok(new { available = true, fields = reading.Facts, lines });
             }
             catch (OperationCanceledException)
             {
@@ -180,11 +211,29 @@ public static class PayslipReaderEndpoint
     {
         var properties = new Dictionary<string, object>();
         foreach (var field in Fields) properties[field] = new { type = "string" };
+        properties["lines"] = new
+        {
+            type = "array",
+            maxItems = MaximumLines,
+            items = new
+            {
+                type = "object",
+                properties = new
+                {
+                    label = new { type = "string" },
+                    hours = new { type = "string" },
+                    rate = new { type = "string" },
+                    amount = new { type = "string" },
+                },
+                required = new[] { "label", "hours", "rate", "amount" },
+                additionalProperties = false,
+            },
+        };
         return new Dictionary<string, JsonElement>
         {
             ["type"] = JsonSerializer.SerializeToElement("object"),
             ["properties"] = JsonSerializer.SerializeToElement(properties),
-            ["required"] = JsonSerializer.SerializeToElement(Fields),
+            ["required"] = JsonSerializer.SerializeToElement(Fields.Append("lines").ToArray()),
             ["additionalProperties"] = JsonSerializer.SerializeToElement(false),
         };
     }
@@ -194,21 +243,100 @@ public static class PayslipReaderEndpoint
      * that gave up — the reader times out after a minute — should not leave a
      * call running that is still being billed for an answer nobody will read.
      */
-    private static async Task<Dictionary<string, string>> Read(string text, string apiKey, CancellationToken cancellationToken)
+    private static async Task<(Dictionary<string, string> Facts, List<PayslipEarningsLine> Lines)> Read(string text, string apiKey, CancellationToken cancellationToken)
     {
         AnthropicClient client = new() { ApiKey = apiKey };
         var message = await client.Messages.Create(new MessageCreateParams
         {
             Model = "claude-opus-5",
-            MaxTokens = 2048,
+            // Room for an earnings table as well as the twelve fields.
+            MaxTokens = 4096,
             System = SystemPrompt,
             OutputConfig = new OutputConfig { Format = new JsonOutputFormat { Schema = Schema() } },
             Messages = [new() { Role = Role.User, Content = text }],
         }, cancellationToken);
 
         var json = string.Concat(message.Content.Select(b => b.Value).OfType<TextBlock>().Select(b => b.Text));
-        return Parse(json);
+        return (Parse(json), ParseLines(json));
     }
+
+    /*
+     * The earnings table, narrowed to rows this app can do something with.
+     *
+     * A row needs a label and an amount to be a row at all. Hours and a rate
+     * are optional, because a bonus or an allowance prints neither, and a row
+     * without them is simply one the arithmetic cannot check rather than one
+     * that is wrong.
+     */
+    public static List<PayslipEarningsLine> ParseLines(string json)
+    {
+        var lines = new List<PayslipEarningsLine>();
+        if (string.IsNullOrWhiteSpace(json)) return lines;
+
+        JsonDocument document;
+        try { document = JsonDocument.Parse(json); }
+        catch (JsonException) { return lines; }
+
+        using (document)
+        {
+            if (document.RootElement.ValueKind != JsonValueKind.Object) return lines;
+            if (!document.RootElement.TryGetProperty("lines", out var list) || list.ValueKind != JsonValueKind.Array) return lines;
+            foreach (var entry in list.EnumerateArray())
+            {
+                if (lines.Count >= MaximumLines) break;
+                if (entry.ValueKind != JsonValueKind.Object) continue;
+                var label = Field(entry, "label", 80);
+                var amount = Figure(Field(entry, "amount", 40));
+                if (label.Length == 0 || amount.Length == 0) continue;
+                lines.Add(new PayslipEarningsLine(label, Figure(Field(entry, "hours", 40)), Figure(Field(entry, "rate", 40)), amount));
+            }
+        }
+        return lines;
+    }
+
+    private static string Field(JsonElement entry, string name, int longest)
+    {
+        if (!entry.TryGetProperty(name, out var value)) return string.Empty;
+        var read = value.ValueKind switch
+        {
+            JsonValueKind.String => value.GetString() ?? string.Empty,
+            JsonValueKind.Number => value.ToString(),
+            _ => string.Empty,
+        };
+        read = read.Trim();
+        return read.Length > longest ? string.Empty : read;
+    }
+
+    /// <summary>A plain figure as a payslip prints one, to four decimal places, or nothing.
+    /// A symbol, a range or a word is exactly what an inferred number looks like.</summary>
+    private static string Figure(string value)
+        => System.Text.RegularExpressions.Regex.IsMatch(value, @"^\d{1,7}(?:\.\d{1,4})?$") ? value : string.Empty;
+
+    /*
+     * Every figure in the table has to be in the payslip.
+     *
+     * This is the transcription check, and it is the same defence the contract
+     * reader uses on its quoted sentence. A table is a lot of numbers to invent
+     * and a person will not check thirty of them by hand, so the document does
+     * the checking: each figure is looked for in the text the model was given,
+     * with symbols and separators removed from both sides so "$1,917.61" in the
+     * page matches "1917.61" in the answer.
+     *
+     * All or nothing. A model that produced one figure the payslip does not
+     * contain has not earned belief about the rest of the table, and half a
+     * table is worse than none — the missing half would read as pay that was
+     * never itemised.
+     */
+    public static List<PayslipEarningsLine> VerifiedLines(List<PayslipEarningsLine> lines, string text)
+    {
+        var flat = Digits(text);
+        foreach (var line in lines)
+            foreach (var figure in new[] { line.Hours, line.Rate, line.Amount })
+                if (figure.Length > 0 && !flat.Contains(Digits(figure), StringComparison.Ordinal)) return [];
+        return lines;
+    }
+
+    private static string Digits(string value) => value.Replace(",", string.Empty).Replace("$", string.Empty);
 
     /// <summary>
     /// Keep only the twelve known fields, as strings, and never let a null or a
