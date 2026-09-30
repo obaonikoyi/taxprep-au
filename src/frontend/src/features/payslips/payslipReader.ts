@@ -135,8 +135,15 @@ async function fromRows(rows: TextRow[], hash: string, name: string, sample: boo
     if (!assist || !isUnknownLayout(error)) throw error
     const text = lines.join('\n')
     if (text.length > 20_000) throw new Error('This payslip contains too much text.')
-    const facts = await readWithAssistance(text, signal)
-    return { id: hash, hash, name, text, facts, original: { ...facts }, confirmed: false, sample, format: ASSISTED_FORMAT, fromPicture }
+    const { facts, lines: earnings } = await readWithAssistance(text, signal)
+    /*
+     * A layout nothing here documents is exactly the case where the earnings
+     * table matters most — on a shift worker's payslip the ordinary line can be
+     * a tenth of the pay — and it arrives only when every figure in it was
+     * found in this document and the rows add up to the gross beside them.
+     */
+    return { id: hash, hash, name, text, facts, original: { ...facts }, confirmed: false, sample, format: ASSISTED_FORMAT, fromPicture,
+      ...(earnings.length ? { lines: earnings } : {}) }
   }
 }
 export { PAYSLIP_VERSION }

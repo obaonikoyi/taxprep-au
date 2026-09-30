@@ -147,3 +147,127 @@ public class PayslipReaderEndpointTests : IClassFixture<WebApplicationFactory<Pr
         Assert.Equal(HttpStatusCode.UnsupportedMediaType, response.StatusCode);
     }
 }
+
+/*
+ * The earnings table an assisted reading brings back.
+ *
+ * A payslip whose layout nothing here documents goes through the model, and
+ * until now that meant its table was lost — on a shift worker's payslip, most
+ * of the pay. The table can be read, but it cannot be trusted: nobody checks
+ * thirty transcribed numbers by hand. So the document checks them.
+ */
+public class PayslipEarningsLineTests
+{
+    private const string Text = """
+        SALARY & WAGES        RATE       THIS PAY      YTD
+        Ordinary Hours        8.0000     $45.2800      $362.24      $2,930.99
+        Afternoon Hours      38.5000     $49.8080    $1,917.61      $9,424.25
+        TOTAL                                        $4,018.60     $22,714.86
+        """;
+
+    private static string Entry(string label, string hours, string rate, string amount)
+        => $$"""{"label":"{{label}}","hours":"{{hours}}","rate":"{{rate}}","amount":"{{amount}}"}""";
+    private static List<PayslipEarningsLine> Parse(params string[] entries)
+        => PayslipReaderEndpoint.ParseLines($$"""{"gross":"4018.60","lines":[{{string.Join(",", entries)}}]}""");
+
+    private static readonly string Ordinary = Entry("Ordinary Hours", "8.0000", "45.2800", "362.24");
+    private static readonly string Afternoon = Entry("Afternoon Hours", "38.5000", "49.8080", "1917.61");
+
+    [Fact]
+    public void ReadsARowWithEveryDecimalPlaceThePayslipPrints()
+    {
+        var lines = Parse(Ordinary, Afternoon);
+        Assert.Equal(2, lines.Count);
+        Assert.Equal(new PayslipEarningsLine("Ordinary Hours", "8.0000", "45.2800", "362.24"), lines[0]);
+        // Four places, because 38.5 x 49.81 is not 1917.61 and the row would
+        // stop adding up.
+        Assert.Equal("49.8080", lines[1].Rate);
+    }
+
+    [Fact]
+    public void KeepsARowThatStatesAnAmountAndNothingElse()
+    {
+        // A bonus or an allowance prints no hours and no rate. It is a row the
+        // arithmetic cannot check, which is not the same as a row that is wrong.
+        var lines = Parse(Entry("Bonus", "", "", "500.00"));
+        Assert.Single(lines);
+        Assert.Equal(string.Empty, lines[0].Hours);
+    }
+
+    [Theory]
+    [InlineData("", "8.0000", "45.2800", "362.24")]          // no label is not a row
+    [InlineData("Ordinary Hours", "8.0000", "45.2800", "")]  // no amount is not a row
+    [InlineData("Ordinary Hours", "8.0000", "45.2800", "$362.24")]
+    [InlineData("Ordinary Hours", "8.0000", "45.2800", "362.24 to 400.00")]
+    [InlineData("Ordinary Hours", "8.0000", "45.2800", "three hundred")]
+    public void DropsARowThatDoesNotStateAPlainAmount(string label, string hours, string rate, string amount)
+        => Assert.Empty(Parse(Entry(label, hours, rate, amount)));
+
+    [Fact]
+    public void BlanksAFigureThatIsNotPlainWithoutLosingTheRow()
+    {
+        // The amount carries the row; a rate that came back with a symbol is
+        // simply not read, and the row stays as one the arithmetic skips.
+        var lines = Parse(Entry("Ordinary Hours", "8.0000", "$45.28", "362.24"));
+        Assert.Single(lines);
+        Assert.Equal(string.Empty, lines[0].Rate);
+        Assert.Equal("362.24", lines[0].Amount);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("not json")]
+    [InlineData("{}")]
+    [InlineData("""{"lines":"none"}""")]
+    [InlineData("""{"lines":[null,7,"Ordinary"]}""")]
+    [InlineData("[]")]
+    public void AnswersAnEmptyTableRatherThanThrowingOnAnythingUnusable(string answer)
+        => Assert.Empty(PayslipReaderEndpoint.ParseLines(answer));
+
+    [Fact]
+    public void BelievesATableOnlyWhenEveryFigureIsInThePayslip()
+    {
+        var good = Parse(Ordinary, Afternoon);
+        Assert.Equal(2, PayslipReaderEndpoint.VerifiedLines(good, Text).Count);
+    }
+
+    [Fact]
+    public void MatchesAcrossTheSymbolsAndSeparatorsAPayslipPrints()
+    {
+        // The page says "$1,917.61"; the answer says "1917.61".
+        Assert.Single(PayslipReaderEndpoint.VerifiedLines(Parse(Afternoon), Text));
+    }
+
+    [Fact]
+    public void ThrowsAwayTheWholeTableWhenOneFigureIsNotInThePayslip()
+    {
+        // A Saturday row this payslip never printed. Half a table is worse than
+        // none: the missing half would read as pay that was never itemised.
+        var invented = Parse(Ordinary, Afternoon, Entry("Saturday Hours", "7.5000", "63.3920", "475.44"));
+        Assert.Equal(3, invented.Count);
+        Assert.Empty(PayslipReaderEndpoint.VerifiedLines(invented, Text));
+    }
+
+    [Fact]
+    public void ThrowsItAwayForAMisreadRateToo()
+    {
+        // 49.81 instead of 49.8080 — the row would then fail its own arithmetic
+        // and read as a discrepancy on the payslip rather than a misreading.
+        var rounded = Parse(Ordinary, Entry("Afternoon Hours", "38.5000", "49.81", "1917.61"));
+        Assert.Empty(PayslipReaderEndpoint.VerifiedLines(rounded, Text));
+    }
+
+    [Fact]
+    public void AnEmptyTableIsNotAFailure()
+        => Assert.Empty(PayslipReaderEndpoint.VerifiedLines([], Text));
+
+    [Fact]
+    public void TellsTheModelTheTableIsCheckedAndWhatBelongsInIt()
+    {
+        var prompt = PayslipReaderEndpoint.SystemPrompt;
+        Assert.Contains("YOUR TABLE IS CHECKED", prompt);
+        Assert.Contains("an omitted row is safer than an invented one", prompt);
+        Assert.Contains("Never the table's own total row", prompt);
+        Assert.Contains("A rate of 49.8080 is not 49.81", prompt);
+    }
+}
