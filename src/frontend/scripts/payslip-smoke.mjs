@@ -805,14 +805,16 @@ export async function verifyPayslips(context, base, artifacts) {
     // payslip read from a photograph on this device, manual entry, five report
     // downloads — must still send nothing at all.
     //
-    // Two reads, not one: the assisted path is exercised twice, once where the
-    // reading matches the payslip and once where it proposes a figure the
-    // payslip never stated. Counted exactly rather than allowed freely, so a
-    // third request appearing from anywhere still fails this.
+    // Three reads, each for a different reason: one where the reading matches
+    // the payslip, one where it proposes a figure the payslip never stated, and
+    // one where what came back was not a payslip at all. Counted exactly rather
+    // than allowed freely, so a fourth request appearing from anywhere still
+    // fails this — including the override on a document held back, which must
+    // reuse the reading it already has rather than pay for a second one.
     const thirdPartyRefused = assertStayedOnDevice(assert, requests, base, ['/api/payslip/read', '/api/contract/read']);
     const posts = requests.attempted.filter(r => r.method === 'POST');
     assert.deepEqual(posts.map(r => new URL(r.url).pathname),
-      ['/api/payslip/read', '/api/payslip/read', '/api/contract/read', '/api/contract/read'],
+      ['/api/payslip/read', '/api/payslip/read', '/api/payslip/read', '/api/contract/read', '/api/contract/read'],
       `only the readings the person asked for were posted anywhere: ${posts.map(r => r.method + ' ' + r.url).join(', ')}`);
     const result = { passed: true, guidedSteps: true, automaticBatchReview: true, noUnconfirmedZeroTotals: true, manualEntry: true, correctionInvalidates: true, duplicateBlocked: true, unreadableBatchAddsNothing: true, batchKeepsWhatItRead: true, notAPayslipIsAskedAbout: true, notAPayslipCanBeOverruled: true, unknownLayoutAsksRatherThanRefuses: true, unknownLayoutAnswerIsOnScreen: true, decliningTheReaderGoesToManualEntry: true, payslipFromPhoto: true, readingCheckedAgainstDocument: true, rateReadFromContract: true, contractRefusalRespected: true, payRiseIsNotAQuestion: true, payRiseRecordedInOneClick: true, exampleToOwnData: true, chartSwitching: true, yearAndEmployerFilters: true, emptyFilterRecovery: true, offlineExport: true, payOutlook: true, payOutlookWithholdingNotScaled: true, payOutlookMobile: true, taxReadiness: true, taxReadinessWholeYear: true, taxReadinessLocked: true, taxReadinessExport: true, taxReadinessMobile: true, yearEndReconciliation: true, yearEndNoDoubleCount: true, annualStatementPdfExtraction: true, annualStatementReviewGate: true, annualStatementDuplicateBlocked: true, annualStatementProvenance: true, yearEndProvisionalExcluded: true, yearEndExport: true, yearEndMobile: true, yearEndPreparationHub: true, yearEndBankChecksNetOnly: true, yearEndExpenseCoverage: true, portableWorkspaceHandoff: true, handoffYearMismatchBlocked: true, handoffExplicitApply: true, handoffDuplicateBlocked: true, handoffNoDoubleCount: true, yearEndPreparationExport: true, yearEndPreparationMobile: true, encryptedPreparationBackup: true, encryptedBackupWrongPassphraseBlocked: true, encryptedBackupExplicitRestore: true, payAdviceV2Layout: true, payAdviceV2CurrentPeriodOnly: true, payAdviceV2ReportRecordsLayout: true, payAdviceV3EarningsBlock: true, payRateSelfCheckWithoutRecord: true, payRateAgainstRecordedRate: true, payRateSilentChange: true, payRateReportNamesWhatWasNotChecked: true, payRateNoEmployerCharacterisation: true, thirdPartyRefused, clearConfirmation: true, clearRefreshAndWorkspaceChange: true, mobileOverflow: false, mobileReviewActionsVisible: true, documentUploads: 0, modelRequests: 0, pageErrors: errors };
     writeFileSync(artifacts + 'payslip-evaluation.json', JSON.stringify(result, null, 2)); return result;
