@@ -541,7 +541,7 @@ export async function verifyPayslips(context, base, artifacts) {
     let posted = null;
     await page.route('**/api/payslip/read', async route => {
       posted = JSON.parse(route.request().postData() ?? '{}');
-      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ available: true, fields: {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ available: true, documentKind: 'payslip', fields: {
         employer: 'Unknown Layout Example Pty', periodStart: '2026-07-01', periodEnd: '2026-07-14', payDate: '2026-07-16',
         gross: '2000.00', withheld: '300.00', deductions: '0.00', net: '1700.00', super: '230.00', hours: '64.00', rate: '31.25', ordinary: '2000.00',
       } }) });
@@ -611,7 +611,7 @@ export async function verifyPayslips(context, base, artifacts) {
     await button('Clear pay history').click(); await button('Yes, clear history').click();
     await page.unroute('**/api/payslip/read');
     await page.route('**/api/payslip/read', async route => {
-      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ available: true, fields: {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ available: true, documentKind: 'payslip', fields: {
         employer: 'Unknown Layout Example Pty', periodStart: '2026-07-01', periodEnd: '2026-07-14', payDate: '2026-07-16',
         gross: '2000.00', withheld: '300.00', deductions: '0.00', net: '1700.00', super: '987.65', hours: '64.00', rate: '31.25', ordinary: '2000.00',
       } }) });
@@ -689,7 +689,7 @@ export async function verifyPayslips(context, base, artifacts) {
     let contractSent = null;
     await page.route('**/api/contract/read', async route => {
       contractSent = JSON.parse(route.request().postData() ?? '{}');
-      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ available: true, fields: {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ available: true, documentKind: 'payslip', fields: {
         employer: 'Kestrel Example Hospitality', basis: 'hourly', amount: '32.50', weeklyHours: '',
         from: '2026-07-01', quote: '4.1  The ordinary hourly rate is $32.50 per hour, effective 1 July 2026.', why: '',
       } }) });
@@ -721,7 +721,7 @@ export async function verifyPayslips(context, base, artifacts) {
      */
     await page.unroute('**/api/contract/read');
     await page.route('**/api/contract/read', async route => {
-      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ available: true, fields: {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ available: true, documentKind: 'payslip', fields: {
         employer: '', basis: '', amount: '', weeklyHours: '', from: '', quote: '',
         why: 'This contract states a base rate plus a 25% casual loading, so it does not state one ordinary rate.',
       } }) });
