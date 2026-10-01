@@ -1,4 +1,5 @@
 import type { EarningsLine } from './payslipEarnings'
+import type { DocumentKind } from './assistedReader'
 export const PAYSLIP_VERSION = 'payslip-summary-v1'
 export const MAX_PAYSLIPS = 100
 export const fields = ['employer', 'periodStart', 'periodEnd', 'payDate', 'gross', 'withheld', 'deductions', 'net', 'super', 'hours', 'rate', 'ordinary'] as const
@@ -22,6 +23,19 @@ export type Payslip = {
    * entry, and for a reading that came back from the assisted reader.
    */
   lines?: EarningsLine[];
+  /*
+   * What the reading said this document is. Absent for a documented layout,
+   * which is a payslip by construction, and for manual entry. Anything other
+   * than 'payslip' is held back and asked about rather than added.
+   */
+  kind?: DocumentKind;
+  /*
+   * A digest of the name this document is made out to — never the name. Enough
+   * to notice that two documents disagree about whose they are, and useless for
+   * anything else. Empty when the document states no name, and absent for every
+   * path that never saw one.
+   */
+  paidToKey?: string;
 }
 export type { EarningsLine }
 export const labels: Record<PayField, string> = {

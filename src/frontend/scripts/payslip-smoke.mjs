@@ -630,6 +630,48 @@ export async function verifyPayslips(context, base, artifacts) {
     // And the text to compare it against is already open.
     assert.equal(await page.locator('.pay-source').getAttribute('open') !== null, true);
     await page.unroute('**/api/payslip/read');
+
+    /*
+     * A document that is not a payslip at all.
+     *
+     * The guard this replaces was "all twelve fields came back empty", which
+     * stops nonsense and nothing else. An ATO notice of assessment is not
+     * nonsense — it carries a name, an ABN, dates and dollar amounts, which is
+     * exactly what a payslip reader hunts for — and its figures cover a year.
+     * Read as a payslip, it counts a year as a fortnight.
+     *
+     * The reading says what it is in the same answer, so this costs no extra
+     * request, and it ends in a sentence the person can overrule: a payslip in
+     * a layout nobody has seen must never be locked out by an opinion.
+     */
+    await button('Clear pay history').click(); await button('Yes, clear history').click();
+    await page.route('**/api/payslip/read', async route => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
+        available: true, documentKind: 'taxReturn', paidTo: 'A. Person', lines: [],
+        fields: { employer: 'Australian Taxation Office', periodStart: '', periodEnd: '', payDate: '',
+          gross: '', withheld: '', deductions: '', net: '', super: '', hours: '', rate: '', ordinary: '' },
+      }) });
+    });
+    await page.setInputFiles('input[aria-label="Choose payslips or photos"]', { name: 'notice-of-assessment.pdf', mimeType: 'application/pdf', buffer: unknownPdf });
+    await offered('notice-of-assessment.pdf');
+    await button('Let our reader try').click();
+    const notPayslip = page.getByRole('alert').filter({ hasText: 'This does not look like a payslip' });
+    await notPayslip.waitFor({ timeout: 30000 });
+    const notPayslipText = await notPayslip.innerText();
+    assert.match(notPayslipText, /notice-of-assessment\.pdf/, `the file is named: ${notPayslipText}`);
+    // The reason, in the terms that matter rather than "wrong document".
+    assert.match(notPayslipText, /whole financial year/, notPayslipText);
+    assert.match(notPayslipText, /count a year as a fortnight/, notPayslipText);
+    assert.equal(await reviewCount(), 0, 'nothing reached the pay history');
+    // Overruling it costs no second reading, and the figures stay empty because
+    // a tax return states none that belong in a pay period.
+    await button('Add it as a payslip anyway').click();
+    await page.getByRole('heading', { name: 'Check your figures' }).waitFor({ timeout: 30000 });
+    assert.equal(await reviewCount(), 1, 'the person may overrule the reading');
+    assert.equal(await page.getByLabel('Gross pay (AUD)', { exact: true }).inputValue(), '');
+    await button('Clear pay history').click(); await button('Yes, clear history').click();
+    await page.unroute('**/api/payslip/read');
+
     // A refresh clears the session, which is the documented behaviour and leaves
     // the next step a clean start screen.
     await page.reload();
@@ -772,7 +814,7 @@ export async function verifyPayslips(context, base, artifacts) {
     assert.deepEqual(posts.map(r => new URL(r.url).pathname),
       ['/api/payslip/read', '/api/payslip/read', '/api/contract/read', '/api/contract/read'],
       `only the readings the person asked for were posted anywhere: ${posts.map(r => r.method + ' ' + r.url).join(', ')}`);
-    const result = { passed: true, guidedSteps: true, automaticBatchReview: true, noUnconfirmedZeroTotals: true, manualEntry: true, correctionInvalidates: true, duplicateBlocked: true, unreadableBatchAddsNothing: true, batchKeepsWhatItRead: true, unknownLayoutAsksRatherThanRefuses: true, unknownLayoutAnswerIsOnScreen: true, decliningTheReaderGoesToManualEntry: true, payslipFromPhoto: true, readingCheckedAgainstDocument: true, rateReadFromContract: true, contractRefusalRespected: true, payRiseIsNotAQuestion: true, payRiseRecordedInOneClick: true, exampleToOwnData: true, chartSwitching: true, yearAndEmployerFilters: true, emptyFilterRecovery: true, offlineExport: true, payOutlook: true, payOutlookWithholdingNotScaled: true, payOutlookMobile: true, taxReadiness: true, taxReadinessWholeYear: true, taxReadinessLocked: true, taxReadinessExport: true, taxReadinessMobile: true, yearEndReconciliation: true, yearEndNoDoubleCount: true, annualStatementPdfExtraction: true, annualStatementReviewGate: true, annualStatementDuplicateBlocked: true, annualStatementProvenance: true, yearEndProvisionalExcluded: true, yearEndExport: true, yearEndMobile: true, yearEndPreparationHub: true, yearEndBankChecksNetOnly: true, yearEndExpenseCoverage: true, portableWorkspaceHandoff: true, handoffYearMismatchBlocked: true, handoffExplicitApply: true, handoffDuplicateBlocked: true, handoffNoDoubleCount: true, yearEndPreparationExport: true, yearEndPreparationMobile: true, encryptedPreparationBackup: true, encryptedBackupWrongPassphraseBlocked: true, encryptedBackupExplicitRestore: true, payAdviceV2Layout: true, payAdviceV2CurrentPeriodOnly: true, payAdviceV2ReportRecordsLayout: true, payAdviceV3EarningsBlock: true, payRateSelfCheckWithoutRecord: true, payRateAgainstRecordedRate: true, payRateSilentChange: true, payRateReportNamesWhatWasNotChecked: true, payRateNoEmployerCharacterisation: true, thirdPartyRefused, clearConfirmation: true, clearRefreshAndWorkspaceChange: true, mobileOverflow: false, mobileReviewActionsVisible: true, documentUploads: 0, modelRequests: 0, pageErrors: errors };
+    const result = { passed: true, guidedSteps: true, automaticBatchReview: true, noUnconfirmedZeroTotals: true, manualEntry: true, correctionInvalidates: true, duplicateBlocked: true, unreadableBatchAddsNothing: true, batchKeepsWhatItRead: true, notAPayslipIsAskedAbout: true, notAPayslipCanBeOverruled: true, unknownLayoutAsksRatherThanRefuses: true, unknownLayoutAnswerIsOnScreen: true, decliningTheReaderGoesToManualEntry: true, payslipFromPhoto: true, readingCheckedAgainstDocument: true, rateReadFromContract: true, contractRefusalRespected: true, payRiseIsNotAQuestion: true, payRiseRecordedInOneClick: true, exampleToOwnData: true, chartSwitching: true, yearAndEmployerFilters: true, emptyFilterRecovery: true, offlineExport: true, payOutlook: true, payOutlookWithholdingNotScaled: true, payOutlookMobile: true, taxReadiness: true, taxReadinessWholeYear: true, taxReadinessLocked: true, taxReadinessExport: true, taxReadinessMobile: true, yearEndReconciliation: true, yearEndNoDoubleCount: true, annualStatementPdfExtraction: true, annualStatementReviewGate: true, annualStatementDuplicateBlocked: true, annualStatementProvenance: true, yearEndProvisionalExcluded: true, yearEndExport: true, yearEndMobile: true, yearEndPreparationHub: true, yearEndBankChecksNetOnly: true, yearEndExpenseCoverage: true, portableWorkspaceHandoff: true, handoffYearMismatchBlocked: true, handoffExplicitApply: true, handoffDuplicateBlocked: true, handoffNoDoubleCount: true, yearEndPreparationExport: true, yearEndPreparationMobile: true, encryptedPreparationBackup: true, encryptedBackupWrongPassphraseBlocked: true, encryptedBackupExplicitRestore: true, payAdviceV2Layout: true, payAdviceV2CurrentPeriodOnly: true, payAdviceV2ReportRecordsLayout: true, payAdviceV3EarningsBlock: true, payRateSelfCheckWithoutRecord: true, payRateAgainstRecordedRate: true, payRateSilentChange: true, payRateReportNamesWhatWasNotChecked: true, payRateNoEmployerCharacterisation: true, thirdPartyRefused, clearConfirmation: true, clearRefreshAndWorkspaceChange: true, mobileOverflow: false, mobileReviewActionsVisible: true, documentUploads: 0, modelRequests: 0, pageErrors: errors };
     writeFileSync(artifacts + 'payslip-evaluation.json', JSON.stringify(result, null, 2)); return result;
   } catch (e) { await page.screenshot({ path: artifacts + 'payslip-failure.png', fullPage: true }); console.error((await page.locator('body').innerText()).slice(-10000)); throw e } finally { await page.close() }
 }

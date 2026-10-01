@@ -1,5 +1,5 @@
 import { PAYSLIP_VERSION, type Payslip } from './payslip'
-import { ASSISTED_FORMAT, readWithAssistance } from './assistedReader'
+import { ASSISTED_FORMAT, paidToDigest, readWithAssistance } from './assistedReader'
 import { detectFormat, earningsLines, type TextRow, type TextToken } from './payslipFormats'
 import { isPicture, MAX_PICTURE_BYTES, pictureCanvas, recogniseRows } from './payslipPicture'
 export type { TextRow, TextToken } from './payslipFormats'
@@ -135,7 +135,7 @@ async function fromRows(rows: TextRow[], hash: string, name: string, sample: boo
     if (!assist || !isUnknownLayout(error)) throw error
     const text = lines.join('\n')
     if (text.length > 20_000) throw new Error('This payslip contains too much text.')
-    const { facts, lines: earnings } = await readWithAssistance(text, signal)
+    const { facts, lines: earnings, kind, paidTo } = await readWithAssistance(text, signal)
     /*
      * A layout nothing here documents is exactly the case where the earnings
      * table matters most — on a shift worker's payslip the ordinary line can be
@@ -143,6 +143,7 @@ async function fromRows(rows: TextRow[], hash: string, name: string, sample: boo
      * found in this document and the rows add up to the gross beside them.
      */
     return { id: hash, hash, name, text, facts, original: { ...facts }, confirmed: false, sample, format: ASSISTED_FORMAT, fromPicture,
+      kind, paidToKey: await paidToDigest(paidTo),
       ...(earnings.length ? { lines: earnings } : {}) }
   }
 }
