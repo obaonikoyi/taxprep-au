@@ -45,7 +45,7 @@ export class AssistedReadError extends Error {}
  * message meant for the person — the reader being switched off on a deployment
  * is an ordinary answer, not a fault, and it always ends in manual entry.
  */
-export async function readWithAssistance(text: string, signal: AbortSignal): Promise<{ facts: PayFacts; lines: EarningsLine[] }> {
+export async function readWithAssistance(text: string, signal: AbortSignal): Promise<{ facts: PayFacts; lines: EarningsLine[]; kind: DocumentKind; paidTo: string }> {
   let response: Response
   try {
     response = await fetch(ASSISTED_ENDPOINT, {
@@ -69,7 +69,45 @@ export async function readWithAssistance(text: string, signal: AbortSignal): Pro
   if (fields.every(field => !facts[field])) {
     throw new AssistedReadError('The assisted reader found no figures in this payslip. Enter them from your payslip instead.')
   }
-  return { facts, lines: addingUp(assistedLines((body as { lines?: unknown })?.lines), facts) }
+  return {
+    facts,
+    lines: addingUp(assistedLines((body as { lines?: unknown })?.lines), facts),
+    kind: documentKind((body as { documentKind?: unknown })?.documentKind),
+    paidTo: name((body as { paidTo?: unknown })?.paidTo),
+  }
+}
+
+/*
+ * What the document is. Anything this app has no sentence for becomes "other",
+ * which is the answer that asks the person rather than assuming — never blank,
+ * because every file needs an answer.
+ */
+export const DOCUMENT_KINDS = ['payslip', 'taxReturn', 'annualIncomeStatement', 'bankStatement', 'employmentContract', 'invoice', 'other'] as const
+export type DocumentKind = (typeof DOCUMENT_KINDS)[number]
+export const documentKind = (value: unknown): DocumentKind =>
+  typeof value === 'string' && (DOCUMENT_KINDS as readonly string[]).includes(value) ? value as DocumentKind : 'other'
+
+const name = (value: unknown) => typeof value === 'string' && value.length <= 120 ? value.trim() : ''
+
+/*
+ * The name a document is made out to, reduced to something that can only be
+ * compared.
+ *
+ * This app has never kept anybody's name and is not going to start. What it
+ * needs is narrower than a name: whether two documents in front of it disagree
+ * about who they belong to. A digest answers exactly that question and no
+ * other — it cannot be shown beside a figure, written into a report or carried
+ * out in an export, because there is nothing there to read.
+ *
+ * Normalised first, so the same name in capitals, with extra spaces or with
+ * punctuation is the same person. It cannot do better than that, which is why
+ * what it produces is a question and never a verdict.
+ */
+export async function paidToDigest(paidTo: string): Promise<string> {
+  const normalised = paidTo.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim()
+  if (normalised.length < 2) return ''
+  const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(normalised))
+  return [...new Uint8Array(bytes)].slice(0, 8).map(b => b.toString(16).padStart(2, '0')).join('')
 }
 
 /*

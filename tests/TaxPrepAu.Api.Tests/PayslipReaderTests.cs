@@ -271,3 +271,90 @@ public class PayslipEarningsLineTests
         Assert.Contains("A rate of 49.8080 is not 49.81", prompt);
     }
 }
+
+/*
+ * What the document is, and who it is made out to.
+ *
+ * The guard these replace was "all twelve fields came back empty", which stops
+ * nonsense and nothing else. An ATO notice of assessment is not nonsense — it
+ * carries a name, an ABN, dates and dollar amounts, which is exactly what a
+ * payslip reader hunts for, and its figures cover a year. Read as a payslip it
+ * counts a year as a fortnight.
+ */
+public class PayslipDocumentKindTests
+{
+    private static string Answer(string kind) => $$"""{"documentKind":"{{kind}}","paidTo":"A. Person","gross":"100.00"}""";
+
+    [Theory]
+    [InlineData("payslip")]
+    [InlineData("taxReturn")]
+    [InlineData("annualIncomeStatement")]
+    [InlineData("bankStatement")]
+    [InlineData("employmentContract")]
+    [InlineData("invoice")]
+    [InlineData("other")]
+    public void ReadsEveryKindItOffers(string kind)
+        => Assert.Equal(kind, PayslipReaderEndpoint.ParseDocumentKind(Answer(kind)));
+
+    [Theory]
+    [InlineData("payslipish")]
+    [InlineData("PAYSLIP")]
+    [InlineData("medicalCertificate")]
+    [InlineData("")]
+    public void CallsAnythingItHasNoSentenceForOther(string kind)
+        => Assert.Equal("other", PayslipReaderEndpoint.ParseDocumentKind(Answer(kind)));
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("not json")]
+    [InlineData("{}")]
+    [InlineData("""{"documentKind":7}""")]
+    [InlineData("""{"documentKind":null}""")]
+    [InlineData("[]")]
+    public void AnswersOtherRatherThanBlankWhenNothingUsableComesBack(string json)
+    {
+        // Never blank: the browser has to have an answer for every file, and
+        // "other" is the answer that asks the person rather than assuming.
+        Assert.Equal("other", PayslipReaderEndpoint.ParseDocumentKind(json));
+    }
+
+    [Fact]
+    public void ReadsTheNameTheDocumentIsMadeOutTo()
+        => Assert.Equal("A. Person", PayslipReaderEndpoint.ParsePaidTo(Answer("payslip")));
+
+    [Fact]
+    public void AnswersNoNameRatherThanAMisreadOne()
+    {
+        Assert.Equal(string.Empty, PayslipReaderEndpoint.ParsePaidTo("""{"paidTo":""}"""));
+        Assert.Equal(string.Empty, PayslipReaderEndpoint.ParsePaidTo("{}"));
+        Assert.Equal(string.Empty, PayslipReaderEndpoint.ParsePaidTo("""{"paidTo":42}"""));
+        // A "name" this long is some other field that was misread.
+        Assert.Equal(string.Empty, PayslipReaderEndpoint.ParsePaidTo($$"""{"paidTo":"{{new string('a', 121)}}"}"""));
+    }
+
+    [Fact]
+    public void TellsTheModelToAnswerTheKindHonestlyAndWhyItMatters()
+    {
+        var prompt = PayslipReaderEndpoint.SystemPrompt;
+        Assert.Contains("WHAT IS THIS DOCUMENT?", prompt);
+        Assert.Contains("a document is what it is", prompt);
+        // The reason a tax return is the dangerous one.
+        Assert.Contains("cover a FINANCIAL YEAR rather than a pay period", prompt);
+        // An unplaceable payslip must still be read, or the override is useless.
+        Assert.Contains("still fill in whatever the document does state", prompt);
+    }
+
+    [Fact]
+    public void TellsTheModelTheNameIsForComparisonOnly()
+    {
+        var prompt = PayslipReaderEndpoint.SystemPrompt;
+        Assert.Contains("WHO IS IT MADE OUT TO?", prompt);
+        Assert.Contains("never stored, never shown", prompt);
+    }
+
+    [Fact]
+    public void OffersOnlyTheKindsTheAppHasASentenceFor()
+        => Assert.Equal(
+            ["payslip", "taxReturn", "annualIncomeStatement", "bankStatement", "employmentContract", "invoice", "other"],
+            PayslipReaderEndpoint.DocumentKinds);
+}

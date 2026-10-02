@@ -47,6 +47,23 @@ public static class PayslipReaderEndpoint
     /// <summary>An earnings table longer than this is a misreading, not a payslip.</summary>
     public const int MaximumLines = 30;
 
+    /*
+     * What the document is, asked before what it says.
+     *
+     * The guard this replaces was "all twelve fields came back empty", which
+     * stops nonsense and nothing else. An ATO notice of assessment is not
+     * nonsense: it carries a name, an ABN, dates and dollar amounts, which is
+     * exactly what a payslip reader is hunting for — and its figures cover a
+     * financial year, so reading one as a payslip counts a year as a fortnight.
+     *
+     * A closed list, so a kind this app has no sentence for cannot come back.
+     */
+    public static readonly string[] DocumentKinds =
+        ["payslip", "taxReturn", "annualIncomeStatement", "bankStatement", "employmentContract", "invoice", "other"];
+
+    /// <summary>A name longer than this is a misreading of some other field.</summary>
+    public const int MaximumNameLength = 120;
+
     public static readonly string[] Fields =
     [
         "employer", "periodStart", "periodEnd", "payDate", "gross", "withheld",
@@ -103,8 +120,41 @@ public static class PayslipReaderEndpoint
         - rate: the ordinary hourly rate, such as 30.75. Not an overtime or penalty rate.
         - ordinary: the pay for those ordinary hours, if it is itemised separately from gross.
 
-        Overtime, penalty rates, allowances and leave loading are never any of these fields.
-        Leave them out of the twelve fields above; they belong in `lines` below.
+        WHAT IS THIS DOCUMENT? Answer in `documentKind`, using exactly one of:
+        payslip, taxReturn, annualIncomeStatement, bankStatement, employmentContract,
+        invoice, other.
+
+        - payslip: ONE pay period, showing what was earned and what was taken out.
+        - taxReturn: an ATO notice of assessment, a tax return, or similar. Its figures
+          cover a FINANCIAL YEAR rather than a pay period.
+        - annualIncomeStatement: an income statement or payment summary covering a whole
+          financial year for one employer.
+        - bankStatement: a list of transactions on an account.
+        - employmentContract: a contract, letter of offer or variation.
+        - invoice: an invoice, a receipt or a bill.
+        - other: anything else, including a document you cannot place.
+
+        Answer this honestly and independently of what you were asked to find. "other"
+        is a good answer. Do not answer "payslip" because payslip fields were requested:
+        a document is what it is.
+
+        When the kind is taxReturn, annualIncomeStatement, bankStatement,
+        employmentContract or invoice, return "" for every field below and [] for lines.
+        Those documents state figures for a whole year or for something that is not pay
+        at all, and a figure taken from one of them is added to a pay history where it
+        cannot be told apart from a fortnight's wages.
+
+        When the kind is "other", still fill in whatever the document does state. A
+        payslip in a layout you have never seen is an "other" you should still read; the
+        person is shown your answer and decides.
+
+        WHO IS IT MADE OUT TO? Put the employee's name in `paidTo`, exactly as printed,
+        or "" when the document states none. It is used for one thing only: noticing
+        that two documents name two different people. It is never stored, never shown
+        beside any figure, and never written into any report.
+
+        Overtime, penalty rates, allowances and leave loading are never any of the twelve
+        fields above; they belong in `lines` below.
 
         THE EARNINGS TABLE goes in `lines`, one entry per row, in the order the payslip
         prints them. Most of a shift worker's pay is in the rows below the ordinary one,
@@ -188,7 +238,14 @@ public static class PayslipReaderEndpoint
             {
                 var reading = await Read(text, key!, request.HttpContext.RequestAborted);
                 var lines = VerifiedLines(reading.Lines, text);
-                return Results.Ok(new { available = true, fields = reading.Facts, lines });
+                /*
+                 * The kind and the name travel beside the figures rather than
+                 * gating them here. The browser asks the person about a document
+                 * that is not a payslip, and an override must not cost a second
+                 * reading — so the figures come back either way and nothing is
+                 * added to a pay history until somebody says so.
+                 */
+                return Results.Ok(new { available = true, fields = reading.Facts, lines, documentKind = reading.Kind, paidTo = reading.PaidTo });
             }
             catch (OperationCanceledException)
             {
@@ -211,6 +268,8 @@ public static class PayslipReaderEndpoint
     {
         var properties = new Dictionary<string, object>();
         foreach (var field in Fields) properties[field] = new { type = "string" };
+        properties["documentKind"] = new { type = "string", @enum = DocumentKinds };
+        properties["paidTo"] = new { type = "string" };
         properties["lines"] = new
         {
             type = "array",
@@ -233,7 +292,7 @@ public static class PayslipReaderEndpoint
         {
             ["type"] = JsonSerializer.SerializeToElement("object"),
             ["properties"] = JsonSerializer.SerializeToElement(properties),
-            ["required"] = JsonSerializer.SerializeToElement(Fields.Append("lines").ToArray()),
+            ["required"] = JsonSerializer.SerializeToElement(Fields.Concat(["documentKind", "paidTo", "lines"]).ToArray()),
             ["additionalProperties"] = JsonSerializer.SerializeToElement(false),
         };
     }
@@ -243,7 +302,7 @@ public static class PayslipReaderEndpoint
      * that gave up — the reader times out after a minute — should not leave a
      * call running that is still being billed for an answer nobody will read.
      */
-    private static async Task<(Dictionary<string, string> Facts, List<PayslipEarningsLine> Lines)> Read(string text, string apiKey, CancellationToken cancellationToken)
+    private static async Task<(Dictionary<string, string> Facts, List<PayslipEarningsLine> Lines, string Kind, string PaidTo)> Read(string text, string apiKey, CancellationToken cancellationToken)
     {
         AnthropicClient client = new() { ApiKey = apiKey };
         var message = await client.Messages.Create(new MessageCreateParams
@@ -257,7 +316,40 @@ public static class PayslipReaderEndpoint
         }, cancellationToken);
 
         var json = string.Concat(message.Content.Select(b => b.Value).OfType<TextBlock>().Select(b => b.Text));
-        return (Parse(json), ParseLines(json));
+        return (Parse(json), ParseLines(json), ParseDocumentKind(json), ParsePaidTo(json));
+    }
+
+    /// <summary>What the model says this document is, or "other" for anything this app
+    /// has no sentence for. Never blank: the browser has to answer for every file.</summary>
+    public static string ParseDocumentKind(string json)
+    {
+        var kind = Property(json, "documentKind", 40);
+        return DocumentKinds.Contains(kind, StringComparer.Ordinal) ? kind : "other";
+    }
+
+    /*
+     * The name the document is made out to.
+     *
+     * Returned so the browser can notice that two documents name two different
+     * people. It is not stored here, not logged, and not written anywhere: the
+     * text it came from was already in this request and is discarded with it.
+     * What the browser keeps is a digest, never this.
+     */
+    public static string ParsePaidTo(string json) => Property(json, "paidTo", MaximumNameLength);
+
+    private static string Property(string json, string name, int longest)
+    {
+        if (string.IsNullOrWhiteSpace(json)) return string.Empty;
+        JsonDocument document;
+        try { document = JsonDocument.Parse(json); }
+        catch (JsonException) { return string.Empty; }
+        using (document)
+        {
+            if (document.RootElement.ValueKind != JsonValueKind.Object) return string.Empty;
+            if (!document.RootElement.TryGetProperty(name, out var value) || value.ValueKind != JsonValueKind.String) return string.Empty;
+            var read = (value.GetString() ?? string.Empty).Trim();
+            return read.Length > longest ? string.Empty : read;
+        }
     }
 
     /*

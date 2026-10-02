@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { appendPayslips, blankFacts, changedFacts, confirmationIssues, employerKey, financialYear, MAX_PAYSLIPS, selectedPayslips, type Payslip, type SkippedFile } from './payslip'
 import { isUnknownLayout, readPayslip } from './payslipReader'
+import { kindNotice, mixedNames } from './documentNotice'
 import { downloadPayReport, payslipReport } from './payslipReport'
 import PayslipStart from './PayslipStart'
 import PayslipSummary from './PayslipSummary'
@@ -32,6 +33,15 @@ export default function PayslipDashboard() {
    * idea of a "layout" to make sense.
    */
   const [offer, setOffer] = useState<File[]>([])
+  /*
+   * Readings the app does not think are payslips, held rather than added.
+   *
+   * Held complete, so saying "add it anyway" costs no second reading and no
+   * second budget unit: the figures are already here, they simply have not been
+   * allowed to join a pay history yet.
+   */
+  const [wrongKind, setWrongKind] = useState<Payslip[]>([])
+  const [namesDismissed, setNamesDismissed] = useState(false)
   const active = useRef<AbortController | null>(null), stageHeading = useRef<HTMLHeadingElement>(null), clearButton = useRef<HTMLButtonElement>(null)
   /*
    * Everything this screen says about a batch is said above the start card. By
@@ -53,6 +63,10 @@ export default function PayslipDashboard() {
   const employers = [...new Map(slips.filter(s => s.facts.employer.trim()).map(s => [employerKey(s.facts.employer), s.facts.employer])).entries()]
   const current = slips.find(s => s.id === selected)
   const fictional = slips.some(s => s.sample)
+  const nameGroups = mixedNames(slips)
+  /* Its own condition, because this one can be the only thing the screen has to
+   * say: two payslips that both read perfectly, and disagree about whose they are. */
+  const namesAsked = !namesDismissed && nameGroups.length > 1
 
   useEffect(() => {
     if (stage === 'add') return
@@ -71,17 +85,17 @@ export default function PayslipDashboard() {
    * centring the pair can leave it off the bottom of a short window.
    */
   useEffect(() => {
-    if (!error && !skipped.length && !offer.length) return
+    if (!error && !skipped.length && !offer.length && !wrongKind.length && !namesAsked) return
     alerts.current?.focus({ preventScroll: true })
     alerts.current?.lastElementChild?.scrollIntoView({ block: 'center', behavior: 'instant' })
-  }, [error, skipped, offer])
+  }, [error, skipped, offer, wrongKind, namesAsked])
 
   async function importFiles(files?: File[], assist = false) {
     if (active.current) return
     const sample = !files
     if (slips.length && fictional !== sample) { setError('Clear the current history before switching between example and your own payslips. Download a report first if you need it.'); return }
     const controller = new AbortController(); active.current = controller
-    setBusy(true); setError(''); setSkipped([]); setOffer([]); setMessage('Opening payslips…')
+    setBusy(true); setError(''); setSkipped([]); setOffer([]); setWrongKind([]); setMessage('Opening payslips…')
     let cancelListener: (() => void) | undefined
     const cancelled = new Promise<never>((_, reject) => {
       cancelListener = () => reject(new Error('Reading cancelled. Existing payslips are unchanged.'))
@@ -143,24 +157,30 @@ export default function PayslipDashboard() {
           else unread.push({ name: files[i].name, reason: reasonFor(e) })
         }
       }
-      const { kept, skipped: notAdded } = appendPayslips(slips, next)
+      /*
+       * What the document is, decided before what it says is believed. A
+       * documented layout carries no kind, because it is a payslip by
+       * construction — only a reading can be wrong about this.
+       */
+      const questioned = sample ? [] : next.filter(slip => slip.kind && slip.kind !== 'payslip')
+      const { kept, skipped: notAdded } = appendPayslips(slips, next.filter(slip => !questioned.includes(slip)))
       const skipped = [...unread, ...notAdded]
       // Nothing was added and nothing can be offered, so this is simply a
       // failure and reads like one. A batch with a question still to ask is not
       // that, even when it added nothing: the question is the outcome.
-      if (kept.length === slips.length && !unknown.length) throw new Error(skipped[0]?.reason ?? 'Could not read these payslips.')
+      if (kept.length === slips.length && !unknown.length && !questioned.length) throw new Error(skipped[0]?.reason ?? 'Could not read these payslips.')
       if (sample) {
         if (next.some(s => confirmationIssues(s, kept).length)) throw new Error('The example could not be verified.')
         // Only shipped fictional examples are pre-reviewed. Every user file starts unconfirmed.
-        return { combined: kept.map(s => ({ ...s, confirmed: true })), skipped, unknown }
+        return { combined: kept.map(s => ({ ...s, confirmed: true })), skipped, unknown, questioned }
       }
-      return { combined: kept, skipped, unknown }
+      return { combined: kept, skipped, unknown, questioned }
     }
     try {
-      const { combined, skipped, unknown } = await Promise.race([work(), cancelled])
+      const { combined, skipped, unknown, questioned } = await Promise.race([work(), cancelled])
       if (!controller.signal.aborted) {
         const added = combined.length - slips.length
-        setSlips(combined); setYear('all'); setEmployer('all'); setSkipped(skipped); setOffer(unknown)
+        setSlips(combined); setYear('all'); setEmployer('all'); setSkipped(skipped); setOffer(unknown); setWrongKind(questioned)
         setSelected(sample || !added ? null : combined[slips.length].id)
         // Nothing new to check means there is nothing to move on to. Staying on
         // this step keeps the question, and the file picker, where they are.
@@ -172,7 +192,7 @@ export default function PayslipDashboard() {
     finally { if (cancelListener) controller.signal.removeEventListener('abort', cancelListener); if (active.current === controller) { active.current = null; setBusy(false) } }
   }
   function focusStart() { requestAnimationFrame(() => { stageHeading.current?.focus({ preventScroll: true }); stageHeading.current?.scrollIntoView({ block: 'start' }) }) }
-  function clear() { setStage('add'); setClearRequested(false); setSlips([]); setRates([]); setSelected(null); setYear('all'); setEmployer('all'); setMessage('Pay history cleared.'); setError(''); setSkipped([]); setOffer([]); focusStart() }
+  function clear() { setStage('add'); setClearRequested(false); setSlips([]); setRates([]); setSelected(null); setYear('all'); setEmployer('all'); setMessage('Pay history cleared.'); setError(''); setSkipped([]); setOffer([]); setWrongKind([]); focusStart() }
   function manual() {
     if (fictional) { setError('Clear the example history before adding your own figures.'); return }
     if (slips.length >= MAX_PAYSLIPS) { setError('This session already has 100 payslips.'); return }
@@ -180,7 +200,21 @@ export default function PayslipDashboard() {
     setSlips([...slips, { id, name: 'Manual payslip', hash: null, text: '', facts, original: { ...facts }, confirmed: false, sample: false }])
     setSelected(id); setStage('review'); setYear('all'); setEmployer('all'); setError(''); setMessage('Enter the period figures from your payslip, then confirm them.')
   }
-  function openReview(id: string) { setSelected(id); setStage('review'); setYear('all'); setEmployer('all'); setError(''); setSkipped([]); setOffer([]) }
+  /*
+   * Overruling the reading. The figures were read once and kept, so this costs
+   * nothing and sends nothing — it only lets a reading that was held back join
+   * the pay history, still unconfirmed, still every figure to be checked.
+   */
+  function addAnyway(slip: Payslip) {
+    const { kept, skipped: notAdded } = appendPayslips(slips, [slip])
+    setWrongKind(wrongKind.filter(held => held.id !== slip.id))
+    setSkipped(notAdded)
+    if (kept.length <= slips.length) return
+    setSlips(kept); setSelected(slip.id); setStage('review'); setYear('all'); setEmployer('all')
+    setMessage('Added. Check every figure — this was not read as a payslip.')
+  }
+
+  function openReview(id: string) { setSelected(id); setStage('review'); setYear('all'); setEmployer('all'); setError(''); setSkipped([]); setOffer([]); setWrongKind([]) }
   function confirmCurrent() {
     if (!current || confirmationIssues(current, slips).length) return
     const updated = slips.map(s => s.id === current.id ? { ...s, confirmed: true } : s)
@@ -207,7 +241,7 @@ export default function PayslipDashboard() {
         aria-label={['Add payslips', 'Check figures', 'View summary'][i]}
         aria-current={stage === step ? 'step' : undefined}
         disabled={busy || (step !== 'add' && !slips.length)}
-        onClick={() => { setStage(step); setError(''); setSkipped([]); setOffer([]); setMessage(''); setClearRequested(false); if (step === 'add') focusStart(); if (step === 'review') setSelected(selected ?? pending[0]?.id ?? slips[0]?.id ?? null) }}>
+        onClick={() => { setStage(step); setError(''); setSkipped([]); setOffer([]); setWrongKind([]); setMessage(''); setClearRequested(false); if (step === 'add') focusStart(); if (step === 'review') setSelected(selected ?? pending[0]?.id ?? slips[0]?.id ?? null) }}>
         <span className="pay-step-number" aria-hidden="true">{i + 1}</span>
         <span><strong>{['Add payslips', 'Check figures', 'View summary'][i]}</strong><small>{['Start with a file or your figures', pending.length ? `${pending.length} to check` : 'Make sure the amounts match', 'Understand and download your pay'][i]}</small></span>
       </button>)}
@@ -215,12 +249,48 @@ export default function PayslipDashboard() {
 
     {fictional && <aside className="pay-example-banner"><div><strong>You’re exploring an example</strong><p>These six fictional payslips show how the dashboard works.</p></div><button className="secondary-button" disabled={busy} onClick={clear}>Use my own payslips</button></aside>}
     <div className="pay-status"><p role="status">{message}</p>{busy && <button className="text-button" onClick={() => active.current?.abort()}>Cancel reading</button>}</div>
-    {(error || skipped.length > 0 || offer.length > 0) && <div className="pay-alerts" ref={alerts} tabIndex={-1}>
+    {(error || skipped.length > 0 || offer.length > 0 || wrongKind.length > 0 || namesAsked) && <div className="pay-alerts" ref={alerts} tabIndex={-1}>
       {error && <div role="alert" className="statement-error"><strong>We couldn’t add those payslips.</strong><p>{error}</p><p>You can type the figures in yourself instead.</p></div>}
       {skipped.length > 0 && <div role="alert" className="statement-error">
         <strong>{skipped.length} of those files {skipped.length === 1 ? 'was' : 'were'} not added.</strong>
         <p>The rest were read and are waiting for you to check them. Add these again on their own, or type their figures in by hand.</p>
         <ul>{skipped.map((file, i) => <li key={`${file.name}-${i}`}>{file.name} — {file.reason}</li>)}</ul>
+      </div>}
+      {/*
+        * A document the reading did not call a payslip. Held, named, explained
+        * in the terms that matter to the person, and always overrulable: a
+        * payslip in a layout nobody has seen must not be locked out by an
+        * opinion about what it is.
+        */}
+      {wrongKind.map(slip => {
+        const notice = kindNotice(slip.kind!)!
+        return <div role="alert" className="pay-offer" key={slip.id}>
+          <strong>{notice.heading}</strong>
+          <ul><li>{slip.name}</li></ul>
+          <p>It looks like {notice.what}. {notice.why}</p>
+          <p>{notice.unsure
+            ? 'The reader could not place it. If it is a payslip, add it and check every figure.'
+            : 'Nothing has been added to your pay history. If this really is a payslip, you can add it anyway.'}</p>
+          <div className="pay-offer-actions">
+            <button className="secondary-button" disabled={busy} onClick={() => addAnyway(slip)}>Add it as a payslip anyway</button>
+            <button className="text-button" disabled={busy} onClick={() => setWrongKind(wrongKind.filter(held => held.id !== slip.id))}>Don’t add it</button>
+          </div>
+        </div>
+      })}
+      {/*
+        * Whose documents are these? Not an identity check — the app holds a
+        * digest per document and can see only that two of them differ. A name
+        * written two ways looks the same as two people from here, so this is a
+        * question that can be dismissed, never a refusal.
+        */}
+      {namesAsked && <div role="alert" className="pay-offer">
+        <strong>These payslips are made out to different names</strong>
+        <p>A pay summary that mixes two people's pay is wrong in a way nothing here can detect later, so it is worth a look:</p>
+        <ul>{nameGroups.map(group => <li key={group.key}>{group.names.join(', ')}</li>)}</ul>
+        <p>Each line above is one name. If that is the same person written two ways, ignore this. If a file belongs to somebody else, open it and remove it.</p>
+        <div className="pay-offer-actions">
+          <button className="secondary-button" onClick={() => setNamesDismissed(true)}>They are the same person</button>
+        </div>
       </div>}
       {offer.length > 0 && <div role="alert" className="pay-offer">
         <strong>{offer.length === 1 ? 'Your payslip is set out in a way this app has not seen before' : `${offer.length} of those payslips are set out in a way this app has not seen before`}</strong>
